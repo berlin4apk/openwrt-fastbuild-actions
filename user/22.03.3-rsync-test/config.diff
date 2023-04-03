@@ -1,0 +1,41 @@
+# -*- mode: sh -*-
+# vi: set ft=sh :
+
+CONFIG_TARGET_x86=y
+CONFIG_TARGET_x86_64=y
+CONFIG_TARGET_x86_64_DEVICE_generic=y
+CONFIG_ISO_IMAGES=y
+CONFIG_PACKAGE_libacl=m
+CONFIG_PACKAGE_libattr=m
+CONFIG_PACKAGE_libpopt=m
+CONFIG_PACKAGE_libzstd=m
+CONFIG_PACKAGE_rsync=m
+CONFIG_PACKAGE_zlib=m
+CONFIG_RSYNC_acl=y
+CONFIG_RSYNC_xattr=y
+CONFIG_RSYNC_zstd=y
+CONFIG_ZSTD_OPTIMIZE_O3=y
+
+
+# https://git.openwrt.org/?p=openwrt/openwrt.git;a=blob_plain;f=package/base-files/image-config.in;h=2de2130b8490d9f18fa0b0189fa1ed7432e9528a;hb=HEAD
+#	config VERSION_REPO
+#		string
+#		prompt "Release repository"
+#		default "https://downloads.openwrt.org/snapshots"
+#		help
+#			This is the repository address embedded in the image, it defaults
+#			to the trunk snapshot repo; the url may contain the following placeholders:
+#			 %R .. Repository revision ID
+#			 %V .. Configured release version number or "SNAPSHOT", uppercase
+#			 %v .. Configured release version number or "snapshot", lowercase
+#			 %C .. Configured release revision code or value of %R, uppercase
+#			 %c .. Configured release revision code or value of %R, lowercase
+#			 %D .. Distribution name or "OpenWrt", uppercase
+#			 %d .. Distribution name or "openwrt", lowercase
+#			 %T .. Target name
+#			 %S .. Target/Subtarget name
+#			 %A .. Package architecture
+#			 %t .. Build taint flags, e.g. "no-all busybox"
+#			 %M .. Manufacturer name or "OpenWrt"
+#			 %P .. Product name or "Generic"
+#			 %h .. Hardware revision or "v0"

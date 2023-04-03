@@ -1,0 +1,71 @@
+# -*- mode: sh -*-
+# vi: set ft=sh :
+
+set -eu
+
+# https://openwrt.org/docs/guide-user/additional-software/imagebuilder#restricting_root_access
+# https://openwrt.org/docs/guide-developer/uci-defaults
+# https://openwrt.org/docs/guide-developer/toolchain/use-buildsystem#custom_files
+
+. /lib/functions.sh # https://github.com/openwrt/openwrt/blob/d98c8fc06ddd36f4b47c0eef8094e68257b92f87/package/base-files/files/etc/uci-defaults/13_fix-group-user#L1
+
+##echo "(I) Set empty root password."
+##(echo ""; sleep 1; echo "") | passwd > /dev/null
+
+
+################################33
+# sed -i 's|^root::|root:your-hash-here:|' /etc/shadow
+#cat /etc/shadow | sed -e 's|^'${USER_NAME}':!:|'${USER_NAME}':!'${USER_PWHASH}':|' 's|^${USER_NAME}::|root:${USER_PWHASH}:|' 
+#cat /etc/shadow | sed -i -e 's|^'${USER_NAME}':!.*:|'${USER_NAME}':!'${USER_PWHASH}':|' /etc/shadow || sed -e 's|^'${USER_NAME}':.*:|'${USER_NAME}':'${USER_PWHASH}':|' /etc/shadow
+
+
+#usern=robbie
+#ENCPASS= :$1$CQoPk7Zh$370xDLmeGD9m4aF/ciIlC
+##Simple example of replacement of a password field in /etc/shadow.
+##usern=robbie
+##encpass= :$1$CQoPk7Zh$370xDLmeGD9m4aF/ciIlC
+##sed -i "s/^${usern}\:[^\:]\{1,100\}\:/${usern}\:${encpass}\:/" /etc/shadow
+
+##sed -i "s/^${USER_NAME}\:[^\:]\{1,100\}\:/${USER_NAME}\:${ENCPASS}\:/" /etc/shadow
+#sed -e '/^toor:/s/:![^:]*:/:!newpassword:/; /^toor:/s/:[^!][^:]*:/:newpassword:/;' /etc/shadow
+#sed -e '/^root:/s/:[^:]*:/:newpassword:/' /etc/shadow
+#sed -e '/^${USER_NAME}:/s/:[^:]*:/:\${ENCPASS}:/' /etc/shadow
+#sed -e 's|^${USER_NAME}::|root:${USER_PWHASH}:|' 
+
+## sed -e "s|^${USER_NAME}:![^:]*:|${USER_NAME}:!${ENCPASS}:|"  /etc/shadow
+# 
+#sed -e "s|^${USER_NAME}:!*:|${USER_NAME}:!${ENCPASS}:|" /etc/shadow
+
+### sed -e "s|^${USER_NAME}:![^:]*:|${USER_NAME}:!${ENCPASS}:|" /etc/shadow
+### sed -e "s|^${USER_NAME}:[^:]*:|${USER_NAME}:${ENCPASS}:|" /etc/shadow
+################################33
+# locked user
+# working # sed -e "s|^${USER_NAME}:![^:]*:|${USER_NAME}:!${ENCPASS}:|" /etc/shadow
+
+# WORKING # sed -e "s|^${USER_NAME}:[!][^:]*:|${USER_NAME}:!${ENCPASS}:|" -e "s|^${USER_NAME}:[^!][^:]*:|${USER_NAME}:${ENCPASS}:|" /etc/shadow
+# WORKING # sed -i.backup -e "s|^${USER_NAME}:[!][^:]*:|${USER_NAME}:!${ENCPASS}:|" -e "s|^${USER_NAME}:[^!][^:]*:|${USER_NAME}:${ENCPASS}:|" /etc/shadow
+
+
+USER_NAME="root"
+# USER_PWHASH='$6$XPo/zRIy2LFOyBaU$SNtPnbg/IIjIBtU7U5DfW2MG8bZ8.S62yamMtODcu9.MEzBnjiJKBdCr614h2gnJxjl5p8U7ArewmtOqtVFPq.' # create with openssl passwd -6 '<password>'
+ENCPASS='$6$XPo/zRIy2LFOyBaU$SNtPnbg/IIjIBtU7U5DfW2MG8bZ8.S62yamMtODcu9.MEzBnjiJKBdCr614h2gnJxjl5p8U7ArewmtOqtVFPq.' # create with openssl passwd -6 '<password>'
+USER_SSHPUB='ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key'
+USER_HOME="$(eval echo ~"${USER_NAME}")"
+mkdir -p "${USER_HOME}"/.ssh
+chmod 700 "${USER_HOME}"/.ssh
+cat << EOI > "${USER_HOME}"/.ssh/authorized_keys
+${USER_SSHPUB}
+EOI
+chmod 600 "${USER_HOME}"/.ssh/authorized_keys
+mkdir -p /etc/dropbear/
+ln -s "${USER_HOME}"/.ssh/authorized_keys /etc/dropbear/authorized_keys
+uci set dropbear.@dropbear[0].RootPasswordAuth="0"
+uci commit dropbear
+/etc/init.d/dropbear restart
+
+# https://gist.github.com/noraj/3b05c0efa57e045afb60e7016662342f
+# set password form hash
+sed -i.backup -e "s|^${USER_NAME}:[!][^:]*:|${USER_NAME}:!${ENCPASS}:|" -e "s|^${USER_NAME}:[^!][^:]*:|${USER_NAME}:${ENCPASS}:|" /etc/shadow
+
+
+exit 0
