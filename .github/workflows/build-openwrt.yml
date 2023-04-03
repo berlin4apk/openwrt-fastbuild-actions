@@ -16,6 +16,7 @@ env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
   OPT_UPDATE_FEEDS: 1
   # OPT_REBUILD: 1
+  REPOSITORY_GH_PAGES_RELEASES: ${{secrets.repository_gh_pages}} # eg berlin4apk/openwrt-releases or openlumi/releases 
 
 name: Build OpenWrt
 
@@ -217,7 +218,7 @@ jobs:
       uses: actions/checkout@v3
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
       with:
-        repository: openlumi/releases
+        repository: ${{env.REPOSITORY_GH_PAGES_RELEASES}}
         path: ${{ env.HOST_WORK_DIR }}/releases
         ref: gh-pages
         token:  ${{ secrets.GH_TOKEN }}
