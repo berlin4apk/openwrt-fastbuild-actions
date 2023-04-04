@@ -26,8 +26,20 @@ on:
   deployment:
   repository_dispatch:
   workflow_dispatch:
-    env:
-      # OPT_DEBUG: 1
+    inputs:
+      BUILD_TARGET:
+        description: 'target to use'
+        #required: true
+        default: 22.03.3-rsync-mini
+        type: choice
+        options:
+        - 22.03.3
+        - 22.03.3-rsync-test
+        - 22.03.3-rsync-test2
+        - 22.03.3-rsync-mini
+        - snapshot
+#    env:
+#        OPT_DEBUG: 1
   pull_request:
   push:
     paths:
@@ -88,6 +100,7 @@ jobs:
         - mode: test
           title: Fast check
     env:
+      # OPT_DEBUG: 1
       HOST_WORK_DIR: ${{github.workspace}}
       BUILD_MODE: ${{matrix.mode}}
       BUILD_TARGET: ${{matrix.target}}
