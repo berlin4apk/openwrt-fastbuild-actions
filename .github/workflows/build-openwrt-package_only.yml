@@ -20,7 +20,7 @@ env:
   OPT_PUSH_WHEN_FAIL: 1
   REPOSITORY_GH_PAGES_RELEASES: ${{vars.VARG_REPOSITORY_GH_PAGES}} # eg berlin4apk/openwrt-releases or openlumi/releases 
 
-name: Build OpenWrt
+name: package_only Build OpenWrt
 
 on:
   deployment:
