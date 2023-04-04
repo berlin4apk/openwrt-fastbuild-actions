@@ -235,10 +235,9 @@ jobs:
       uses: actions/cache@v3
       with:
         path: |
+          ${{github.workspace}}/.ccache
           openwrt/.ccache
           ${{github.workspace}}/openwrt/.ccache
-          ${{github.workspace}}/.ccache
-          ${{github.workspace}}/.ccache
           '**/.ccache'
           '/tmp/**/.ccache'
           '$HOME/**/.ccache'
@@ -247,6 +246,15 @@ jobs:
         key: ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-${{ needs.setup_build.outputs.ccache_hash }}
         restore-keys: |
           ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-
+
+    - name: Cache DLccache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{github.workspace}}/DLccache
+        key: DLccache-${{ env.TARGET }}/${{ env.SUBTARGET }}-${{ needs.setup_build.outputs.ccache_hash }}
+        restore-keys: |
+          DLccache-${{ env.TARGET }}/${{ env.SUBTARGET }}-
 
     - name: Apply customizations
       if: env.SKIP_TARGET == '0'
@@ -279,13 +287,13 @@ jobs:
       run: scripts/cisteps/build-openwrt/11-compile_multi.sh
 
     - name: test ccache dir 
-      if: env.SKIP_TARGET == '0'
+      if: env.SKIP_TARGET == '0'	&& ## DISABELD #$
       run: |
         realfs=$(df -x devtmpfs | tail -n +2 | awk '{print $6;}' | xargs)
         find ${realfs} -iname "*ccache" -ls 2>&1 | grep -v "Permission denied"
 
     - name: 99-test-ccache-dir.sh
-      if: env.SKIP_TARGET == '0'
+      if: env.SKIP_TARGET == '0'	&& ## DISABELD #$
       run: scripts/cisteps/build-openwrt/99-test-ccache-dir.sh
 
     - name: Compile firmware and packages with single threads when failed
