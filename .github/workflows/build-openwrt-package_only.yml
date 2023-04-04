@@ -373,7 +373,7 @@ jobs:
       run: |
         set -vx
         #mkdir -p docker_inspect
-        docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
+        # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
         docker export image0 | tar t | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_t.txt.zstd
         docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
         ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
@@ -385,11 +385,11 @@ jobs:
       run: |
         set -vx
         #mkdir -p docker_inspect
-        docker create --name image1 "$BUILDER_IMAGE_ID_INC"
-        docker export image1 | tar t | zstdmt -vvv --adapt -f -o builder_inc_docker_export_image_tar_t.txt.zstd
-        docker export image1 | tar tv | zstdmt -vvv --adapt -f -o builder_inc_docker_export_image_tar_tv.txt.zstd
-        ## docker image history image1 | zstdmt -vvv --adapt -f -o builder_inc_docker_image_history.txt.zstd
-        docker container rm --force image1
+        # docker create --name image1 "$BUILDER_IMAGE_ID_INC"
+        docker export "${BUILDER_IMAGE_ID_INC}" | tar t | zstdmt -vvv --adapt -f -o builder_inc_docker_export_image_tar_t.txt.zstd
+        docker export "${BUILDER_IMAGE_ID_INC}" | tar tv | zstdmt -vvv --adapt -f -o builder_inc_docker_export_image_tar_tv.txt.zstd
+        ## docker image history "${BUILDER_IMAGE_ID_INC}" | zstdmt -vvv --adapt -f -o builder_inc_docker_image_history.txt.zstd
+        ## docker container rm --force image1
 
     - name: Upload inspect output
       uses: actions/upload-artifact@master
