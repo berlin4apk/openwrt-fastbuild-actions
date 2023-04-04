@@ -55,7 +55,21 @@ on:
         - 22.03.3-rsync-test2
         - 22.03.3-rsync-mini
         - snapshot
-
+      OPT_UPDATE_FEEDS:
+        #description: 'target to use'
+        #required: true
+        #default: 22.03.3-rsync-mini
+        type: boolean
+      OPT_REBUILD:
+        type: boolean
+      OPT_PACKAGE_ONLY:
+        type: boolean
+      OPT_PUSH_WHEN_FAIL:
+        type: boolean
+      OPT_DEBUG:
+        type: boolean
+      continue-on-error:
+        type: boolean
 #    env:
 #        OPT_DEBUG: 1
   pull_request:
@@ -71,13 +85,10 @@ on:
 
 jobs:
   build:
-    permissions:
-      contents: write
-      deployments: write
     runs-on: ubuntu-22.04
     continue-on-error: true
     # For `github.event`'s structure, see: https://developer.github.com/v3/activity/events/types/
-    # Do not modify the trigger methods here, customize them in the `on` section
+    # Do not modify the trigger methods here, customize them in the `on` section     
     if: |
       github.event_name == 'push'
       || github.event_name == 'pull_request'
@@ -124,6 +135,19 @@ jobs:
       BUILD_TARGET: ${{matrix.target}}
 
     steps:
+    - if: ${{ github.event.inputs.OPT_UPDATE_FEEDS }}
+      run: echo "OPT_UPDATE_FEEDS=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_REBUILD }}
+      run: echo "OPT_REBUILD=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_PACKAGE_ONLY }}
+      run: echo "OPT_PACKAGE_ONLY=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_PUSH_WHEN_FAIL }}
+      run: echo "OPT_PUSH_WHEN_FAIL=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_DEBUG }}
+      run: echo "OPT_DEBUG=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.continue-on-error }}
+      continue-on-error: ${{ github.event.inputs.continue-on-error }}
+
     - name: Checkout
       uses: actions/checkout@v3
       with:
