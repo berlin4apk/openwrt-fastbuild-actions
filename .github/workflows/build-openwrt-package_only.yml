@@ -342,9 +342,10 @@ jobs:
     # failure checking
     - name: '[Failure/Debug] wait for SSH connection (timeout 5min, old 30min. You are safe to cancel the job now.)'
       if: |
-        TIMEOUT_MIN: 5
         env.SKIP_TARGET == '0' && !cancelled()
         && (job.status == 'failure' || (env.OPT_DEBUG == '1' && env.TEST != '1'))
+      env:
+        TIMEOUT_MIN: 5
       uses: openlumi/safe-debugger-action@e0141e5738ac68421298d9eb4217e037e6cb1a0b # openlumi/safe-debugger-action@dev
     
 
