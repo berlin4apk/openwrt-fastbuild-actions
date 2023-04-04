@@ -86,7 +86,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    continue-on-error: true
+#    if: ${{ github.event.inputs.continue-on-error }}
+#    continue-on-error: true
     # For `github.event`'s structure, see: https://developer.github.com/v3/activity/events/types/
     # Do not modify the trigger methods here, customize them in the `on` section     
     if: |
@@ -134,6 +135,9 @@ jobs:
       BUILD_MODE: ${{matrix.mode}}
       BUILD_TARGET: ${{matrix.target}}
 
+  if: ${{ github.event.inputs.continue-on-error }}
+  continue-on-error: true
+
     steps:
     - if: ${{ github.event.inputs.OPT_UPDATE_FEEDS }}
       run: echo "OPT_UPDATE_FEEDS=1" >> $GITHUB_OUTPUT
@@ -145,8 +149,8 @@ jobs:
       run: echo "OPT_PUSH_WHEN_FAIL=1" >> $GITHUB_OUTPUT
     - if: ${{ github.event.inputs.OPT_DEBUG }}
       run: echo "OPT_DEBUG=1" >> $GITHUB_OUTPUT
-    - if: ${{ github.event.inputs.continue-on-error }}
-      continue-on-error: ${{ github.event.inputs.continue-on-error }}
+#    - if: ${{ github.event.inputs.continue-on-error }}
+#      continue-on-error: ${{ github.event.inputs.continue-on-error }}
 
     - name: Checkout
       uses: actions/checkout@v3
