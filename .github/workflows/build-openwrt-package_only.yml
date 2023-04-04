@@ -45,16 +45,14 @@ on:
         - snapshot
       RD_TASK:
 #      BUILD_TARGET:
-        description: 'target to use'
+        description: 'Task to run'
         #required: true
-        default: 22.03.3-rsync-mini
+        default: build
         type: choice
         options:
         - build
         - squash
-        - 22.03.3-rsync-test2
-        - 22.03.3-rsync-mini
-        - snapshot
+        - test
       OPT_UPDATE_FEEDS:
         #description: 'target to use'
         #required: true
