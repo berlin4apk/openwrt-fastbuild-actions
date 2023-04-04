@@ -326,7 +326,7 @@ jobs:
       run: |
         ssh-add -l
         ssh-add -D
-        ssh-add -l
+        ssh-add -l ||:
         kill $SSH_AGENT_PID
 
     - name: Copy files into Git branch
@@ -354,7 +354,7 @@ jobs:
       run: |
         ssh-add -l
         ssh-add -D
-        ssh-add -l
+        ssh-add -l ||:
         kill $SSH_AGENT_PID
 
 #    - name: Create Pull Request
