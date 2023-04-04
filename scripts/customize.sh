@@ -40,6 +40,7 @@ fi
 
 SYNC_EXCLUDES="
 /bin
+/.ccache
 /dl
 /tmp
 /build_dir
