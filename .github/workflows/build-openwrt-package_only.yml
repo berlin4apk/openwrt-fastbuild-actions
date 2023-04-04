@@ -135,8 +135,8 @@ jobs:
       BUILD_MODE: ${{matrix.mode}}
       BUILD_TARGET: ${{matrix.target}}
 
-  if: ${{ github.event.inputs.continue-on-error }}
-  continue-on-error: true
+# fixme # if: ${{ github.event.inputs.continue-on-error }}
+# fixme #  continue-on-error: true
 
     steps:
     - if: ${{ github.event.inputs.OPT_UPDATE_FEEDS }}
