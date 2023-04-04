@@ -231,6 +231,12 @@ jobs:
         echo "CCACHE_HASH=$CCACHE_HASH"
         echo "CCACHE_HASH=$CCACHE_HASH" >> $GITHUB_OUTPUT
 
+      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+    - name: Fix ./.ccache/ directory permissions
+      run: |
+        sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+
     - name: Cache ccache
       uses: actions/cache@v3
       with:
@@ -243,6 +249,7 @@ jobs:
           '$HOME/**/.ccache'
           '$HOME/.ccache'
           '/.ccache'
+          ${{ env.HOST_CCACHE_DIR }}
         key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
         restore-keys: |
           ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
@@ -250,11 +257,16 @@ jobs:
           ccache-kernel-${{ env.BUILD_TARGET }}-
           ccache-kernel-
 
+      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+    - name: Fix HOST_DLCCACHE_DIR directory permissions
+      run: sudo chown -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }}
+
     - name: Cache DLccache
       uses: actions/cache@v3
       with:
         path: |
           '${{github.workspace}}/DLccache'
+          ${{ env.HOST_DLCCACHE_DIR }}
         key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
         restore-keys: |
           DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
@@ -315,7 +327,6 @@ jobs:
           openwrt/.ccache
           ${{github.workspace}}/openwrt/.ccache
           ${{github.workspace}}/.ccache
-          ${{github.workspace}}/.ccache
           '**/.ccache'
           '/tmp/**/.ccache'
           '$HOME/**/.ccache'
@@ -356,6 +367,40 @@ jobs:
       if: env.SKIP_TARGET == '0' && !cancelled() && ( steps.mtcompile.outputs.status == 'success' || steps.stcompile.outputs.status == 'success' )
       run: scripts/cisteps/build-openwrt/14-organize_files.sh
 
+    - name: docker inspect
+      id: inspect1
+      if: env.SKIP_TARGET == '0' && !cancelled()
+      run: |
+        set -vx
+        #mkdir -p docker_inspect
+        # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
+        docker export image0 | tar t | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_t.txt.zstd
+        docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
+        ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
+        docker container rm --force image0
+
+    - name: docker inspect
+      id: inspect2
+      if: env.SKIP_TARGET == '0' && !cancelled()
+      run: |
+        set -vx
+        #mkdir -p docker_inspect
+        # docker create --name image1 "$BUILDER_IMAGE_ID_INC"
+        docker export "${BUILDER_IMAGE_ID_INC}" | tar t | zstdmt -vvv --adapt -f -o builder_inc_docker_export_image_tar_t.txt.zstd
+        docker export "${BUILDER_IMAGE_ID_INC}" | tar tv | zstdmt -vvv --adapt -f -o builder_inc_docker_export_image_tar_tv.txt.zstd
+        ## docker image history "${BUILDER_IMAGE_ID_INC}" | zstdmt -vvv --adapt -f -o builder_inc_docker_image_history.txt.zstd
+        ## docker container rm --force image1
+
+    - name: Upload inspect output
+      uses: actions/upload-artifact@master
+      if: env.SKIP_TARGET == '0'
+      with:
+        name: docker_inspect_${{env.BUILD_TARGET}}
+        path: |
+          builder_base_docker_* 
+          builder_inc_docker_*
+
+
     - name: Upload firmware
       uses: actions/upload-artifact@master
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && env.OPT_PACKAGE_ONLY != '1' && steps.organize.outputs.status == 'success' && !cancelled()
@@ -382,13 +427,13 @@ jobs:
         ref: gh-pages
         token: ${{ secrets.GITHUB_TOKEN }}
         #token: ${{ secrets.GH_TOKEN_REPOSITORY_GH_PAGES_RELEASES }}
-    - name: Remove ssh key form SSH_AGENT
-      # $SSH_AGENT_PID
-      run: |
-        ssh-add -l
-        ssh-add -D
-        ssh-add -l ||:
-        kill $SSH_AGENT_PID
+#    - name: Remove ssh key form SSH_AGENT
+#      # $SSH_AGENT_PID
+#      run: |
+#        ssh-add -l
+#        ssh-add -D
+#        ssh-add -l ||:
+#        kill $SSH_AGENT_PID
 
     - name: Copy files into Git branch
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
@@ -397,9 +442,9 @@ jobs:
         cp -r ${{env.HOST_BIN_DIR}}/* ${{env.HOST_WORK_DIR}}/releases/${{env.BUILD_TARGET}}
         scripts/make-index-html.sh ${{env.HOST_WORK_DIR}}/releases || true
 
-    - uses: webfactory/ssh-agent@v0.7.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+#    - uses: webfactory/ssh-agent@v0.7.0
+#      with:
+#        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Commit files
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
       run: |
@@ -416,7 +461,7 @@ jobs:
         ssh-add -l
         ssh-add -D
         ssh-add -l ||:
-        kill $SSH_AGENT_PID
+##        kill $SSH_AGENT_PID
 
 #    - name: Create Pull Request
 #      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled()
