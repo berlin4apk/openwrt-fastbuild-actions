@@ -16,6 +16,7 @@ env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
   OPT_UPDATE_FEEDS: 1
   # OPT_REBUILD: 1
+  OPT_PUSH_WHEN_FAIL: 1
   REPOSITORY_GH_PAGES_RELEASES: ${{vars.VARG_REPOSITORY_GH_PAGES}} # eg berlin4apk/openwrt-releases or openlumi/releases 
 
 name: Build OpenWrt
@@ -25,7 +26,7 @@ on:
   repository_dispatch:
   workflow_dispatch:
     env:
-      OPT_DEBUG: 1
+      # OPT_DEBUG: 1
   pull_request:
   push:
     paths:
