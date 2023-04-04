@@ -9,7 +9,7 @@ env:
   # DO NOT CHANGE the following here, set them only in forked repo's Settings->Secrets page
   # You don't need to set docker_registry if you are using the default Docker Hub Settings->Secrets
   DK_REGISTRY: ${{secrets.docker_registry}}
-  DK_USERNAME: ${{secrets.docker_username}}
+  DK_USERNAME: ${{vars.docker_username}}
   DK_PASSWORD: ${{secrets.docker_password}}
   SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK_URL}}
   TMATE_ENCRYPT_PASSWORD: ${{secrets.TMATE_ENCRYPT_PASSWORD}}
@@ -41,6 +41,7 @@ jobs:
 
   build:
     runs-on: ubuntu-22.04
+    continue-on-error: true
     # For `github.event`'s structure, see: https://developer.github.com/v3/activity/events/types/
     # Do not modify the trigger methods here, customize them in the `on` section
     if: |
@@ -74,6 +75,7 @@ jobs:
           # - 22.03.2
 #          - 22.03.3
            - 22.03.3-rsync-test
+           - 22.03.3-rsync-test2
           # - snapshot
         include:
         - mode: normal
@@ -126,6 +128,10 @@ jobs:
           ${{github.workspace}}/.ccache
           ${{github.workspace}}/.ccache
           '**/.ccache'
+          '/tmp/**/.ccache'
+          '$HOME/**/.ccache'
+          '$HOME/.ccache'
+          '/.ccache'
         key: ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-${{ needs.setup_build.outputs.ccache_hash }}
         restore-keys: |
           ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-
@@ -252,7 +258,8 @@ jobs:
         repository: ${{env.REPOSITORY_GH_PAGES_RELEASES}}
         path: ${{ env.HOST_WORK_DIR }}/releases
         ref: gh-pages
-        token:  ${{ secrets.GH_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        #token: ${{ secrets.GH_TOKEN_REPOSITORY_GH_PAGES_RELEASES }}
 
     - name: Copy files into Git branch
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
