@@ -27,7 +27,8 @@ on:
   repository_dispatch:
   workflow_dispatch:
     inputs:
-      BUILD_TARGET:
+      RD_TARGET:
+#      BUILD_TARGET:
         description: 'target to use'
         #required: true
         default: 22.03.3-rsync-mini
