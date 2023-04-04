@@ -307,6 +307,9 @@ jobs:
         name: OpenWrt_packages_${{env.BUILD_TARGET}}
         path: ${{env.HOST_BIN_DIR}}
 
+    - uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Checkout tools repo
       uses: actions/checkout@v3
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
@@ -316,6 +319,13 @@ jobs:
         ref: gh-pages
         token: ${{ secrets.GITHUB_TOKEN }}
         #token: ${{ secrets.GH_TOKEN_REPOSITORY_GH_PAGES_RELEASES }}
+    - name: Remove ssh key form SSH_AGENT
+      # $SSH_AGENT_PID
+      run: |
+        ssh-add -l
+        ssh-add -D
+        ssh-add -l
+        kill $SSH_AGENT_PID
 
     - name: Copy files into Git branch
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
@@ -324,6 +334,9 @@ jobs:
         cp -r ${{env.HOST_BIN_DIR}}/* ${{env.HOST_WORK_DIR}}/releases/${{env.BUILD_TARGET}}
         scripts/make-index-html.sh ${{env.HOST_WORK_DIR}}/releases || true
 
+    - uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Commit files
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
       run: |
@@ -334,6 +347,13 @@ jobs:
         git config --local user.name "GitHub Action"
         git commit -m "Updates files from build ${{env.BUILD_TARGET}}" -m "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" -a
         git push
+    - name: Remove ssh key form SSH_AGENT
+      # $SSH_AGENT_PID
+      run: |
+        ssh-add -l
+        ssh-add -D
+        ssh-add -l
+        kill $SSH_AGENT_PID
 
 #    - name: Create Pull Request
 #      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled()
