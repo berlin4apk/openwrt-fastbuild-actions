@@ -363,9 +363,9 @@ jobs:
         set -vx
         mkdir -p docker_inspect
         docker create --name image "$BUILDER_IMAGE_ID_BASE"
-        docker export image | tar t > docker_inspect/base_docker export_image_tar_t.txt
-        docker export image | tar tv > docker_inspect/base_docker export_image_tar_tv.txt
-        docker image history image > docker_inspect/base_docker_image_history.txt
+        docker export image | tar t > builder_base_docker_export_image_tar_t.txt
+        docker export image | tar tv > builder_base_docker_export_image_tar_tv.txt
+        docker image history image > builder_base_docker_image_history.txt
         docker container rm image
 
     - name: docker inspect
@@ -375,9 +375,9 @@ jobs:
         set -vx
         mkdir -p docker_inspect
         docker create --name image "$BUILDER_IMAGE_ID_INC"
-        docker export image | tar t > docker_inspect/inc_docker export_image_tar_t.txt
-        docker export image | tar tv > docker_inspect/inc_docker export_image_tar_tv.txt
-        docker image history image > docker_inspect/inc_docker_image_history.txt
+        docker export image | tar t > builder_inc_docker_export_image_tar_t.txt
+        docker export image | tar tv > builder_inc_docker_export_image_tar_tv.txt
+        docker image history image > builder_inc_docker_image_history.txt
         docker container rm image
 
     - name: Upload inspect output
@@ -385,7 +385,9 @@ jobs:
       if: env.SKIP_TARGET == '0'
       with:
         name: docker_inspect_${{env.BUILD_TARGET}}
-        path: docker_inspect
+        path: |
+          builder_base_docker_* 
+          builder_inc_docker_*
 
 
     - name: Upload firmware
