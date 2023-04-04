@@ -211,6 +211,15 @@ jobs:
       continue-on-error: true
       run: scripts/cisteps/build-openwrt/11-compile_multi.sh
 
+    - name: test ccache dir 
+      run: |
+        realfs=$(df -x devtmpfs | tail -n +2 | awk '{print $6;}' | xargs)
+        find ${realfs} -iname "*ccache" -ls 2>&1 | grep -v "Permission denied"
+
+    - name: 99-test-ccache-dir.sh
+      if: env.SKIP_TARGET == '0' && steps.mtcompile.outputs.started == '1' && steps.mtcompile.outputs.status != 'success'
+      run: scripts/cisteps/build-openwrt/99-test-ccache-dir.sh
+
     - name: Compile firmware and packages with single threads when failed
       id: stcompile
       if: env.SKIP_TARGET == '0' && steps.mtcompile.outputs.started == '1' && steps.mtcompile.outputs.status != 'success'
