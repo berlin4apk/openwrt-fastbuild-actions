@@ -1,0 +1,347 @@
+#=================================================
+# https://github.com/tete1030/openwrt-fastbuild-actions
+# Description: FAST building OpenWrt with Github Actions and Docker!
+# Lisence: MIT
+# Author: Texot
+#=================================================
+
+env:
+  # DO NOT CHANGE the following here, set them only in forked repo's Settings->Secrets page
+  # You don't need to set docker_registry if you are using the default Docker Hub Settings->Secrets
+  DK_REGISTRY: ${{secrets.docker_registry}}
+  DK_USERNAME: ${{vars.docker_username}}
+  DK_PASSWORD: ${{secrets.docker_password}}
+  SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK_URL}}
+  TMATE_ENCRYPT_PASSWORD: ${{secrets.TMATE_ENCRYPT_PASSWORD}}
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+  OPT_UPDATE_FEEDS: 1
+  # OPT_REBUILD: 1
+  OPT_PACKAGE_ONLY: 1
+  OPT_PUSH_WHEN_FAIL: 1
+  REPOSITORY_GH_PAGES_RELEASES: ${{vars.VARG_REPOSITORY_GH_PAGES}} # eg berlin4apk/openwrt-releases or openlumi/releases 
+
+name: Build OpenWrt
+
+on:
+  deployment:
+  repository_dispatch:
+  workflow_dispatch:
+    env:
+      # OPT_DEBUG: 1
+  pull_request:
+  push:
+    paths:
+      - 'user/**'
+  # # For 'schedule', see examples in: https://crontab.guru/examples.html
+  # #     e.g. every sunday midnight: '0 0 * * 0' every midnight: '0 0 * * *'
+  # schedule:
+  #   - cron: '0 0 * * 0'
+  # watch:
+  #   types: [started]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-22.04
+    continue-on-error: true
+    # For `github.event`'s structure, see: https://developer.github.com/v3/activity/events/types/
+    # Do not modify the trigger methods here, customize them in the `on` section
+    if: |
+      github.event_name == 'push'
+      || github.event_name == 'pull_request'
+      || github.event_name == 'repository_dispatch'
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'deployment'
+      || (github.event_name == 'watch' && github.event.action == 'started' && github.event.repository.owner.id == github.event.sender.id)
+      || github.event_name == 'schedule'
+    name: ${{matrix.title}} ${{matrix.target}}
+    strategy:
+      fail-fast: false
+      matrix:
+        mode:
+          - normal
+          - test
+        # ########### Add your target name below ###########
+        # E.g. target: [x86_64, wdr4310v1]
+        target:
+          # - 19.07.7
+          # - 19.07.8
+          # - 19.07.10
+          # - 21.02.0
+          # - 21.02.1
+          # - 21.02.2
+          # - 21.02.3
+#          - 21.02.5
+          # - 21.02.1-ha
+          # - 22.03.0
+          # - 22.03.2
+#          - 22.03.3
+           - 22.03.3-rsync-test
+           - 22.03.3-rsync-test2
+           - 22.03.3-rsync-mini
+          # - snapshot
+        include:
+        - mode: normal
+          title: Build
+        - mode: test
+          title: Fast check
+    env:
+      HOST_WORK_DIR: ${{github.workspace}}
+      BUILD_MODE: ${{matrix.mode}}
+      BUILD_TARGET: ${{matrix.target}}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set lower case owner name
+      id: lower_owner
+      run: |
+        OWNER_LC=$(echo "${{ github.repository_owner }}" \
+          | tr '[:upper:]' '[:lower:]')
+        echo "owner_lc=$OWNER_LC"
+        echo "owner_lc=$OWNER_LC" >> $GITHUB_OUTPUT
+#        if [ ${{ inputs.use_openwrt_container }} == "true" ]; then
+#          OWNER_LC=openwrt
+#        fi
+
+    - name: Init build env
+      run: scripts/cisteps/build-openwrt/01-init_env.sh
+
+    - name: Check if skip this job
+      run: scripts/cisteps/build-openwrt/02-check_target.sh
+
+    - name: Clean up for extra space
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: scripts/cisteps/build-openwrt/03-clean_up.sh
+
+      # https://github.com/docker/setup-qemu-action
+    - name: Set up QEMU
+      id: buildx-qemy
+      if: env.SKIP_TARGET == '0'
+      uses: docker/setup-qemu-action@v2
+      # https://github.com/docker/setup-buildx-action
+    - name: Set up Docker Buildx
+      id: buildx
+      if: env.SKIP_TARGET == '0'
+      uses: docker/setup-buildx-action@v2
+
+    - name: Configure docker
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/04-configure_docker.sh
+
+    - name: Check status of builders
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/05-check_builders.sh
+
+    - name: '[Debug] Wait for SSH connection (timeout 5min)'
+      if: env.SKIP_TARGET == '0' && env.OPT_DEBUG == '1' && env.TEST != '1'
+      env:
+        TIMEOUT_MIN: 5
+      uses: openlumi/safe-debugger-action@e0141e5738ac68421298d9eb4217e037e6cb1a0b # openlumi/safe-debugger-action@dev
+
+    - name: 'Get key-build'
+      run: 'echo "$OPENWRT_BUILD_KEY" > $HOST_WORK_DIR/key-build;echo "$OPENWRT_BUILD_KEY_PUB" > $HOST_WORK_DIR/key-build.pub'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      shell: bash
+      env:
+        HOST_WORK_DIR: ${{github.workspace}}
+        OPENWRT_BUILD_KEY: ${{secrets.OPENWRT_BUILD_KEY}}
+        OPENWRT_BUILD_KEY_PUB: ${{secrets.OPENWRT_BUILD_KEY_PUB}}
+
+    - name: Get builder
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/06-get_builder.sh
+
+    - name: Clone/update OpenWrt
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/07-download_openwrt.sh
+
+    - name: Generate ccache hash
+      id: ccache_hash
+      run: |
+        CCACHE_HASH=$(md5sum include/kernel-* 2>/dev/null | awk '{ print $1 }' \
+         | md5sum | awk '{ print $1 }')
+        echo "ccache_hash=$CCACHE_HASH"
+        echo "ccache_hash=$CCACHE_HASH" >> $GITHUB_OUTPUT
+
+    - name: Cache ccache
+      uses: actions/cache@v3
+      with:
+        path: |
+          openwrt/.ccache
+          ${{github.workspace}}/openwrt/.ccache
+          ${{github.workspace}}/.ccache
+          ${{github.workspace}}/.ccache
+          '**/.ccache'
+          '/tmp/**/.ccache'
+          '$HOME/**/.ccache'
+          '$HOME/.ccache'
+          '/.ccache'
+        key: ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-${{ needs.setup_build.outputs.ccache_hash }}
+        restore-keys: |
+          ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-
+
+    - name: Apply customizations
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/08-customize.sh
+
+    # Allow intermediate customization
+    - name: '[Debug/Menuconfig] Wait for SSH connection (timeout 30min)'
+      if: env.SKIP_TARGET == '0' && env.OPT_DEBUG == '1' && env.TEST != '1'
+      env:
+        TMATE_DOCKER_CONTAINER: ${{env.BUILDER_CONTAINER_ID}}
+      uses: openlumi/safe-debugger-action@e0141e5738ac68421298d9eb4217e037e6cb1a0b # openlumi/safe-debugger-action@dev
+
+    - name: Prepare config file
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/09-prepare_config.sh
+
+    - name: Download packages
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/10-download_packages.sh
+
+    - name: Print disk space
+      if: env.SKIP_TARGET == '0'
+      run: df -h
+
+    - name: Compile firmware and packages with multiple threads
+      id: mtcompile
+      if: env.SKIP_TARGET == '0'
+      continue-on-error: true
+      run: scripts/cisteps/build-openwrt/11-compile_multi.sh
+
+    - name: test ccache dir 
+      run: |
+        realfs=$(df -x devtmpfs | tail -n +2 | awk '{print $6;}' | xargs)
+        find ${realfs} -iname "*ccache" -ls 2>&1 | grep -v "Permission denied"
+
+    - name: 99-test-ccache-dir.sh
+      if: env.SKIP_TARGET == '0' && steps.mtcompile.outputs.started == '1' && steps.mtcompile.outputs.status != 'success'
+      run: scripts/cisteps/build-openwrt/99-test-ccache-dir.sh
+
+    - name: Compile firmware and packages with single threads when failed
+      id: stcompile
+      if: env.SKIP_TARGET == '0' && steps.mtcompile.outputs.started == '1' && steps.mtcompile.outputs.status != 'success'
+      run: scripts/cisteps/build-openwrt/12-compile_single.sh
+
+
+    - name: Glob match
+      uses: tj-actions/glob@v16
+      id: glob
+      with:
+        files: |
+          openwrt/.ccache
+          ${{github.workspace}}/openwrt/.ccache
+          ${{github.workspace}}/.ccache
+          ${{github.workspace}}/.ccache
+          '**/.ccache'
+          '/tmp/**/.ccache'
+          '$HOME/**/.ccache'
+          '$HOME/.ccache'
+          '/.ccache'
+          **/*.yaml
+          !action.yml
+          **/rebase.yml
+    - name: Show all matching files
+      run: |
+        echo "${{ steps.glob.outputs.paths }}"
+      # Outputs: .github/workflows/rebase.yml .github/workflows/sync-release-version.yml .github/workflows/test.yml...
+
+
+    - name: Print disk space
+      if: env.SKIP_TARGET == '0'
+      run: df -h
+
+    # failure checking
+    - name: '[Failure/Debug] Wait for SSH connection (timeout 30min)'
+      if: |
+        env.SKIP_TARGET == '0' && !cancelled()
+        && (job.status == 'failure' || (env.OPT_DEBUG == '1' && env.TEST != '1'))
+      env:
+        TMATE_DOCKER_CONTAINER: ${{env.BUILDER_CONTAINER_ID}}
+      uses: openlumi/safe-debugger-action@e0141e5738ac68421298d9eb4217e037e6cb1a0b # openlumi/safe-debugger-action@dev
+
+    # - name: Upload bin directory
+    #   uses: actions/upload-artifact@master
+    #   if: env.SKIP_TARGET == '0' && !cancelled()
+    #   with:
+    #     name: OpenWrt_bin_${{env.BUILD_TARGET}}
+    #     path: ${{env.HOST_BIN_DIR}}
+
+    - name: Organize files
+      id: organize
+      if: env.SKIP_TARGET == '0' && !cancelled() && ( steps.mtcompile.outputs.status == 'success' || steps.stcompile.outputs.status == 'success' )
+      run: scripts/cisteps/build-openwrt/14-organize_files.sh
+
+    - name: Upload firmware
+      uses: actions/upload-artifact@master
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && env.OPT_PACKAGE_ONLY != '1' && steps.organize.outputs.status == 'success' && !cancelled()
+      with:
+        name: OpenWrt_firmware_${{env.BUILD_TARGET}}
+        path: openwrt_firmware
+
+    - name: Upload packages
+      uses: actions/upload-artifact@master
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled()
+      with:
+        name: OpenWrt_packages_${{env.BUILD_TARGET}}
+        path: ${{env.HOST_BIN_DIR}}
+
+    - name: Checkout tools repo
+      uses: actions/checkout@v3
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
+      with:
+        repository: ${{env.REPOSITORY_GH_PAGES_RELEASES}}
+        path: ${{ env.HOST_WORK_DIR }}/releases
+        ref: gh-pages
+        token: ${{ secrets.GITHUB_TOKEN }}
+        #token: ${{ secrets.GH_TOKEN_REPOSITORY_GH_PAGES_RELEASES }}
+
+    - name: Copy files into Git branch
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
+      run: |
+        mkdir -p ${{env.HOST_WORK_DIR}}/releases/${{env.BUILD_TARGET}}
+        cp -r ${{env.HOST_BIN_DIR}}/* ${{env.HOST_WORK_DIR}}/releases/${{env.BUILD_TARGET}}
+        scripts/make-index-html.sh ${{env.HOST_WORK_DIR}}/releases || true
+
+    - name: Commit files
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
+      run: |
+        cd ${{ env.HOST_WORK_DIR }}/releases
+        git status
+        git add -A
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -m "Updates files from build ${{env.BUILD_TARGET}}" -m "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" -a
+        git push
+
+#    - name: Create Pull Request
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled()
+#      uses: peter-evans/create-pull-request@v3
+#      with:
+#        token: ${{ secrets.GH_TOKEN }}
+#        path: ${{ env.HOST_WORK_DIR }}/releases
+#        branch: pr-pages
+#        base: gh-pages
+#        title: 'Updates files from latest Actions build'
+
+
+    - name: Upload builder
+      if: |
+        env.SKIP_TARGET == '0' && !cancelled() && (
+          job.status == 'success'
+          || env.OPT_PUSH_WHEN_FAIL == '1'
+        ) && github.ref == 'refs/heads/master'
+      run: scripts/cisteps/build-openwrt/13-upload_builder.sh
+
+    # failure checking
+    - name: '[Failure/Debug] wait for SSH connection (timeout 30min. You are safe to cancel the job now.)'
+      if: |
+        env.SKIP_TARGET == '0' && !cancelled()
+        && (job.status == 'failure' || (env.OPT_DEBUG == '1' && env.TEST != '1'))
+      uses: openlumi/safe-debugger-action@e0141e5738ac68421298d9eb4217e037e6cb1a0b # openlumi/safe-debugger-action@dev
+    
+
