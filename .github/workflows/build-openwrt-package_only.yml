@@ -427,13 +427,13 @@ jobs:
         ref: gh-pages
         token: ${{ secrets.GITHUB_TOKEN }}
         #token: ${{ secrets.GH_TOKEN_REPOSITORY_GH_PAGES_RELEASES }}
-    - name: Remove ssh key form SSH_AGENT
-      # $SSH_AGENT_PID
-      run: |
-        ssh-add -l
-        ssh-add -D
-        ssh-add -l ||:
-        kill $SSH_AGENT_PID
+#    - name: Remove ssh key form SSH_AGENT
+#      # $SSH_AGENT_PID
+#      run: |
+#        ssh-add -l
+#        ssh-add -D
+#        ssh-add -l ||:
+#        kill $SSH_AGENT_PID
 
     - name: Copy files into Git branch
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
@@ -442,9 +442,9 @@ jobs:
         cp -r ${{env.HOST_BIN_DIR}}/* ${{env.HOST_WORK_DIR}}/releases/${{env.BUILD_TARGET}}
         scripts/make-index-html.sh ${{env.HOST_WORK_DIR}}/releases || true
 
-    - uses: webfactory/ssh-agent@v0.7.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+#    - uses: webfactory/ssh-agent@v0.7.0
+#      with:
+#        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Commit files
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
       run: |
@@ -461,7 +461,7 @@ jobs:
         ssh-add -l
         ssh-add -D
         ssh-add -l ||:
-        kill $SSH_AGENT_PID
+##        kill $SSH_AGENT_PID
 
 #    - name: Create Pull Request
 #      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled()
