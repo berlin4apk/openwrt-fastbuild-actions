@@ -235,26 +235,26 @@ jobs:
       uses: actions/cache@v3
       with:
         path: |
-          ${{github.workspace}}/.ccache
-          openwrt/.ccache
+          '${{github.workspace}}/.ccache'
+          'openwrt/.ccache'
           ${{github.workspace}}/openwrt/.ccache
           '**/.ccache'
           '/tmp/**/.ccache'
           '$HOME/**/.ccache'
           '$HOME/.ccache'
           '/.ccache'
-        key: ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-${{ needs.setup_build.outputs.ccache_hash }}
+        key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ env.CCACHE_HASH }}-${{ needs.setup_build.outputs.ccache_hash }}
         restore-keys: |
-          ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-
+          ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-
 
     - name: Cache DLccache
       uses: actions/cache@v3
       with:
         path: |
-          ${{github.workspace}}/DLccache
-        key: DLccache-${{ env.TARGET }}/${{ env.SUBTARGET }}-${{ needs.setup_build.outputs.ccache_hash }}
+          '${{github.workspace}}/DLccache'
+        key: DLccache-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ env.CCACHE_HASH }}-${{ needs.setup_build.outputs.ccache_hash }}
         restore-keys: |
-          DLccache-${{ env.TARGET }}/${{ env.SUBTARGET }}-
+          DLccache-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-
 
     - name: Apply customizations
       if: env.SKIP_TARGET == '0'
