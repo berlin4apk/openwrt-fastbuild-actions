@@ -31,6 +31,10 @@ _get_opt() {
     local commit_message
     commit_message="$(jq -crMe ".head_commit.message" "${GITHUB_EVENT_PATH}")"
     opt_value="$(_extract_opt_from_string "${opt_name}" "${commit_message}" "${opt_default}" 1)"
+  elif [ "x${GITHUB_EVENT_NAME}" = "xworkflow_dispatch" ]; then
+### FIXME ###
+    opt_value="${EVENT_INPUTS_RD_TARGET}" ## // "'"${opt_default}"'") as $v | if ($v|type=="boolean") then (if $v then 1 else 0 end) else $v end' "${GITHUB_EVENT_PATH}")"
+### FIXME ###
   elif [ "x${GITHUB_EVENT_NAME}" = "xrepository_dispatch" ]; then
     opt_value="$(jq -crM '(.client_payload.'"${opt_name}"' // "'"${opt_default}"'") as $v | if ($v|type=="boolean") then (if $v then 1 else 0 end) else $v end' "${GITHUB_EVENT_PATH}")"
   elif [ "x${GITHUB_EVENT_NAME}" = "xdeployment" ]; then

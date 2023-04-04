@@ -19,7 +19,9 @@ env:
   OPT_PACKAGE_ONLY: 1
   OPT_PUSH_WHEN_FAIL: 1
   REPOSITORY_GH_PAGES_RELEASES: ${{vars.VARG_REPOSITORY_GH_PAGES}} # eg berlin4apk/openwrt-releases or openlumi/releases 
-  RD_TARGET: ${{ github.event.inputs.rd_target }}
+  EVENT_INPUTS_RD_TARGET: ${{ github.event.inputs.rd_target }}
+  EVENT_INPUTS_RD_TASK: ${{ github.event.inputs.rd_task }}
+  #RD_TARGET: ${{ github.event.inputs.rd_target }}
 
 name: package_only Build OpenWrt
 
@@ -35,11 +37,25 @@ on:
         default: 22.03.3-rsync-mini
         type: choice
         options:
+        - all
         - 22.03.3
         - 22.03.3-rsync-test
         - 22.03.3-rsync-test2
         - 22.03.3-rsync-mini
         - snapshot
+      RD_TASK:
+#      BUILD_TARGET:
+        description: 'target to use'
+        #required: true
+        default: 22.03.3-rsync-mini
+        type: choice
+        options:
+        - build
+        - squash
+        - 22.03.3-rsync-test2
+        - 22.03.3-rsync-mini
+        - snapshot
+
 #    env:
 #        OPT_DEBUG: 1
   pull_request:
