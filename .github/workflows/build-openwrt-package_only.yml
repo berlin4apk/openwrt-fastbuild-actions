@@ -360,22 +360,24 @@ jobs:
       id: inspect1
       if: env.SKIP_TARGET == '0' && !cancelled()
       run: |
+        set -vx
         mkdir -p docker_inspect
-        docker create --name image {{env.BUILDER_IMAGE_ID_BASE}}
-        docker export image | tar t > docker_inspect/{{env.BUILDER_IMAGE_ID_BASE}}_docker export_image_tar_t.txt
-        docker export image | tar tv > docker_inspect/{{env.BUILDER_IMAGE_ID_BASE}}_docker export_image_tar_tv.txt
-        docker image history image > docker_inspect/{{env.BUILDER_IMAGE_ID_BASE}}_docker_image_history.txt
+        docker create --name image "$BUILDER_IMAGE_ID_BASE"
+        docker export image | tar t > docker_inspect/base_docker export_image_tar_t.txt
+        docker export image | tar tv > docker_inspect/base_docker export_image_tar_tv.txt
+        docker image history image > docker_inspect/base_docker_image_history.txt
         docker container rm image
 
     - name: docker inspect
       id: inspect2
       if: env.SKIP_TARGET == '0' && !cancelled()
       run: |
+        set -vx
         mkdir -p docker_inspect
-        docker create --name image {{env.BUILDER_IMAGE_ID_INC}}
-        docker export image | tar t > docker_inspect/{{env.BUILDER_IMAGE_ID_INC}}_docker export_image_tar_t.txt
-        docker export image | tar tv > docker_inspect/{{env.BUILDER_IMAGE_ID_INC}}_docker export_image_tar_tv.txt
-        docker image history image > docker_inspect/{{env.BUILDER_IMAGE_ID_INC}}_docker_image_history.txt
+        docker create --name image "$BUILDER_IMAGE_ID_INC"
+        docker export image | tar t > docker_inspect/inc_docker export_image_tar_t.txt
+        docker export image | tar tv > docker_inspect/inc_docker export_image_tar_tv.txt
+        docker image history image > docker_inspect/inc_docker_image_history.txt
         docker container rm image
 
     - name: Upload inspect output
