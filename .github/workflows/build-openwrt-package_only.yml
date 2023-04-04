@@ -60,16 +60,19 @@ on:
         #required: true
         #default: 22.03.3-rsync-mini
         type: boolean
+        default: true
       OPT_REBUILD:
         type: boolean
       OPT_PACKAGE_ONLY:
         type: boolean
+        default: true
       OPT_PUSH_WHEN_FAIL:
         type: boolean
+        default: true
       OPT_DEBUG:
         type: boolean
-      continue-on-error:
-        type: boolean
+##      continue-on-error:
+##        type: boolean
 #    env:
 #        OPT_DEBUG: 1
   pull_request:
