@@ -99,16 +99,11 @@ jobs:
       run: |
         OWNER_LC=$(echo "${{ github.repository_owner }}" \
           | tr '[:upper:]' '[:lower:]')
-        if [ ${{ inputs.use_openwrt_container }} == "true" ]; then
-          OWNER_LC=openwrt
-        fi
+        echo "owner_lc=$OWNER_LC"
         echo "owner_lc=$OWNER_LC" >> $GITHUB_OUTPUT
-    - name: Generate ccache hash
-      id: ccache_hash
-      run: |
-        CCACHE_HASH=$(md5sum include/kernel-* 2>/dev/null | awk '{ print $1 }' \
-         | md5sum | awk '{ print $1 }')
-        echo "ccache_hash=$CCACHE_HASH" >> $GITHUB_OUTPUT
+#        if [ ${{ inputs.use_openwrt_container }} == "true" ]; then
+#          OWNER_LC=openwrt
+#        fi
 
     - name: Init build env
       run: scripts/cisteps/build-openwrt/01-init_env.sh
@@ -119,23 +114,6 @@ jobs:
     - name: Clean up for extra space
       if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: scripts/cisteps/build-openwrt/03-clean_up.sh
-
-    - name: Cache ccache
-      uses: actions/cache@v3
-      with:
-        path: |
-          openwrt/.ccache
-          ${{github.workspace}}/openwrt/.ccache
-          ${{github.workspace}}/.ccache
-          ${{github.workspace}}/.ccache
-          '**/.ccache'
-          '/tmp/**/.ccache'
-          '$HOME/**/.ccache'
-          '$HOME/.ccache'
-          '/.ccache'
-        key: ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-${{ needs.setup_build.outputs.ccache_hash }}
-        restore-keys: |
-          ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-
 
       # https://github.com/docker/setup-qemu-action
     - name: Set up QEMU
@@ -179,6 +157,31 @@ jobs:
       if: env.SKIP_TARGET == '0'
       run: scripts/cisteps/build-openwrt/07-download_openwrt.sh
 
+    - name: Generate ccache hash
+      id: ccache_hash
+      run: |
+        CCACHE_HASH=$(md5sum include/kernel-* 2>/dev/null | awk '{ print $1 }' \
+         | md5sum | awk '{ print $1 }')
+        echo "ccache_hash=$CCACHE_HASH"
+        echo "ccache_hash=$CCACHE_HASH" >> $GITHUB_OUTPUT
+
+    - name: Cache ccache
+      uses: actions/cache@v3
+      with:
+        path: |
+          openwrt/.ccache
+          ${{github.workspace}}/openwrt/.ccache
+          ${{github.workspace}}/.ccache
+          ${{github.workspace}}/.ccache
+          '**/.ccache'
+          '/tmp/**/.ccache'
+          '$HOME/**/.ccache'
+          '$HOME/.ccache'
+          '/.ccache'
+        key: ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-${{ needs.setup_build.outputs.ccache_hash }}
+        restore-keys: |
+          ccache-kernel-${{ env.TARGET }}/${{ env.SUBTARGET }}-
+
     - name: Apply customizations
       if: env.SKIP_TARGET == '0'
       run: scripts/cisteps/build-openwrt/08-customize.sh
@@ -212,6 +215,30 @@ jobs:
       id: stcompile
       if: env.SKIP_TARGET == '0' && steps.mtcompile.outputs.started == '1' && steps.mtcompile.outputs.status != 'success'
       run: scripts/cisteps/build-openwrt/12-compile_single.sh
+
+
+    - name: Glob match
+      uses: tj-actions/glob@v16
+      id: glob
+      with:
+        files: |
+          openwrt/.ccache
+          ${{github.workspace}}/openwrt/.ccache
+          ${{github.workspace}}/.ccache
+          ${{github.workspace}}/.ccache
+          '**/.ccache'
+          '/tmp/**/.ccache'
+          '$HOME/**/.ccache'
+          '$HOME/.ccache'
+          '/.ccache'
+          **/*.yaml
+          !action.yml
+          **/rebase.yml
+    - name: Show all matching files
+      run: |
+        echo "${{ steps.glob.outputs.paths }}"
+      # Outputs: .github/workflows/rebase.yml .github/workflows/sync-release-version.yml .github/workflows/test.yml...
+
 
     - name: Print disk space
       if: env.SKIP_TARGET == '0'
