@@ -228,8 +228,8 @@ jobs:
       run: |
         CCACHE_HASH=$(md5sum include/kernel-* 2>/dev/null | awk '{ print $1 }' \
          | md5sum | awk '{ print $1 }')
-        echo "ccache_hash=$CCACHE_HASH"
-        echo "ccache_hash=$CCACHE_HASH" >> $GITHUB_OUTPUT
+        echo "CCACHE_HASH=$CCACHE_HASH"
+        echo "CCACHE_HASH=$CCACHE_HASH" >> $GITHUB_OUTPUT
 
     - name: Cache ccache
       uses: actions/cache@v3
