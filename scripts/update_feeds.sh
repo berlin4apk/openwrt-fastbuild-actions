@@ -39,7 +39,8 @@ if [ "x${OPENWRT_CUR_DIR}" != "x${OPENWRT_COMPILE_DIR}" ] && [ "x${OPT_UPDATE_FE
   ret_val=$?
   if [ $ret_val -ne 0 ]; then
     echo "::warning::Something went wrong in previous builder. Not using last feeds.conf"
-    rm "${BUILDER_TMP_DIR}/feeds.conf.prev" || true
+#    rm "${BUILDER_TMP_DIR}/feeds.conf.prev" || true
+    rm --verbose "${BUILDER_TMP_DIR}/feeds.conf.prev" || true
   else
     mv "${BUILDER_TMP_DIR}/feeds.conf.prev" "${OPENWRT_CUR_DIR}/feeds.conf"
   fi
@@ -151,7 +152,8 @@ install_package() {
   if [ -d "${full_cur_package_path}" ]; then
     if [ $OVERRIDE -eq 1 ]; then
       echo "install_package: removing existed package: ${package_path}"
-      rm -rf "${full_cur_package_path}"
+#      rm -rf "${full_cur_package_path}"
+      rm --verbose -rf "${full_cur_package_path}"
     else
       echo "install_package: package already exists: ${package_path}" >&2
       exit 1
@@ -185,7 +187,8 @@ install_package() {
       fi
     else
       local TMP_REPO="${BUILDER_TMP_DIR}/clonesubdir/${PACKAGE_NAME}"
-      rm -rf "${TMP_REPO}" || true
+#      rm -rf "${TMP_REPO}" || true
+      rm -rf --verbose "${TMP_REPO}" || true
       mkdir -p "$(dirname "${TMP_REPO}")" || true
       git clone "${PACKAGE_URL}" "${TMP_REPO}"
       if [ -n "${PACKAGE_REF}" ]; then
@@ -193,7 +196,8 @@ install_package() {
       fi
       mkdir -p "${full_cur_package_path}"
       rsync -aI --exclude=".git" "${TMP_REPO}/${PACKAGE_SUBDIR}/" "${full_cur_package_path}/"
-      rm -rf "${TMP_REPO}"
+#      rm -rf "${TMP_REPO}"
+      rm -rf --verbose "${TMP_REPO}"
       # Managing subdir by git to preserve version
       git -C "${full_cur_package_path}" init
       git -C "${full_cur_package_path}" add .

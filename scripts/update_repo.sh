@@ -16,7 +16,8 @@ link_bin() {
   if mountpoint "${BIN_MOUNT_POINT}" ; then
     if [[ ! -L "${BIN_DIR}" || ! -d "${BIN_DIR}" || "$(readlink "${BIN_DIR}")" != "${BIN_MOUNT_POINT}" ]]; then
       echo "'bin' link does not exist, creating"
-      rm -rf "${BIN_DIR}" || true
+#      rm -rf "${BIN_DIR}" || true
+      rm --verbose -rf "${BIN_DIR}" || true
       ln -sf "${BIN_MOUNT_POINT}" "${BIN_DIR}"
     fi
   else
@@ -34,7 +35,8 @@ link_key() {
   if mountpoint "${KEY_BUILD_MOUNT_POINT}" ; then
     if [[ ! -L "${KEY_BUILD}" || "$(readlink "${KEY_BUILD}")" != "${KEY_BUILD_MOUNT_POINT}" ]]; then
       echo "'bin' link does not exist, creating"
-      rm -rf "${KEY_BUILD}" || true
+#      rm -rf "${KEY_BUILD}" || true
+      rm --verbose -rf "${KEY_BUILD}" || true
       ln -sf "${KEY_BUILD_MOUNT_POINT}" "${KEY_BUILD}"
     fi
   else
@@ -44,7 +46,8 @@ link_key() {
   if mountpoint "${KEY_BUILD_MOUNT_POINT_PUB}" ; then
     if [[ ! -L "${KEY_BUILD_PUB}" || "$(readlink "${KEY_BUILD_PUB}")" != "${KEY_BUILD_MOUNT_POINT_PUB}" ]]; then
       echo "'bin' link does not exist, creating"
-      rm -rf "${KEY_BUILD_PUB}" || true
+#      rm -rf "${KEY_BUILD_PUB}" || true
+      rm --verbose -rf "${KEY_BUILD_PUB}" || true
       ln -sf "${KEY_BUILD_MOUNT_POINT_PUB}" "${KEY_BUILD_PUB}"
     fi
   else

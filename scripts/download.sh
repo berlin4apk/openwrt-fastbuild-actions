@@ -15,4 +15,5 @@ fi
 cd "${OPENWRT_CUR_DIR}"
 make download -j8
 find dl -size -1024c -exec ls -l {} \;
-find dl -size -1024c -exec rm -f {} \;
+#find dl -size -1024c -exec rm -f {} \;
+find dl -size -1024c -exec rm --verbose -f {} \;

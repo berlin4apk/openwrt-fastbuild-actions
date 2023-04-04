@@ -18,5 +18,6 @@ fi
 
 # In case previous steps failed
 if [ -d "${OPENWRT_SOURCE_DIR}" ]; then
-    rm -rf "${OPENWRT_SOURCE_DIR}"
+#    rm -rf "${OPENWRT_SOURCE_DIR}"
+    rm -rf --verbose "${OPENWRT_SOURCE_DIR}"
 fi

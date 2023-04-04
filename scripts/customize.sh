@@ -80,7 +80,8 @@ if [ "x${OPENWRT_CUR_DIR}" != "x${OPENWRT_COMPILE_DIR}" ]; then
   rsync -camv --no-t --delete "${sync_exclude_opts[@]}" \
     "${OPENWRT_CUR_DIR}/" "${OPENWRT_COMPILE_DIR}/"
 
-  rm -rf "${OPENWRT_CUR_DIR}"
+#  rm -rf "${OPENWRT_CUR_DIR}"
+  rm -rf --verbose "${OPENWRT_CUR_DIR}"
   OPENWRT_CUR_DIR="${OPENWRT_COMPILE_DIR}"
   _set_env OPENWRT_CUR_DIR
 fi
