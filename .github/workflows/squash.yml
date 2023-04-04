@@ -16,6 +16,8 @@ env:
   SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK_URL}}
   TMATE_ENCRYPT_PASSWORD: ${{secrets.TMATE_ENCRYPT_PASSWORD}}
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+  EVENT_INPUTS_RD_TARGET: ${{ github.event.inputs.rd_target }}
+  EVENT_INPUTS_RD_TASK: ${{ github.event.inputs.rd_task }}
 
 name: Squash builders
 
