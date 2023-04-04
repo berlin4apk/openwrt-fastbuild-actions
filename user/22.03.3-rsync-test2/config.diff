@@ -3,17 +3,17 @@
 
 # from https://github.com/openwrt/openwrt/blob/f25abdf144f8ccabde6bfca2f0d3c509acfc53bc/.github/workflows/build-tools.yml#L32
 CONFIG_DEVEL=y
-CONFIG_AUTOREMOVE=y
+# CONFIG_AUTOREMOVE=y
 CONFIG_CCACHE=y
 #
-CONFIG_EXTERNAL_TOOLCHAIN=y
-CONFIG_NATIVE_TOOLCHAIN=y
+# CONFIG_EXTERNAL_TOOLCHAIN=y
+# CONFIG_NATIVE_TOOLCHAIN=y
 CONFIG_GRUB_EFI_IMAGES=n
 
 CONFIG_TARGET_x86=y
 CONFIG_TARGET_x86_64=y
 CONFIG_TARGET_x86_64_DEVICE_generic=y
-CONFIG_ISO_IMAGES=n
+CONFIG_ISO_IMAGES=y
 CONFIG_PACKAGE_libacl=m
 CONFIG_PACKAGE_libattr=m
 CONFIG_PACKAGE_libpopt=m
@@ -24,6 +24,17 @@ CONFIG_RSYNC_acl=y
 CONFIG_RSYNC_xattr=y
 CONFIG_RSYNC_zstd=y
 CONFIG_ZSTD_OPTIMIZE_O3=y
+
+CONFIG_VERSIONOPT=y
+CONFIG_VERSION_DIST="OpenLumi"
+CONFIG_VERSION_FILENAMES=y
+CONFIG_VERSION_HOME_URL="https://openlumi.github.io/releases"
+CONFIG_VERSION_BUG_URL="https://github.com/openlumi/openlumi.github.io/issues"
+CONFIG_VERSION_SUPPORT_URL="https://github.com/openlumi/openlumi.github.io/issues"
+CONFIG_VERSION_REPO="%u/%v"
+
+CONFIG_IB=n
+# CONFIG_IB_STANDALONE is not set
 
 
 # https://git.openwrt.org/?p=openwrt/openwrt.git;a=blob_plain;f=package/base-files/image-config.in;h=2de2130b8490d9f18fa0b0189fa1ed7432e9528a;hb=HEAD
