@@ -86,6 +86,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+# FIXME #    # fixme # if: ${{ github.event.inputs.continue-on-error }}
+# FIXME #    continue-on-error: true
 #    if: ${{ github.event.inputs.continue-on-error }}
 #    continue-on-error: true
     # For `github.event`'s structure, see: https://developer.github.com/v3/activity/events/types/
@@ -134,10 +136,6 @@ jobs:
       HOST_WORK_DIR: ${{github.workspace}}
       BUILD_MODE: ${{matrix.mode}}
       BUILD_TARGET: ${{matrix.target}}
-
-# fixme # if: ${{ github.event.inputs.continue-on-error }}
-# fixme #  continue-on-error: true
-
     steps:
     - if: ${{ github.event.inputs.OPT_UPDATE_FEEDS }}
       run: echo "OPT_UPDATE_FEEDS=1" >> $GITHUB_OUTPUT
