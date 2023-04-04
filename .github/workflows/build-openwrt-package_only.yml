@@ -14,10 +14,10 @@ env:
   SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK_URL}}
   TMATE_ENCRYPT_PASSWORD: ${{secrets.TMATE_ENCRYPT_PASSWORD}}
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-  OPT_UPDATE_FEEDS: 1
-  # OPT_REBUILD: 1
-  OPT_PACKAGE_ONLY: 1
-  OPT_PUSH_WHEN_FAIL: 1
+  OPT_UPDATE_FEEDS: "1"
+  # OPT_REBUILD: "1"
+  OPT_PACKAGE_ONLY: "1"
+  OPT_PUSH_WHEN_FAIL: "1"
   REPOSITORY_GH_PAGES_RELEASES: ${{vars.VARG_REPOSITORY_GH_PAGES}} # eg berlin4apk/openwrt-releases or openlumi/releases 
   EVENT_INPUTS_RD_TARGET: ${{ github.event.inputs.rd_target }}
   EVENT_INPUTS_RD_TASK: ${{ github.event.inputs.rd_task }}
@@ -68,7 +68,7 @@ on:
         default: true
       OPT_PUSH_WHEN_FAIL:
         type: boolean
-        default: true
+        default: 1
       OPT_DEBUG:
         type: boolean
 ##      continue-on-error:
@@ -89,8 +89,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-# FIXME #    # fixme # if: ${{ github.event.inputs.continue-on-error }}
-# FIXME #    continue-on-error: true
 #    if: ${{ github.event.inputs.continue-on-error }}
 #    continue-on-error: true
     # For `github.event`'s structure, see: https://developer.github.com/v3/activity/events/types/
@@ -139,20 +137,26 @@ jobs:
       HOST_WORK_DIR: ${{github.workspace}}
       BUILD_MODE: ${{matrix.mode}}
       BUILD_TARGET: ${{matrix.target}}
+# FIXME BUG see https://github.com/actions/runner/issues/1483      
+      CONTINUE_ON_ERROR: ${{inputs.continue-on-error}}
+# FIXME #    # fixme # if: ${{ github.event.inputs.continue-on-error }}
+# FIXME #    continue-on-error: true
     steps:
-    - if: ${{ github.event.inputs.OPT_UPDATE_FEEDS }}
+# FIXME BUG see https://github.com/actions/runner/issues/1483
+    - if: ${{ github.event.inputs.OPT_UPDATE_FEEDS && github.event.inputs.OPT_UPDATE_FEEDS != 'false' }}
       run: echo "OPT_UPDATE_FEEDS=1" >> $GITHUB_OUTPUT
-    - if: ${{ github.event.inputs.OPT_REBUILD }}
+    - if: ${{ github.event.inputs.OPT_REBUILD && github.event.inputs.OPT_REBUILD != 'false' }}
       run: echo "OPT_REBUILD=1" >> $GITHUB_OUTPUT
-    - if: ${{ github.event.inputs.OPT_PACKAGE_ONLY }}
+    - if: ${{ github.event.inputs.OPT_PACKAGE_ONLY && github.event.inputs.OPT_PACKAGE_ONLY != 'false' }}
       run: echo "OPT_PACKAGE_ONLY=1" >> $GITHUB_OUTPUT
-    - if: ${{ github.event.inputs.OPT_PUSH_WHEN_FAIL }}
+    - if: ${{ github.event.inputs.OPT_PUSH_WHEN_FAIL && github.event.inputs.OPT_PUSH_WHEN_FAIL != 'false' }}
       run: echo "OPT_PUSH_WHEN_FAIL=1" >> $GITHUB_OUTPUT
-    - if: ${{ github.event.inputs.OPT_DEBUG }}
+    - if: ${{ github.event.inputs.OPT_DEBUG && github.event.inputs.OPT_DEBUG != 'false' }}
       run: echo "OPT_DEBUG=1" >> $GITHUB_OUTPUT
 #    - if: ${{ github.event.inputs.continue-on-error }}
 #      continue-on-error: ${{ github.event.inputs.continue-on-error }}
-
+# FIXME BUG see https://github.com/actions/runner/issues/1483
+      continue-on-error: ${{ fromJSON(env.CONTINUE_ON_ERROR) }}
     - name: Checkout
       uses: actions/checkout@v3
       with:
