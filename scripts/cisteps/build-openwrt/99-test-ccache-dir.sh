@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # set -eo pipefail
+set -vx
 
 echo "start ON HOST ###########################################"
         realfs=$(df -x devtmpfs | tail -n +2 | awk '{print $6;}' | xargs)
