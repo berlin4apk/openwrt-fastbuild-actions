@@ -22,7 +22,6 @@ CONFIG_RSYNC_xattr=y
 CONFIG_RSYNC_zstd=y
 CONFIG_ZSTD_OPTIMIZE_O3=y
 
-
 # https://git.openwrt.org/?p=openwrt/openwrt.git;a=blob_plain;f=package/base-files/image-config.in;h=2de2130b8490d9f18fa0b0189fa1ed7432e9528a;hb=HEAD
 #	config VERSION_REPO
 #		string
