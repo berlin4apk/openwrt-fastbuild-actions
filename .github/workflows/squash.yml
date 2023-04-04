@@ -10,8 +10,8 @@ env:
   # You don't need to set docker_registry if you are using the default Docker Hub
   # 安全起见以下参数请不要在此更改，在你Fork的repo中，Settings->Secrets页面更改
   # 如果你想使用默认的Docker Hub，你不需要在secrets页面设置docker_registry
-  DK_REGISTRY: ${{secrets.docker_registry}}
-  DK_USERNAME: ${{secrets.docker_username}}
+  DK_REGISTRY: ${{vars.docker_registry}}
+  DK_USERNAME: ${{vars.docker_username}}
   DK_PASSWORD: ${{secrets.docker_password}}
   SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK_URL}}
   TMATE_ENCRYPT_PASSWORD: ${{secrets.TMATE_ENCRYPT_PASSWORD}}
@@ -22,6 +22,32 @@ name: Squash builders
 # Start every 24 hours
 on:
   workflow_dispatch:
+    inputs:
+      RD_TARGET:
+#      BUILD_TARGET:
+        description: 'target to use'
+        #required: true
+        default: 22.03.3-rsync-mini
+        type: choice
+        options:
+        - all
+        - 22.03.3
+        - 22.03.3-rsync-test
+        - 22.03.3-rsync-test2
+        - 22.03.3-rsync-mini
+        - snapshot
+      RD_TASK:
+#      BUILD_TARGET:
+        description: 'target to use'
+        #required: true
+        default: 22.03.3-rsync-mini
+        type: choice
+        options:
+        - build
+        - squash
+        - 22.03.3-rsync-test2
+        - 22.03.3-rsync-mini
+        - snapshot
   deployment:
   schedule:
     - cron: '10 6/24 */7 * *'
@@ -48,6 +74,9 @@ jobs:
           - 22.03.0
           - 22.03.2
           - 22.03.3
+          - 22.03.3-rsync-test
+          - 22.03.3-rsync-test2
+          - 22.03.3-rsync-mini
           - snapshot
         include:
           - mode: normal
