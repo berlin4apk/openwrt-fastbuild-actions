@@ -356,6 +356,36 @@ jobs:
       if: env.SKIP_TARGET == '0' && !cancelled() && ( steps.mtcompile.outputs.status == 'success' || steps.stcompile.outputs.status == 'success' )
       run: scripts/cisteps/build-openwrt/14-organize_files.sh
 
+    - name: docker inspect
+      id: inspect1
+      if: env.SKIP_TARGET == '0' && !cancelled()
+      run: |
+        mkdir -p docker_inspect
+        docker create --name image {{env.BUILDER_IMAGE_ID_BASE}}
+        docker export image | tar t > docker_inspect/{{env.BUILDER_IMAGE_ID_BASE}}_docker export_image_tar_t.txt
+        docker export image | tar tv > docker_inspect/{{env.BUILDER_IMAGE_ID_BASE}}_docker export_image_tar_tv.txt
+        docker image history image > docker_inspect/{{env.BUILDER_IMAGE_ID_BASE}}_docker_image_history.txt
+        docker container rm image
+
+    - name: docker inspect
+      id: inspect2
+      if: env.SKIP_TARGET == '0' && !cancelled()
+      run: |
+        mkdir -p docker_inspect
+        docker create --name image {{env.BUILDER_IMAGE_ID_INC}}
+        docker export image | tar t > docker_inspect/{{env.BUILDER_IMAGE_ID_INC}}_docker export_image_tar_t.txt
+        docker export image | tar tv > docker_inspect/{{env.BUILDER_IMAGE_ID_INC}}_docker export_image_tar_tv.txt
+        docker image history image > docker_inspect/{{env.BUILDER_IMAGE_ID_INC}}_docker_image_history.txt
+        docker container rm image
+
+    - name: Upload inspect output
+      uses: actions/upload-artifact@master
+      if: env.SKIP_TARGET == '0'
+      with:
+        name: docker_inspect_${{env.BUILD_TARGET}}
+        path: docker_inspect
+
+
     - name: Upload firmware
       uses: actions/upload-artifact@master
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && env.OPT_PACKAGE_ONLY != '1' && steps.organize.outputs.status == 'success' && !cancelled()
