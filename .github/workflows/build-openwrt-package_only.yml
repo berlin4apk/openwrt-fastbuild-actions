@@ -231,6 +231,12 @@ jobs:
         echo "CCACHE_HASH=$CCACHE_HASH"
         echo "CCACHE_HASH=$CCACHE_HASH" >> $GITHUB_OUTPUT
 
+      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+    - name: Fix ./.ccache/ directory permissions
+      run: |
+        sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+
     - name: Cache ccache
       uses: actions/cache@v3
       with:
@@ -250,6 +256,10 @@ jobs:
           ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-
           ccache-kernel-${{ env.BUILD_TARGET }}-
           ccache-kernel-
+
+      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+    - name: Fix HOST_DLCCACHE_DIR directory permissions
+      run: sudo chown -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }}
 
     - name: Cache DLccache
       uses: actions/cache@v3
