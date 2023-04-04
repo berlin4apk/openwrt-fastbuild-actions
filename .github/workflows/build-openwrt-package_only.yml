@@ -245,16 +245,21 @@ jobs:
           '/.ccache'
         key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
         restore-keys: |
-          ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}-
+          ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+          ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-
+          ccache-kernel-${{ env.BUILD_TARGET }}-
+          ccache-kernel-
 
     - name: Cache DLccache
       uses: actions/cache@v3
       with:
         path: |
           '${{github.workspace}}/DLccache'
-        key: DLccache-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+        key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
         restore-keys: |
-          DLccache-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}-
+          DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+          DLccache-${{ env.BUILD_TARGET }}-
+          DLccache-
 
     - name: Apply customizations
       if: env.SKIP_TARGET == '0'
