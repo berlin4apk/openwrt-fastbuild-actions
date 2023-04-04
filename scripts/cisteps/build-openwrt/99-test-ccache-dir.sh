@@ -4,7 +4,7 @@
 
 echo "start ON HOST ###########################################"
         realfs=$(df -x devtmpfs | tail -n +2 | awk '{print $6;}' | xargs)
-        find ${realfs} -iname "*ccache" -ls 2>&1 | grep -v "Permission denied"
+        find ${realfs} -iname "*ccache" -o -iname "bc-*" -ls 2>&1 | grep -v "Permission denied"
 echo "end ON HOST ###########################################"
 
 
