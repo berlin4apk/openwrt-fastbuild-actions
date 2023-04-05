@@ -120,9 +120,9 @@ jobs:
           # - 21.02.1-ha
           # - 22.03.0
           # - 22.03.2
-#          - 22.03.3
-#           - 22.03.3-rsync-test
-#           - 22.03.3-rsync-test2
+          - 22.03.3
+           - 22.03.3-rsync-test
+           - 22.03.3-rsync-test2
            - 22.03.3-rsync-mini
           # - snapshot
         include:
