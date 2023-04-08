@@ -38,6 +38,7 @@ on:
         type: choice
         options:
         - all
+        - 21.02.5
         - 22.03.3
         - 22.03.3-rsync-test
         - 22.03.3-rsync-test2
@@ -116,13 +117,13 @@ jobs:
           # - 21.02.1
           # - 21.02.2
           # - 21.02.3
-#          - 21.02.5
+           - 21.02.5
           # - 21.02.1-ha
           # - 22.03.0
           # - 22.03.2
-           - 22.03.3
-           - 22.03.3-rsync-test
-           - 22.03.3-rsync-test2
+#           - 22.03.3
+#           - 22.03.3-rsync-test
+#           - 22.03.3-rsync-test2
            - 22.03.3-rsync-mini
           # - snapshot
         include:
