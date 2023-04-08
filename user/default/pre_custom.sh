@@ -37,5 +37,11 @@ _install_if_not_has_command tree
 #_install_if_not_has_command foofeeoo
 
 set -vx
-cat config.pre_custom | tee -a .config
+#mv .config .config.diff
+#cp config_xiaomi_lumi .config
+#cat .config.diff >> .config
+mv .config .config.diff
+cp config.pre_custom .config
+cat .config.diff | tee -a .config
+#cat config.pre_custom | tee -a .config
 set +vx
