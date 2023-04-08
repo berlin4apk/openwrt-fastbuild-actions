@@ -38,6 +38,7 @@ on:
         type: choice
         options:
         - all
+        - 21.02.5
         - 22.03.3
         - 22.03.3-rsync-test
         - 22.03.3-rsync-test2
