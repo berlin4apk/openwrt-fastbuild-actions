@@ -446,7 +446,7 @@ jobs:
       run: |
         set -vx
         #mkdir -p docker_inspect
-        df -aPT | zstdmt -vvv --adapt -f -o builder_host_df.txt.zstd
+        df -aPTh | zstdmt -vvv --adapt -f -o builder_host_df.txt.zstd
         tree -axdf /  | zstdmt -vvv --adapt -f -o builder_host_tree.txt.zstd
         echo "::group::builder_host_df.txt.zstd"
         zstdcat builder_host_df.txt.zstd
@@ -464,9 +464,9 @@ jobs:
         # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
         docker ps
         docker ps -a
-        docker exec builder df -aPT | zstdmt -vvv --adapt -f -o builder0_base_docker_exec_df.txt.zstd
+        docker exec builder df -aPTh | zstdmt -vvv --adapt -f -o builder0_base_docker_exec_df.txt.zstd
         docker exec builder tree -axdf /  | zstdmt -vvv --adapt -f -o builder0_base_docker_exec_tree.txt.zstd
-        docker exec "${BUILDER_CONTAINER_ID}" df -aPT | zstdmt -vvv --adapt -f -o builder_base_docker_exec_df.txt.zstd
+        docker exec "${BUILDER_CONTAINER_ID}" df -aPTh | zstdmt -vvv --adapt -f -o builder_base_docker_exec_df.txt.zstd
         docker exec "${BUILDER_CONTAINER_ID}" tree -axdf /  | zstdmt -vvv --adapt -f -o builder_base_docker_exec_tree.txt.zstd
         # docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
         ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
@@ -485,7 +485,7 @@ jobs:
         set -vx
         #mkdir -p docker_inspect
         # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
-        docker exec "${BUILDER_IMAGE_ID_INC}" df -aPT | zstdmt -vvv --adapt -f -o builder_base_docker_exec_df.txt.zstd
+        docker exec "${BUILDER_IMAGE_ID_INC}" df -aPTh | zstdmt -vvv --adapt -f -o builder_base_docker_exec_df.txt.zstd
         docker exec "${BUILDER_IMAGE_ID_INC}" tree -axdf /  | zstdmt -vvv --adapt -f -o builder_base_docker_exec_tree.txt.zstd
         # docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
         ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
