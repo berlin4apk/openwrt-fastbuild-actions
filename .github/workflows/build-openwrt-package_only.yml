@@ -385,6 +385,8 @@ jobs:
         set -vx
         #mkdir -p docker_inspect
         # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
+        docker ps
+        docker ps -a
         docker exec "${BUILDER_IMAGE_ID_BASE}" df -aPT | zstdmt -vvv --adapt -f -o builder_base_docker_exec_df.txt.zstd
         docker exec "${BUILDER_IMAGE_ID_BASE}" tree -axdf /  | zstdmt -vvv --adapt -f -o builder_base_docker_exec_tree.txt.zstd
         # docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
