@@ -261,9 +261,10 @@ jobs:
         sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
         # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
-    - name: ccache
+    - name: ccache-action
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      if: env.SKIP_TARGET == '0'
+      #if: env.SKIP_TARGET == '0' 
+      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
       uses: hendrikmuhs/ccache-action@v1.2.8
       with:
         key: ${{ matrix.os }}-${{ matrix.type }}
@@ -320,7 +321,7 @@ jobs:
     - name: Cache DLccache
       uses: actions/cache@v3
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      if: env.SKIP_TARGET == '0'
+      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
       with:
         path: |
           '${{github.workspace}}/DLccache'
