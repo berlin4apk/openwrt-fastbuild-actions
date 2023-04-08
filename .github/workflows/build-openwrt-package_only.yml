@@ -447,8 +447,10 @@ jobs:
         # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
         docker ps
         docker ps -a
-        docker exec "${BUILDER_IMAGE_ID_BASE}" df -aPT | zstdmt -vvv --adapt -f -o builder_base_docker_exec_df.txt.zstd
-        docker exec "${BUILDER_IMAGE_ID_BASE}" tree -axdf /  | zstdmt -vvv --adapt -f -o builder_base_docker_exec_tree.txt.zstd
+        docker exec builder df -aPT | zstdmt -vvv --adapt -f -o builder0_base_docker_exec_df.txt.zstd
+        docker exec builder tree -axdf /  | zstdmt -vvv --adapt -f -o builder0_base_docker_exec_tree.txt.zstd
+        docker exec "${BUILDER_CONTAINER_ID}" df -aPT | zstdmt -vvv --adapt -f -o builder_base_docker_exec_df.txt.zstd
+        docker exec "${BUILDER_CONTAINER_ID}" tree -axdf /  | zstdmt -vvv --adapt -f -o builder_base_docker_exec_tree.txt.zstd
         # docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
         ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
         # docker container rm --force image0
@@ -480,7 +482,7 @@ jobs:
         # docker start "${BUILDER_IMAGE_ID_BASE}"
         # docker container rm --force image0
 
-    - name: docker inspect2
+    - name: docker inspect2 BUILDER_CONTAINER_ID
       id: inspect2
       if: env.SKIP_TARGET == '0' && env.TEST != '1' && !cancelled()
       run: |
@@ -488,8 +490,8 @@ jobs:
         #mkdir -p docker_inspect
         # docker create --name image1 "$BUILDER_IMAGE_ID_INC"
         # docker stop "${BUILDER_IMAGE_ID_INC}"
-        docker export "${BUILDER_IMAGE_ID_INC}" | tar t | zstdmt -vvv --adapt -f -o builder_inc_docker_export_image_tar_t.txt.zstd
-        docker export "${BUILDER_IMAGE_ID_INC}" | tar tv | zstdmt -vvv --adapt -f -o builder_inc_docker_export_image_tar_tv.txt.zstd
+        docker export "${BUILDER_CONTAINER_ID}" | tar t | zstdmt -vvv --adapt -f -o BUILDER_CONTAINER_ID_docker_export_image_tar_t.txt.zstd
+        docker export "${BUILDER_CONTAINER_ID}" | tar tv | zstdmt -vvv --adapt -f -o BUILDER_CONTAINER_ID_docker_export_image_tar_tv.txt.zstd
         ## docker image history "${BUILDER_IMAGE_ID_INC}" | zstdmt -vvv --adapt -f -o builder_inc_docker_image_history.txt.zstd
         # docker start "${BUILDER_IMAGE_ID_INC}"
         ## docker container rm --force image1
@@ -500,6 +502,10 @@ jobs:
       with:
         name: docker_inspect_${{env.BUILD_TARGET}}
         path: |
+          builder0_base_docker_* 
+          builder0_inc_docker_*
+          builder0_host_*
+          BUILDER_CONTAINER_ID_*
           builder_base_docker_* 
           builder_inc_docker_*
           builder_host_*
