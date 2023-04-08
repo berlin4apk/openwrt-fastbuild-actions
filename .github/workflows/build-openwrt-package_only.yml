@@ -376,21 +376,48 @@ jobs:
       if: env.SKIP_TARGET == '0' && !cancelled() && ( steps.mtcompile.outputs.status == 'success' || steps.stcompile.outputs.status == 'success' )
       run: scripts/cisteps/build-openwrt/14-organize_files.sh
 
-    - name: docker inspect
-      id: inspect1
+
+    - name: docker tree1
+      id: tree1
       if: env.SKIP_TARGET == '0' && !cancelled()
       run: |
         set -vx
         #mkdir -p docker_inspect
         # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
-        docker export image0 | tar t | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_t.txt.zstd
-        docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
+        docker exec "${BUILDER_IMAGE_ID_BASE}" df -aPT | zstdmt -vvv --adapt -f -o builder_base_docker_exec_df.txt.zstd
+        docker exec "${BUILDER_IMAGE_ID_BASE}" tree -axdf /  | zstdmt -vvv --adapt -f -o builder_base_docker_exec_tree.txt.zstd
+        # docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
         ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
         docker container rm --force image0
 
-    - name: docker inspect
-      id: inspect2
+    - name: docker tree2
+      id: tree2
       if: env.SKIP_TARGET == '0' && !cancelled()
+      run: |
+        set -vx
+        #mkdir -p docker_inspect
+        # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
+        docker exec "${BUILDER_IMAGE_ID_INC}" df -aPT | zstdmt -vvv --adapt -f -o builder_base_docker_exec_df.txt.zstd
+        docker exec "${BUILDER_IMAGE_ID_INC}" tree -axdf /  | zstdmt -vvv --adapt -f -o builder_base_docker_exec_tree.txt.zstd
+        # docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
+        ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
+        docker container rm --force image0
+
+    - name: docker inspect1
+      id: inspect1
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && !cancelled()
+      run: |
+        set -vx
+        #mkdir -p docker_inspect
+        # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
+        docker export "${BUILDER_IMAGE_ID_BASE}" | tar t | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_t.txt.zstd
+        docker export "${BUILDER_IMAGE_ID_BASE}" | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
+        ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
+        # docker container rm --force image0
+
+    - name: docker inspect2
+      id: inspect2
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && !cancelled()
       run: |
         set -vx
         #mkdir -p docker_inspect
