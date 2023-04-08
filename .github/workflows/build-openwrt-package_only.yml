@@ -192,6 +192,12 @@ jobs:
       if: env.SKIP_TARGET == '0'
       uses: docker/setup-buildx-action@v2
 
+    - name: docker ps
+      if: env.SKIP_TARGET == '0'
+      run: |
+        dockker ps
+        docker ps -a
+
     - name: Configure docker
       if: env.SKIP_TARGET == '0'
       run: scripts/cisteps/build-openwrt/04-configure_docker.sh
@@ -215,9 +221,21 @@ jobs:
         OPENWRT_BUILD_KEY: ${{secrets.OPENWRT_BUILD_KEY}}
         OPENWRT_BUILD_KEY_PUB: ${{secrets.OPENWRT_BUILD_KEY_PUB}}
 
+    - name: docker ps
+      if: env.SKIP_TARGET == '0'
+      run: |
+        dockker ps
+        docker ps -a
+
     - name: Get builder
       if: env.SKIP_TARGET == '0'
       run: scripts/cisteps/build-openwrt/06-get_builder.sh
+
+    - name: docker ps
+      if: env.SKIP_TARGET == '0'
+      run: |
+        dockker ps
+        docker ps -a
 
     - name: Clone/update OpenWrt
       if: env.SKIP_TARGET == '0'
