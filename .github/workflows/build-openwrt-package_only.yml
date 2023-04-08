@@ -233,45 +233,71 @@ jobs:
 
       # https://github.com/actions/cache/issues/133#issuecomment-599102035
     - name: Fix ./.ccache/ directory permissions
-      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.SKIP_TARGET == '0'
       run: |
-        sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
         # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
     - name: ccache
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       uses: hendrikmuhs/ccache-action@v1.2.8
       with:
         key: ${{ matrix.os }}-${{ matrix.type }}
         max-size: 2G
         verbose: 2
 
-    - name: Cache ccache
-      uses: actions/cache@v3
-      with:
-        path: |
-          '${{github.workspace}}/.ccache'
-          'openwrt/.ccache'
-          ${{github.workspace}}/openwrt/.ccache
-          '**/.ccache'
-          '/tmp/**/.ccache'
-          #'$HOME/**/.ccache'
-          #'$HOME/.ccache'
-          #'/.ccache'
-          ${{ env.HOST_CCACHE_DIR }}
-        #key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
-        key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}
-        restore-keys: |
-          #ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
-          ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}
-          ccache-kernel-${{ env.BUILD_TARGET }}-
-          ccache-kernel-
+      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+    - name: Fix 2 ./.ccache/ directory permissions
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      #if: env.SKIP_TARGET == '0'
+      run: |
+        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+
+#    - name: Cache ccache
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      uses: actions/cache@v3
+#      with:
+#        path: |
+#          '${{github.workspace}}/.ccache'
+#          'openwrt/.ccache'
+#          ${{github.workspace}}/openwrt/.ccache
+#          '**/.ccache'
+#          '/tmp/**/.ccache'
+#          #'$HOME/**/.ccache'
+#          #'$HOME/.ccache'
+#          #'/.ccache'
+#          ${{ env.HOST_CCACHE_DIR }}
+#        #key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+#        key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}
+#        restore-keys: |
+#          #ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+#          ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}
+#          ccache-kernel-${{ env.BUILD_TARGET }}-
+#          ccache-kernel-
+
+      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+    - name: Fix 3 ./.ccache/ directory permissions
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      #if: env.SKIP_TARGET == '0'
+      run: |
+        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
       # https://github.com/actions/cache/issues/133#issuecomment-599102035
     - name: Fix HOST_DLCCACHE_DIR directory permissions
-      run: sudo chown -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }}
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+        sudo chown --verbose -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }} ||:
+        sudo chmod --verbose -R 777 ${{ env.HOST_DLCCACHE_DIR }} ||:
 
     - name: Cache DLccache
       uses: actions/cache@v3
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       with:
         path: |
           '${{github.workspace}}/DLccache'
@@ -282,6 +308,13 @@ jobs:
           DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('${{github.workspace}}/DLccache/*') }}
           DLccache-${{ env.BUILD_TARGET }}-
           DLccache-
+
+      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+    - name: Fix 2 HOST_DLCCACHE_DIR directory permissions
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+        sudo chown --verbose -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }} ||:
+        sudo chmod --verbose -R 777 ${{ env.HOST_DLCCACHE_DIR }} ||:
 
     - name: Apply customizations
       if: env.SKIP_TARGET == '0'
@@ -378,6 +411,15 @@ jobs:
       run: scripts/cisteps/build-openwrt/14-organize_files.sh
 
 
+    - name: host tree1
+      id: hosttree1
+      if: env.SKIP_TARGET == '0' && !cancelled()
+      run: |
+        set -vx
+        #mkdir -p docker_inspect
+        df -aPT | zstdmt -vvv --adapt -f -o builder_host_df.txt.zstd
+        tree -axdf /  | zstdmt -vvv --adapt -f -o builder_host_tree.txt.zstd
+
     - name: docker tree1
       id: tree1
       if: env.SKIP_TARGET == '0' && !cancelled()
@@ -391,7 +433,7 @@ jobs:
         docker exec "${BUILDER_IMAGE_ID_BASE}" tree -axdf /  | zstdmt -vvv --adapt -f -o builder_base_docker_exec_tree.txt.zstd
         # docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
         ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
-        docker container rm --force image0
+        # docker container rm --force image0
 
     - name: docker tree2
       id: tree2
@@ -404,7 +446,7 @@ jobs:
         docker exec "${BUILDER_IMAGE_ID_INC}" tree -axdf /  | zstdmt -vvv --adapt -f -o builder_base_docker_exec_tree.txt.zstd
         # docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
         ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
-        docker container rm --force image0
+        # docker container rm --force image0
 
     - name: docker inspect1
       id: inspect1
@@ -442,6 +484,7 @@ jobs:
         path: |
           builder_base_docker_* 
           builder_inc_docker_*
+          builder_host_*
 
 
     - name: Upload firmware
