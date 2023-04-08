@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-echo "= $0 ==== start ==========================================="
+echo "= default pre_custom.sh ==== $0 ==== start ==========================================="
 
 
 set -vx 
@@ -39,7 +39,8 @@ _install_if_not_has_command tree
 #_install_if_not_has_command foofeeoo
 
 
-
+bash -xc "wc -l .config.diff"
+bash -xc "wc -l .config"
 for FILE in pre_custom_*.sh; do
 	set -vx
 	#[ -e "$FILE" ] && . "$FILE"
@@ -47,5 +48,7 @@ for FILE in pre_custom_*.sh; do
 	set +vx
 done
 unset FILE
+bash -xc "wc -l .config.diff"
+bash -xc "wc -l .config"
 
-echo "= $0 ==== end ==========================================="
+echo "= default pre_custom.sh ==== $0 ==== end ==========================================="
