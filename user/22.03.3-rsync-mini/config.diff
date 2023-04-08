@@ -4,7 +4,7 @@
 # from https://github.com/openwrt/openwrt/blob/f25abdf144f8ccabde6bfca2f0d3c509acfc53bc/.github/workflows/build-tools.yml#L32
 CONFIG_DEVEL=y
 # CONFIG_AUTOREMOVE=y
-CONFIG_CCACHE=y
+# CONFIG_CCACHE=y
 #
 
 CONFIG_TARGET_x86=y
