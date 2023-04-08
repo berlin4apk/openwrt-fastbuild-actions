@@ -195,7 +195,7 @@ jobs:
     - name: docker ps
       if: env.SKIP_TARGET == '0'
       run: |
-        dockker ps
+        docker ps
         docker ps -a
 
     - name: Configure docker
@@ -224,7 +224,7 @@ jobs:
     - name: docker ps
       if: env.SKIP_TARGET == '0'
       run: |
-        dockker ps
+        docker ps
         docker ps -a
 
     - name: Get builder
@@ -234,7 +234,7 @@ jobs:
     - name: docker ps
       if: env.SKIP_TARGET == '0'
       run: |
-        dockker ps
+        docker ps
         docker ps -a
 
     - name: Clone/update OpenWrt
