@@ -239,7 +239,8 @@ jobs:
         docker ps -a
 
     - name: Clone/update OpenWrt
-      if: env.SKIP_TARGET == '0'
+      #if: env.SKIP_TARGET == '0'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: scripts/cisteps/build-openwrt/07-download_openwrt.sh
 
     - name: Generate ccache hash
@@ -260,7 +261,8 @@ jobs:
         # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
     - name: ccache
-      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.SKIP_TARGET == '0'
       uses: hendrikmuhs/ccache-action@v1.2.8
       with:
         key: ${{ matrix.os }}-${{ matrix.type }}
@@ -269,8 +271,8 @@ jobs:
 
       # https://github.com/actions/cache/issues/133#issuecomment-599102035
     - name: Fix 2 ./.ccache/ directory permissions
-      if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      #if: env.SKIP_TARGET == '0'
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.SKIP_TARGET == '0'
       run: |
         sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
         sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
@@ -316,7 +318,8 @@ jobs:
 
     - name: Cache DLccache
       uses: actions/cache@v3
-      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.SKIP_TARGET == '0'
       with:
         path: |
           '${{github.workspace}}/DLccache'
@@ -336,7 +339,8 @@ jobs:
         sudo chmod --verbose -R 777 ${{ env.HOST_DLCCACHE_DIR }} ||:
 
     - name: Apply customizations
-      if: env.SKIP_TARGET == '0'
+      #if: env.SKIP_TARGET == '0'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: scripts/cisteps/build-openwrt/08-customize.sh
 
     # Allow intermediate customization
@@ -348,7 +352,8 @@ jobs:
       uses: openlumi/safe-debugger-action@e0141e5738ac68421298d9eb4217e037e6cb1a0b # openlumi/safe-debugger-action@dev
 
     - name: Prepare config file
-      if: env.SKIP_TARGET == '0'
+      #if: env.SKIP_TARGET == '0'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: scripts/cisteps/build-openwrt/09-prepare_config.sh
 
     - name: Download packages
@@ -382,6 +387,7 @@ jobs:
 
 
     - name: Glob match
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       uses: tj-actions/glob@v16
       id: glob
       with:
@@ -398,6 +404,7 @@ jobs:
           !action.yml
           **/rebase.yml
     - name: Show all matching files
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
         echo "${{ steps.glob.outputs.paths }}"
       # Outputs: .github/workflows/rebase.yml .github/workflows/sync-release-version.yml .github/workflows/test.yml...
@@ -438,6 +445,12 @@ jobs:
         #mkdir -p docker_inspect
         df -aPT | zstdmt -vvv --adapt -f -o builder_host_df.txt.zstd
         tree -axdf /  | zstdmt -vvv --adapt -f -o builder_host_tree.txt.zstd
+        echo "::group::builder_host_df.txt.zstd"
+        zstdcat builder_host_df.txt.zstd
+        echo "::endgroup::"
+        echo "::group::builder_host_tree.txt.zstd"
+        zstdcat builder_host_tree.txt.zstd
+        echo "::endgroup::"
 
     - name: docker tree1
       id: tree1
@@ -455,6 +468,12 @@ jobs:
         # docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
         ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
         # docker container rm --force image0
+        echo "::group::builder0_base_docker_exec_df.txt.zstd"
+        zstdcat builder0_base_docker_exec_df.txt.zstd
+        echo "::endgroup::"
+        echo "::group::builder0_base_docker_exec_tree.txt.zstd"
+        zstdcat builder0_base_docker_exec_tree.txt.zstd
+        echo "::endgroup::"
 
     - name: docker tree2
       id: tree2
