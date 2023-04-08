@@ -1,6 +1,8 @@
 #!/bin/bash
 
 
+echo "= $0 ==== start ==========================================="
+
 
 set -vx 
 _has_command() {
@@ -36,12 +38,14 @@ _install_if_not_has_command genisoimage
 _install_if_not_has_command tree
 #_install_if_not_has_command foofeeoo
 
-set -vx
-#mv .config .config.diff
-#cp config_xiaomi_lumi .config
-#cat .config.diff >> .config
-mv .config .config.diff
-cp config.pre_custom .config
-cat .config.diff | tee -a .config
-#cat config.pre_custom | tee -a .config
-set +vx
+
+
+for FILE in pre_custom_*.sh; do
+	set -vx
+	#[ -e "$FILE" ] && . "$FILE"
+	bash "$FILE"
+	set +vx
+done
+unset FILE
+
+echo "= $0 ==== end ==========================================="
