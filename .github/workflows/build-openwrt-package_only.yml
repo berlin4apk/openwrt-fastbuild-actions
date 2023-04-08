@@ -233,6 +233,7 @@ jobs:
 
       # https://github.com/actions/cache/issues/133#issuecomment-599102035
     - name: Fix ./.ccache/ directory permissions
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
         sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
         # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
@@ -410,9 +411,11 @@ jobs:
         set -vx
         #mkdir -p docker_inspect
         # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
+        # docker stop "${BUILDER_IMAGE_ID_BASE}"
         docker export "${BUILDER_IMAGE_ID_BASE}" | tar t | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_t.txt.zstd
         docker export "${BUILDER_IMAGE_ID_BASE}" | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
         ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
+        # docker start "${BUILDER_IMAGE_ID_BASE}"
         # docker container rm --force image0
 
     - name: docker inspect2
@@ -422,9 +425,11 @@ jobs:
         set -vx
         #mkdir -p docker_inspect
         # docker create --name image1 "$BUILDER_IMAGE_ID_INC"
+        # docker stop "${BUILDER_IMAGE_ID_INC}"
         docker export "${BUILDER_IMAGE_ID_INC}" | tar t | zstdmt -vvv --adapt -f -o builder_inc_docker_export_image_tar_t.txt.zstd
         docker export "${BUILDER_IMAGE_ID_INC}" | tar tv | zstdmt -vvv --adapt -f -o builder_inc_docker_export_image_tar_tv.txt.zstd
         ## docker image history "${BUILDER_IMAGE_ID_INC}" | zstdmt -vvv --adapt -f -o builder_inc_docker_image_history.txt.zstd
+        # docker start "${BUILDER_IMAGE_ID_INC}"
         ## docker container rm --force image1
 
     - name: Upload inspect output
@@ -452,6 +457,7 @@ jobs:
         path: ${{env.HOST_BIN_DIR}}
 
     - uses: webfactory/ssh-agent@v0.7.0
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled()
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Checkout tools repo
@@ -479,6 +485,7 @@ jobs:
         scripts/make-index-html.sh ${{env.HOST_WORK_DIR}}/releases || true
 
 #    - uses: webfactory/ssh-agent@v0.7.0
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled()
 #      with:
 #        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Commit files
@@ -494,8 +501,8 @@ jobs:
     - name: Remove ssh key form SSH_AGENT
       # $SSH_AGENT_PID
       run: |
-        ssh-add -l
-        ssh-add -D
+        ssh-add -l ||:
+        ssh-add -D ||:
         ssh-add -l ||:
 ##        kill $SSH_AGENT_PID
 
