@@ -1,0 +1,111 @@
+# -*- mode: sh -*-
+# vi: set ft=sh :
+
+# from https://github.com/openwrt/openwrt/blob/f25abdf144f8ccabde6bfca2f0d3c509acfc53bc/.github/workflows/build-tools.yml#L32
+#CONFIG_DEVEL=y
+# CONFIG_AUTOREMOVE=y
+#CONFIG_CCACHE=y
+
+
+CONFIG_TARGET_x86=y
+CONFIG_TARGET_x86_64=y
+#CONFIG_PACKAGE_example1=y
+CONFIG_PACKAGE_zlib=m
+
+
+# CONFIG_DEVEL=y
+CONFIG_CCACHE=y
+CONFIG_CCACHE_DIR="/home/builder/.ccache"
+CONFIG_DOWNLOAD_FOLDER="/tmp/DLccache"
+
+
+# CONFIG_IMAGEOPT=y
+#CONFIG_PACKAGE_kmod-ata-ahci=m
+#CONFIG_PACKAGE_kmod-ata-core=m
+#CONFIG_PACKAGE_kmod-ata-piix=m
+#CONFIG_PACKAGE_kmod-cdrom=m
+#CONFIG_PACKAGE_kmod-crypto-acompress=m
+#CONFIG_PACKAGE_kmod-irqbypass=m
+#CONFIG_PACKAGE_kmod-kvm-amd=m
+#CONFIG_PACKAGE_kmod-kvm-intel=m
+#CONFIG_PACKAGE_kmod-kvm-x86=m
+#CONFIG_PACKAGE_kmod-lib-lzo=m
+#CONFIG_PACKAGE_kmod-nvme=m
+#CONFIG_PACKAGE_kmod-scsi-cdrom=m
+#CONFIG_PACKAGE_kmod-scsi-core=m
+#CONFIG_PACKAGE_kmod-scsi-generic=m
+#CONFIG_PACKAGE_kmod-vmxnet3=y
+#CONFIG_PACKAGE_kmod-zram=m
+#CONFIG_PACKAGE_libacl=m
+#CONFIG_PACKAGE_libattr=m
+#CONFIG_PACKAGE_libpopt=m
+#CONFIG_PACKAGE_libzstd=m
+#CONFIG_PACKAGE_rsync=m
+#CONFIG_PACKAGE_zlib=m
+#CONFIG_RSYNC_acl=y
+#CONFIG_RSYNC_xattr=y
+#CONFIG_RSYNC_zstd=y
+# CONFIG_TARGET_IMAGES_GZIP is not set
+# CONFIG_TARGET_ROOTFS_EXT4FS is not set
+# CONFIG_TARGET_ROOTFS_SQUASHFS is not set
+# CONFIG_TARGET_ROOTFS_TARGZ is not set
+#CONFIG_ZSTD_OPTIMIZE_O3=y
+#CONFIG_PACKAGE_grub2=y
+#CONFIG_PACKAGE_grub2-bios-setup=y
+#CONFIG_PACKAGE_grub2-efi=y
+
+
+#CONFIG_TARGET_x86=y
+#CONFIG_TARGET_x86_64=y
+#CONFIG_TARGET_x86_64_DEVICE_generic=y
+## CONFIG_ISO_IMAGES=y
+#CONFIG_PACKAGE_libacl=m
+#CONFIG_PACKAGE_libattr=m
+#CONFIG_PACKAGE_libpopt=m
+#CONFIG_PACKAGE_libzstd=m
+#CONFIG_PACKAGE_rsync=m
+#CONFIG_PACKAGE_zlib=m
+#CONFIG_RSYNC_acl=y
+#CONFIG_RSYNC_xattr=y
+#CONFIG_RSYNC_zstd=y
+#CONFIG_ZSTD_OPTIMIZE_O3=y
+
+CONFIG_VERSIONOPT=y
+CONFIG_VERSION_BUG_URL="https://github.com/berlin4apk/berlin4apk.github.io/issues"
+# CONFIG_VERSION_CODE=""
+CONFIG_VERSION_DIST="OpenWrt"
+CONFIG_VERSION_FILENAMES=y
+CONFIG_VERSION_HOME_URL="https://berlin4apk.github.io/openwrt-releases"
+# CONFIG_VERSION_HWREV=""
+# CONFIG_VERSION_MANUFACTURER=""
+# CONFIG_VERSION_MANUFACTURER_URL=""
+# CONFIG_VERSION_NUMBER=""
+# CONFIG_VERSION_PRODUCT=""
+CONFIG_VERSION_REPO="%u/%v"
+CONFIG_VERSION_SUPPORT_URL="https://github.com/berlin4apk/berlin4apk.github.io/issues"
+
+
+
+
+# https://git.openwrt.org/?p=openwrt/openwrt.git;a=blob_plain;f=package/base-files/image-config.in;h=2de2130b8490d9f18fa0b0189fa1ed7432e9528a;hb=HEAD
+#	config VERSION_REPO
+#		string
+#		prompt "Release repository"
+#		default "https://downloads.openwrt.org/snapshots"
+#		help
+#			This is the repository address embedded in the image, it defaults
+#			to the trunk snapshot repo; the url may contain the following placeholders:
+#			 %R .. Repository revision ID
+#			 %V .. Configured release version number or "SNAPSHOT", uppercase
+#			 %v .. Configured release version number or "snapshot", lowercase
+#			 %C .. Configured release revision code or value of %R, uppercase
+#			 %c .. Configured release revision code or value of %R, lowercase
+#			 %D .. Distribution name or "OpenWrt", uppercase
+#			 %d .. Distribution name or "openwrt", lowercase
+#			 %T .. Target name
+#			 %S .. Target/Subtarget name
+#			 %A .. Package architecture
+#			 %t .. Build taint flags, e.g. "no-all busybox"
+#			 %M .. Manufacturer name or "OpenWrt"
+#			 %P .. Product name or "Generic"
+#			 %h .. Hardware revision or "v0"
