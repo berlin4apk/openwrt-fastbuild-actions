@@ -36,3 +36,6 @@ _install_if_not_has_command genisoimage
 _install_if_not_has_command tree
 #_install_if_not_has_command foofeeoo
 
+set -vx
+cat config.pre_custom | tee -a .config
+set +vx

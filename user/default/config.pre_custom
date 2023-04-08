@@ -1,0 +1,8 @@
+
+# from https://github.com/openwrt/openwrt/blob/f25abdf144f8ccabde6bfca2f0d3c509acfc53bc/.github/workflows/build-tools.yml#L32
+
+# CONFIG_DEVEL=y
+CONFIG_CCACHE=y
+CONFIG_CCACHE_DIR="/home/builder/.ccache"
+CONFIG_DOWNLOAD_FOLDER="/tmp/DLccache"
+
