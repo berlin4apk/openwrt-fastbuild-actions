@@ -24,10 +24,14 @@ setup_envs() {
   BUILDER_KEY_BUILD_PUB="${BUILDER_WORK_DIR}/key-build.pub"
   HOST_KEY_BUILD_PUB="${HOST_WORK_DIR}/key-build.pub"
   BUILDER_PROFILE_DIR="${BUILDER_WORK_DIR}/user/current"
-  HOST_CCACHE_DIR="${HOST_WORK_DIR}/.ccache"
-  BUILDER_CCACHE_DIR="${BUILDER_WORK_DIR}/.ccache"
-  HOST_DLCCACHE_DIR="${HOST_WORK_DIR}/DLccache"
-  BUILDER_DLCCACHE_DIR="/tmp/DLccache"
+  #HOST_CCACHE_DIR="${HOST_WORK_DIR}/.ccache"
+  HOST_CCACHE_DIR="/dev/shm/ccache"
+  #BUILDER_CCACHE_DIR="${BUILDER_WORK_DIR}/.ccache"
+  BUILDER_CCACHE_DIR="/dev/shm/ccache"
+  #HOST_DLCCACHE_DIR="${HOST_WORK_DIR}/DLccache"
+  HOST_DLCCACHE_DIR="${HOME}/DLccache"
+  #BUILDER_DLCCACHE_DIR="/tmp/DLccache"
+  BUILDER_DLCCACHE_DIR="${BUILDER_WORK_DIR}/DLccache"
   BUILDER_MOUNT_OPTS="
     -v '${HOST_WORK_DIR}/scripts:${BUILDER_WORK_DIR}/scripts'
     -v '${HOST_WORK_DIR}/user:${BUILDER_WORK_DIR}/user'
