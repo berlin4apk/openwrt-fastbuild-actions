@@ -13,7 +13,8 @@ fi
 [ "x${TEST}" != "x1" ] || exit 0
 
 cd "${OPENWRT_CUR_DIR}"
-make download -j8
+#make download -j8
+make download -j8 V=sa
 find dl -size -1024c -exec ls -l {} \;
 #find dl -size -1024c -exec rm -f {} \;
 find dl -size -1024c -exec rm --verbose -f {} \;
