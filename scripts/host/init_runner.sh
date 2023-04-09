@@ -176,12 +176,25 @@ prepare_dirs() {
   sudo chmod 777 "${HOST_DLCCACHE_DIR}"
 }
 
+show_uids() {
+echo "= UID on host scripts/host/init_runner.sh ==== $0 ==============================================="
+	set -vx
+id -u
+id -g
+id
+	set +vx
+echo "= UID on host scripts/host/init_runner.sh ==== $0 ==============================================="
+}
+
+
+
 main() {
   set -eo pipefail
   if [ "$1" = "build" ]; then
     BUILD_OPTS="update_feeds update_repo rebase rebuild debug push_when_fail package_only all_packages"
   fi
 
+  show_uids
   install_commands
   setup_envs
   check_test
