@@ -38,6 +38,13 @@ _install_if_not_has_command genisoimage
 _install_if_not_has_command tree
 #_install_if_not_has_command foofeeoo
 
+echo "= UIDs in docker ==== $0 ==============================================="
+	set -vx
+id -u
+id -g
+id
+	set +vx
+echo "= UIDs in docker ==== $0 ==============================================="
 
 bash -xc "wc -l .config.diff"
 bash -xc "wc -l .config"
