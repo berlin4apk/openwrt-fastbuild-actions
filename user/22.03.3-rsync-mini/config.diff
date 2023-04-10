@@ -14,7 +14,8 @@ CONFIG_CCACHE=y
 CONFIG_CCACHE_DIR="/dev/shm/1001/ccache/"
 # CONFIG_DOWNLOAD_FOLDER="/tmp/DLccache"
 #CONFIG_DOWNLOAD_FOLDER="/dev/shm/$(id -u)/DLccache"
-CONFIG_DOWNLOAD_FOLDER="/dev/shm/1001/DLccache"
+CONFIG_DOWNLOAD_FOLDER="/dev/shm/1001/DLccache/"
+DL_DIR="/dev/shm/1001/DLccache/"
 
 CONFIG_TARGET_x86=y
 CONFIG_TARGET_x86_64=y
