@@ -6,4 +6,10 @@ echo "= $0 ==== start ==========================================="
 # ./scripts/feeds update node
 # ./scripts/feeds install -a -p node
 # make defconfig
+
+set -x
+mkdir -p dl
+mkdir -p /home/builder/dl
+mkdir -p /home/builder/openwrt/dl
+
 echo "= $0 ==== end ==========================================="
