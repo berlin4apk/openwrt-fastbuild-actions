@@ -171,13 +171,13 @@ check_validity() {
 prepare_dirs() {
   mkdir -p "${HOST_BIN_DIR}"
   chmod 777 "${HOST_BIN_DIR}"
-  sudo mkdir "${HOST_TMP_DIR}"
+  sudo mkdir -p "${HOST_TMP_DIR}"
   sudo chmod 777 "${HOST_TMP_DIR}"
-  sudo mkdir "${HOST_CCACHE_DIR}"
+  sudo mkdir -p "${HOST_CCACHE_DIR}"
   ### sudo chmod 777 "${HOST_CCACHE_DIR}"
   sudo chown --verbose -R "1001:123" "${HOST_CCACHE_DIR}"
   ###sudo chmod 777 "${HOST_CCACHE_DIR}"
-  sudo mkdir "${HOST_DLCCACHE_DIR}"
+  sudo mkdir -p "${HOST_DLCCACHE_DIR}"
   sudo chown --verbose -R "1001:123" "${HOST_DLCCACHE_DIR}"
   ### sudo chmod 777 "${HOST_DLCCACHE_DIR}"
 }
