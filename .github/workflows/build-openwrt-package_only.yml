@@ -285,8 +285,8 @@ jobs:
     - name: ls /dev/shm/1001/DLccache/
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
-       ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl  DL_DIR $DL_DIR ||:
-       mkdir -p /home/builder/dl
+       ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl DL_DIR $DL_DIR ||:
+       mkdir -p /home/builder/dl ||:
        ln -s /home/builder/openwrt/dl /home/builder/dl ||:
        export -p | grep DIR
        #ln -s /dev/shm/1001/DLccache/ /home/builder/openwrt/dl ||:
