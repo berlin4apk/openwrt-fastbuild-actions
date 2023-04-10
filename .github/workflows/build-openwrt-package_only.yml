@@ -265,11 +265,14 @@ jobs:
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       #if: env.SKIP_TARGET == '0' 
       if: env.NULL_DISABLE_SKIP_TARGET == '0' 
-      uses: hendrikmuhs/ccache-action@v1.2.8
+###uses: hendrikmuhs/ccache-action@v1.2.8
+      uses: berlin4apk/ccache-action@v1.2.99
       with:
         key: ${{ matrix.os }}-${{ matrix.type }}
         max-size: 2G
-        verbose: 2
+        #verbose: 2
+        verbose: 1
+        install-from-github: true
 
       # https://github.com/actions/cache/issues/133#issuecomment-599102035
     - name: Fix 2 ./.ccache/ directory permissions
