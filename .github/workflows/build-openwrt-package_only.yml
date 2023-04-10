@@ -328,14 +328,78 @@ jobs:
       if: env.NULL_DISABLE_SKIP_TARGET == '0' 
       with:
         path: |
-          '${{github.workspace}}/DLccache'
+          /dev/shm/1001/DLccache
           ${{ env.HOST_DLCCACHE_DIR }}
         #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
-        key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('${{github.workspace}}/DLccache/*') }}
+        key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles(/dev/shm/1001/DLccache/*) }}
         restore-keys: |
-          DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('${{github.workspace}}/DLccache/*') }}
+          DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles(/dev/shm/1001/DLccache/*) }}
           DLccache-${{ env.BUILD_TARGET }}-
           DLccache-
+          
+    - name: Link ccache
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+       cd /usr/local/bin && ln --verbose -s /usr/lib/ccache/* .
+       ls -latr /usr/local/bin /usr/lib/ccache/
+
+    - name: get ccache config
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+       cat /usr/local/etc/ccache.conf
+       ccache -sv
+       ccache -p
+
+    - name: get ccache config
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+        # https://github.com/ccache/ccache/blob/master/test/suites/remote_file.bash
+        touch test.h
+        echo '#include "test.h"' >test.c
+        # backdate test.h ||:
+        #$CCACHE_COMPILE -c test.c
+        echo "#################"
+        ccache -p
+        echo "#################"
+        ccache -svv
+        echo "#################"
+        PATH="/usr/lib/ccache:$PATH" gcc -c test.c   ||: # FIXME
+        echo "#################"
+        ccache -svv
+        echo "#################"
+
+
+    - name: get ccache config2
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+        # https://github.com/ccache/ccache/blob/master/test/suites/remote_file.bash
+        touch test.h
+        echo '#include "test.h"' >test.c
+        # backdate test.h ||:
+        #$CCACHE_COMPILE -c test.c
+        echo "#################"
+        ccache -p
+        echo "#################"
+        ccache -svv
+        echo "#################"
+        #PATH="/usr/lib/ccache:$PATH" gcc -c test.c   ||: # FIXME
+        gcc -c test.c   ||: # FIXME
+        echo "#################"
+        ccache -svv
+        echo "#################"
+
+
+
+#        path: |
+#          '${{github.workspace}}/DLccache'
+#          ${{ env.HOST_DLCCACHE_DIR }}
+#        #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+#        key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('${{github.workspace}}/DLccache/*') }}
+#        restore-keys: |
+#          DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('${{github.workspace}}/DLccache/*') }}
+#          DLccache-${{ env.BUILD_TARGET }}-
+#          DLccache-
+
 
 #      # https://github.com/actions/cache/issues/133#issuecomment-599102035
 #    - name: Fix 2 HOST_DLCCACHE_DIR directory permissions
