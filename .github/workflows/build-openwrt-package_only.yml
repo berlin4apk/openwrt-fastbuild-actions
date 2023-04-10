@@ -193,11 +193,11 @@ jobs:
       if: env.SKIP_TARGET == '0'
       uses: docker/setup-buildx-action@v2
 
-    - name: docker ps
-      if: env.SKIP_TARGET == '0'
-      run: |
-        docker ps
-        docker ps -a
+#    - name: docker ps
+#      if: env.SKIP_TARGET == '0'
+#      run: |
+#        docker ps
+#        docker ps -a
 
     - name: Configure docker
       if: env.SKIP_TARGET == '0'
@@ -223,11 +223,11 @@ jobs:
         OPENWRT_BUILD_KEY: ${{secrets.OPENWRT_BUILD_KEY}}
         OPENWRT_BUILD_KEY_PUB: ${{secrets.OPENWRT_BUILD_KEY_PUB}}
 
-    - name: docker ps
-      if: env.SKIP_TARGET == '0'
-      run: |
-        docker ps
-        docker ps -a
+#    - name: docker ps
+#      if: env.SKIP_TARGET == '0'
+#      run: |
+#        docker ps
+#        docker ps -a
 
     - name: Get builder
       if: env.SKIP_TARGET == '0'
@@ -252,36 +252,37 @@ jobs:
         echo "CCACHE_HASH=$CCACHE_HASH"
         echo "CCACHE_HASH=$CCACHE_HASH" >> $GITHUB_OUTPUT
 
-      # https://github.com/actions/cache/issues/133#issuecomment-599102035
-    - name: Fix ./.ccache/ directory permissions
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      if: env.SKIP_TARGET == '0'
-      run: |
-        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
-        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
-        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+#      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+#    - name: Fix ./.ccache/ directory permissions
+#      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      if: env.SKIP_TARGET == '0'
+#      run: |
+#        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
     - name: ccache-action
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       #if: env.SKIP_TARGET == '0' 
       if: env.NULL_DISABLE_SKIP_TARGET == '0' 
 ###uses: hendrikmuhs/ccache-action@v1.2.8
-      uses: berlin4apk/ccache-action@v1.2.99
+      uses: berlin4apk/ccache-action@v1.2.100 
       with:
         key: ${{ matrix.os }}-${{ matrix.type }}
         max-size: 2G
         #verbose: 2
         verbose: 1
         install-from-github: true
+        dont-do-config: true
 
-      # https://github.com/actions/cache/issues/133#issuecomment-599102035
-    - name: Fix 2 ./.ccache/ directory permissions
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      if: env.SKIP_TARGET == '0'
-      run: |
-        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
-        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
-        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+#      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+#    - name: Fix 2 ./.ccache/ directory permissions
+#      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      if: env.SKIP_TARGET == '0'
+#      run: |
+#        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
 #    - name: Cache ccache
 #      if: env.SKIP_TARGET == '0' && env.TEST != '1'
@@ -305,21 +306,21 @@ jobs:
 #          ccache-kernel-${{ env.BUILD_TARGET }}-
 #          ccache-kernel-
 
-      # https://github.com/actions/cache/issues/133#issuecomment-599102035
-    - name: Fix 3 ./.ccache/ directory permissions
-      if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      #if: env.SKIP_TARGET == '0'
-      run: |
-        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
-        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
-        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+#      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+#    - name: Fix 3 ./.ccache/ directory permissions
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      #if: env.SKIP_TARGET == '0'
+#      run: |
+#        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
-      # https://github.com/actions/cache/issues/133#issuecomment-599102035
-    - name: Fix HOST_DLCCACHE_DIR directory permissions
-      if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      run: |
-        sudo chown --verbose -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }} ||:
-        sudo chmod --verbose -R 777 ${{ env.HOST_DLCCACHE_DIR }} ||:
+ #     # https://github.com/actions/cache/issues/133#issuecomment-599102035
+ #   - name: Fix HOST_DLCCACHE_DIR directory permissions
+ #     if: env.SKIP_TARGET == '0' && env.TEST != '1'
+ #     run: |
+ #       sudo chown --verbose -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }} ||:
+ #       sudo chmod --verbose -R 777 ${{ env.HOST_DLCCACHE_DIR }} ||:
 
     - name: Cache DLccache
       uses: actions/cache@v3
@@ -336,12 +337,12 @@ jobs:
           DLccache-${{ env.BUILD_TARGET }}-
           DLccache-
 
-      # https://github.com/actions/cache/issues/133#issuecomment-599102035
-    - name: Fix 2 HOST_DLCCACHE_DIR directory permissions
-      if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      run: |
-        sudo chown --verbose -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }} ||:
-        sudo chmod --verbose -R 777 ${{ env.HOST_DLCCACHE_DIR }} ||:
+#      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+#    - name: Fix 2 HOST_DLCCACHE_DIR directory permissions
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      run: |
+#        sudo chown --verbose -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }} ||:
+#        sudo chmod --verbose -R 777 ${{ env.HOST_DLCCACHE_DIR }} ||:
 
     - name: Apply customizations
       #if: env.SKIP_TARGET == '0'
@@ -392,28 +393,28 @@ jobs:
       run: scripts/cisteps/build-openwrt/12-compile_single.sh
 
 
-    - name: Glob match
-      if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      uses: tj-actions/glob@v16
-      id: glob
-      with:
-        files: |
-          openwrt/.ccache
-          ${{github.workspace}}/openwrt/.ccache
-          ${{github.workspace}}/.ccache
-          '**/.ccache'
-          '/tmp/**/.ccache'
-          '$HOME/**/.ccache'
-          '$HOME/.ccache'
-          '/.ccache'
-          **/*.yaml
-          !action.yml
-          **/rebase.yml
-    - name: Show all matching files
-      if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      run: |
-        echo "${{ steps.glob.outputs.paths }}"
-      # Outputs: .github/workflows/rebase.yml .github/workflows/sync-release-version.yml .github/workflows/test.yml...
+#    - name: Glob match
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      uses: tj-actions/glob@v16
+#      id: glob
+#      with:
+#        files: |
+#          openwrt/.ccache
+#          ${{github.workspace}}/openwrt/.ccache
+#          ${{github.workspace}}/.ccache
+#          '**/.ccache'
+#          '/tmp/**/.ccache'
+#          '$HOME/**/.ccache'
+#          '$HOME/.ccache'
+#          '/.ccache'
+#          **/*.yaml
+#          !action.yml
+#          **/rebase.yml
+#    - name: Show all matching files
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      run: |
+#        echo "${{ steps.glob.outputs.paths }}"
+#      # Outputs: .github/workflows/rebase.yml .github/workflows/sync-release-version.yml .github/workflows/test.yml...
 
 
     - name: Print disk space
