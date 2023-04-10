@@ -340,8 +340,8 @@ jobs:
     - name: Link ccache
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
-       cd /usr/local/bin && ln --verbose -s /usr/lib/ccache/* .
-       ls -latr /usr/local/bin /usr/lib/ccache/
+       cd /usr/local/bin && ln --verbose -s /usr/lib/ccache/* . ||:
+       ls -latr /usr/local/bin /usr/lib/ccache/ ||:
 
     - name: get ccache config
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
