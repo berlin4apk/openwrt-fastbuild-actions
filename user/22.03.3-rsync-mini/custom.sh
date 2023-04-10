@@ -12,4 +12,5 @@ mkdir -p dl
 mkdir -p /home/builder/dl
 mkdir -p /home/builder/openwrt/dl
 
+tree -a ./
 echo "= $0 ==== end ==========================================="
