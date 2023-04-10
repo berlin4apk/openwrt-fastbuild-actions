@@ -256,19 +256,39 @@ jobs:
       with:
         path: |
           /dev/shm/1001/DLccache/
-          ${{ env.HOST_DLCCACHE_DIR }}
+          ###${{ env.HOST_DLCCACHE_DIR }}
         #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
         key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
         restore-keys: |
           DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
           DLccache-${{ env.BUILD_TARGET }}-
           DLccache-
-          
+
+
+    - name: Cache /home/builder/dl
+      uses: actions/cache@v3
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+      with:
+        path: |
+          /home/builder/dl
+          ###${{ env.HOST_DLCCACHE_DIR }}
+        #key: builderDL-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+        key: builderDL-${{ env.BUILD_TARGET }}-${{ hashFiles('/home/builder/dl/**') }}
+        restore-keys: |
+          builderDL-${{ env.BUILD_TARGET }}-${{ hashFiles('/home/builder/dl/**') }}
+          builderDL-${{ env.BUILD_TARGET }}-
+          builderDL-
+
+
 #    - name: link dl to /dev/shm/1001/DLccache/
     - name: ls /dev/shm/1001/DLccache/
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
        ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl  DL_DIR $DL_DIR ||:
+       mkdir -p /home/builder/dl
+       ln -s /home/builder/openwrt/dl /home/builder/dl ||:
+       export -p | grep DIR
        #ln -s /dev/shm/1001/DLccache/ /home/builder/openwrt/dl ||:
        #ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl ||:
 
