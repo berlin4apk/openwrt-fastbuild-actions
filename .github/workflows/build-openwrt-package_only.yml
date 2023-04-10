@@ -199,6 +199,15 @@ jobs:
 #        docker ps
 #        docker ps -a
 
+    - name: Configure DL_DIR var and export it
+      #if: env.SKIP_TARGET == '0'
+      run: |
+        echo "DL_DIR=/dev/shm/1001/DLccache/" >> $GITHUB_ENV
+        echo "DL_DIR-testing=${{ env.HOST_DLCCACHE_DIR }}" >> $GITHUB_ENV
+
+
+
+
     - name: Configure docker
       if: env.SKIP_TARGET == '0'
       run: scripts/cisteps/build-openwrt/04-configure_docker.sh
@@ -238,6 +247,31 @@ jobs:
       run: |
         docker ps
         docker ps -a
+
+
+    - name: Cache DLccache
+      uses: actions/cache@v3
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+      with:
+        path: |
+          /dev/shm/1001/DLccache/
+          ${{ env.HOST_DLCCACHE_DIR }}
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+        key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+        restore-keys: |
+          DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+          DLccache-${{ env.BUILD_TARGET }}-
+          DLccache-
+          
+#    - name: link dl to /dev/shm/1001/DLccache/
+    - name: ls /dev/shm/1001/DLccache/
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+       ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl  DL_DIR $DL_DIR ||:
+       #ln -s /dev/shm/1001/DLccache/ /home/builder/openwrt/dl ||:
+       #ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl ||:
+
 
     - name: Clone/update OpenWrt
       #if: env.SKIP_TARGET == '0'
@@ -331,33 +365,16 @@ jobs:
  #       sudo chown --verbose -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }} ||:
  #       sudo chmod --verbose -R 777 ${{ env.HOST_DLCCACHE_DIR }} ||:
 
-    - name: Cache DLccache
-      uses: actions/cache@v3
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
-      with:
-        path: |
-          /dev/shm/1001/DLccache/
-          ${{ env.HOST_DLCCACHE_DIR }}
-        #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
-        key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
-        restore-keys: |
-          DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
-          DLccache-${{ env.BUILD_TARGET }}-
-          DLccache-
-          
-    - name: link dl to /dev/shm/1001/DLccache/
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      run: |
-       ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl ||:
-       ln -s /dev/shm/1001/DLccache/ /home/builder/openwrt/dl ||:
-       ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl ||:
-          
+     
+
     - name: Link ccache
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
-       cd /usr/local/bin && ln --verbose -s /usr/lib/ccache/* . ||:
-       ls -latr /usr/local/bin /usr/lib/ccache/ ||:
+       #cd /usr/local/bin && ln --verbose -s /usr/lib/ccache/* . ||:
+       ls -latr /usr/lib/ccache/bin/* /usr/local/bin/ ||:
+       ln -vs /usr/lib/ccache/bin/* /usr/local/bin/ ||:
+       ls -latr /usr/lib/ccache/bin/* /usr/local/bin/ ||:
+
 
     - name: get ccache config
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
