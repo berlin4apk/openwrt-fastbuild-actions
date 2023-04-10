@@ -346,9 +346,9 @@ jobs:
     - name: get ccache config
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
-       cat /usr/local/etc/ccache.conf
-       ccache -sv
-       ccache -p
+       cat /usr/local/etc/ccache.conf ||:
+       ccache -sv ||:
+       ccache -p ||:
 
     - name: get ccache config
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
