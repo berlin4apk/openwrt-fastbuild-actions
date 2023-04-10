@@ -275,6 +275,15 @@ jobs:
         install-from-github: true
         dont-do-config: true
 
+    - name: set cache_dir 
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+       ccache --set-config=cache_dir=${{ env.HOST_CCACHE_DIR }} ||:
+       ccache --set-config=max_size=1500M
+       ccache --set-config=compression=true
+       ccache -p
+
+
 #      # https://github.com/actions/cache/issues/133#issuecomment-599102035
 #    - name: Fix 2 ./.ccache/ directory permissions
 #      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
@@ -336,6 +345,13 @@ jobs:
           DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
           DLccache-${{ env.BUILD_TARGET }}-
           DLccache-
+          
+    - name: link dl to /dev/shm/1001/DLccache/
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+       ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl ||:
+       ln -s /dev/shm/1001/DLccache/ /home/builder/openwrt/dl ||:
+       ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl ||:
           
     - name: Link ccache
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
