@@ -265,19 +265,21 @@ jobs:
           DLccache-
 
  
-    - name: Cache HOST_WORK_DIR builder/dl
+    - name: Cache /tmp/builder/dl
       uses: actions/cache@v3
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       if: env.NULL_DISABLE_SKIP_TARGET == '0' 
       with:
         path: |
-          ${{ env.HOST_WORK_DIR }}/openwrt/dl
-          /home/builder/dl
+          /tmp/builder/dl
+          #${{ env.HOST_WORK_DIR }}/openwrt/dl
+          #/home/builder/dl
           ###${{ env.HOST_DLCCACHE_DIR }}
         #key: builderDL-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
-        key: builderDL-${{ env.BUILD_TARGET }}-${{ hashFiles('/home/builder/dl/**') }}
+        #key: builderDL-${{ env.BUILD_TARGET }}-${{ hashFiles('/home/builder/dl/**') }}
+        key: builderDL-${{ env.BUILD_TARGET }}-${{ hashFiles('/tmp/builder/dl/**') }}
         restore-keys: |
-          builderDL-${{ env.BUILD_TARGET }}-${{ hashFiles('/home/builder/dl/**') }}
+          builderDL-${{ env.BUILD_TARGET }}-${{ hashFiles('/tmp/builder/dl/**') }}
           builderDL-${{ env.BUILD_TARGET }}-
           builderDL-
 
