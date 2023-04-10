@@ -12,7 +12,8 @@ install_commands() {
 
 setup_envs() {
   # Do not change
-  BUILDER_IMAGE_ID_BUILDENV="tete1030/openwrt-buildenv:latest"
+### BUILDER_IMAGE_ID_BUILDENV="tete1030/openwrt-buildenv:latest"
+  BUILDER_IMAGE_ID_BUILDENV="berlin4apk/openwrt-buildenv:latest"
   BUILDER_CONTAINER_ID="builder"
   BUILDER_WORK_DIR="/home/builder"
   BUILDER_TMP_DIR="/tmp/builder"
@@ -25,13 +26,15 @@ setup_envs() {
   HOST_KEY_BUILD_PUB="${HOST_WORK_DIR}/key-build.pub"
   BUILDER_PROFILE_DIR="${BUILDER_WORK_DIR}/user/current"
   #HOST_CCACHE_DIR="${HOST_WORK_DIR}/.ccache"
-  HOST_CCACHE_DIR="/dev/shm/ccache"
+  HOST_CCACHE_DIR="/dev/shm/1001/ccache"
   #BUILDER_CCACHE_DIR="${BUILDER_WORK_DIR}/.ccache"
-  BUILDER_CCACHE_DIR="/dev/shm/ccache"
+  BUILDER_CCACHE_DIR="/dev/shm/1001/ccache"
   #HOST_DLCCACHE_DIR="${HOST_WORK_DIR}/DLccache"
-  HOST_DLCCACHE_DIR="${HOME}/DLccache"
+  #HOST_DLCCACHE_DIR="${HOME}/DLccache"
+  HOST_DLCCACHE_DIR="/dev/shm/1001/DLccache"
+  BUILDER_DLCCACHE_DIR="/dev/shm/1001/DLccache"
   #BUILDER_DLCCACHE_DIR="/tmp/DLccache"
-  BUILDER_DLCCACHE_DIR="${BUILDER_WORK_DIR}/DLccache"
+  #BUILDER_DLCCACHE_DIR="${BUILDER_WORK_DIR}/DLccache"
   BUILDER_MOUNT_OPTS="
     -v '${HOST_WORK_DIR}/scripts:${BUILDER_WORK_DIR}/scripts'
     -v '${HOST_WORK_DIR}/user:${BUILDER_WORK_DIR}/user'
@@ -171,9 +174,12 @@ prepare_dirs() {
   sudo mkdir "${HOST_TMP_DIR}"
   sudo chmod 777 "${HOST_TMP_DIR}"
   sudo mkdir "${HOST_CCACHE_DIR}"
-  sudo chmod 777 "${HOST_CCACHE_DIR}"
+  ### sudo chmod 777 "${HOST_CCACHE_DIR}"
+  sudo chown --verbose -R "1001:123" "${HOST_CCACHE_DIR}"
+  ###sudo chmod 777 "${HOST_CCACHE_DIR}"
   sudo mkdir "${HOST_DLCCACHE_DIR}"
-  sudo chmod 777 "${HOST_DLCCACHE_DIR}"
+  sudo chown --verbose -R "1001:123" "${HOST_DLCCACHE_DIR}"
+  ### sudo chmod 777 "${HOST_DLCCACHE_DIR}"
 }
 
 show_uids() {
