@@ -264,13 +264,14 @@ jobs:
           DLccache-${{ env.BUILD_TARGET }}-
           DLccache-
 
-
-    - name: Cache /home/builder/dl
+ 
+    - name: Cache HOST_WORK_DIR builder/dl
       uses: actions/cache@v3
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       if: env.NULL_DISABLE_SKIP_TARGET == '0' 
       with:
         path: |
+          ${{ env.HOST_WORK_DIR }}/openwrt/dl
           /home/builder/dl
           ###${{ env.HOST_DLCCACHE_DIR }}
         #key: builderDL-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
@@ -285,6 +286,7 @@ jobs:
     - name: ls /dev/shm/1001/DLccache/
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
+       ls -latR ${{ env.HOST_WORK_DIR }} ||:
        ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl DL_DIR $DL_DIR ||:
        mkdir -p /home/builder/dl ||:
        ln -s /home/builder/openwrt/dl /home/builder/dl ||:
