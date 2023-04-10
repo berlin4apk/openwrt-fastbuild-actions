@@ -25,6 +25,7 @@
 
 configure_docker() {
   echo '{
+    "default-shm-size": "2G",
     "max-concurrent-downloads": 50,
     "max-concurrent-uploads": 50,
     "experimental": true
