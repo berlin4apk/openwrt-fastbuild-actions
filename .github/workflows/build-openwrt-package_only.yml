@@ -265,7 +265,7 @@ jobs:
         docker ps -a
 
 
-    - name: Cache DLccache
+    - name: U+1F5DC actions/cache: Cache DLccache
       uses: actions/cache@v3
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       if: env.NULL_DISABLE_SKIP_TARGET == '0' 
@@ -285,6 +285,9 @@ jobs:
           DLccache-
  
     - name: Cache /tmp/builder/dl
+      branding:
+        icon: 'award'
+        color: 'green'
       uses: actions/cache@v3
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       if: env.NULL_DISABLE_SKIP_TARGET == '0' 
