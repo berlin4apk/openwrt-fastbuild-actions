@@ -3,6 +3,21 @@
 
 # CONFIG_DEVEL=y
 CONFIG_CCACHE=y
-CONFIG_CCACHE_DIR="/home/builder/.ccache"
-CONFIG_DOWNLOAD_FOLDER="/tmp/DLccache"
+### CONFIG_CCACHE_DIR="/home/builder/.ccache"
+### CONFIG_DOWNLOAD_FOLDER="/tmp/DLccache"
+CONFIG_CCACHE_DIR="/dev/shm/1001/ccache"
+CONFIG_DOWNLOAD_FOLDER="/dev/shm/1001/DLccache"
+### HOST_CCACHE_DIR="/dev/shm/1001/ccache"
+### BUILDER_CCACHE_DIR="/dev/shm/1001/ccache"
+### #HOST_DLCCACHE_DIR="${HOST_WORK_DIR}/DLccache"
+### #HOST_DLCCACHE_DIR="${HOME}/DLccache"
+### #HOST_DLCCACHE_DIR="/dev/shm/1001/DLccache"
+#  HOST_DLCCACHE_DIR="${GITHUB_WORKSPACE}/.DLccache"
+#  BUILDER_DLCCACHE_DIR="/dev/shm/1001/DLccache"
+
+FOO_BUILDER_DLCCACHE_DIR="/dev/shm/1001/DLccache"
+FOO_HOST_DLCCACHE_DIR="${GITHUB_WORKSPACE}/.DLccache"
+FOO2_HOST_DLCCACHE_DIR="${HOST_WORK_DIR}/.HOST_WORK_DIRDLccache"
+
+
 
