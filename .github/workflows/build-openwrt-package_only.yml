@@ -254,7 +254,7 @@ jobs:
 #        docker ps
 #        docker ps -a
 
-    - name: Get builder
+    - name: 🧰 Get builder
       if: env.SKIP_TARGET == '0'
       run: scripts/cisteps/build-openwrt/06-get_builder.sh
 
@@ -279,12 +279,14 @@ jobs:
         key: DLccache-${{ github.sha }}-${{ steps.date.outputs.time }}
         restore-keys: |
           #DLccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+          DLccache-${{ env.REPO_BRANCH }}-${{ github.sha }}-
+          DLccache-${{ env.REPO_BRANCH }}-
           DLccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-
           DLccache-${{ github.sha }}-
           DLccache-${{ env.BUILD_TARGET }}-
           DLccache-
  
-    - name: Cache /tmp/builder/dl
+    - name: 🗜 Cache /tmp/builder/dl
       uses: actions/cache@v3
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       if: env.NULL_DISABLE_SKIP_TARGET == '0' 
@@ -300,6 +302,8 @@ jobs:
         key: builderDL-${{ github.sha }}-${{ steps.date.outputs.time }}
         restore-keys: |
           builderDL-${{ env.BUILD_TARGET }}-${{ github.sha }}-
+          builderDL-${{ env.REPO_BRANCH }}-${{ github.sha }}-
+          builderDL-${{ env.REPO_BRANCH }}-
           builderDL-${{ github.sha }}-
           builderDL-${{ env.BUILD_TARGET }}-
           builderDL-
@@ -340,14 +344,39 @@ jobs:
 #        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
 #        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
-    - name: => ccache-action
+    - name: get ccache config, bevor ccache-action
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+        # https://github.com/ccache/ccache/blob/master/test/suites/remote_file.bash
+        touch test.h
+        echo '#include "test.h"' >test.c
+        # backdate test.h ||:
+        #$CCACHE_COMPILE -c test.c
+        echo "#################"
+        ccache --version | awk -v RS= 'NR==1' # awk print 1st paragraph / until the blank line
+        echo "#################"
+        ccache -p
+        echo "#################"
+        ccache -svv
+        echo "#################"
+        PATH="/usr/lib/ccache:$PATH" gcc -c test.c   ||: # FIXME
+        echo "#################"
+        ccache -svv
+        echo "#################"
+      shell: bash -l {0}
+      # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell
+      # shell: bash -e {0} # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell
+
+    - name: 🪣 ccache-action
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       #if: env.SKIP_TARGET == '0' 
       if: env.NULL_DISABLE_SKIP_TARGET == '0' 
 ###uses: hendrikmuhs/ccache-action@v1.2.8
       uses: berlin4apk/ccache-action@v1.2.100 
       with:
-        key: ${{ matrix.os }}-${{ matrix.type }}
+        #key: ccache-${{ matrix.os }}-${{ matrix.type }}
+        #key: ccache-${{ env.BUILD_TARGET }}-${{ matrix.type }}
+        key: ccache-${{ env.REPO_BRANCH }}-${{ matrix.type }}
         max-size: 2G
         #verbose: 2
         verbose: 1
@@ -436,6 +465,8 @@ jobs:
         echo '#include "test.h"' >test.c
         # backdate test.h ||:
         #$CCACHE_COMPILE -c test.c
+        echo "#################"
+        ccache --version | awk -v RS= 'NR==1' # awk print 1st paragraph / until the blank line
         echo "#################"
         ccache -p
         echo "#################"
