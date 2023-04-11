@@ -161,6 +161,22 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Get current time
+      uses: josStorer/get-current-time@v2.1.1
+      id: date
+      with:
+        format: x # Unix Millisecond Timestamp  # https://momentjs.com/docs/#/displaying/format/
+        #format: YYYYMMDD-HH
+        #utcOffset: "+08:00"
+    - name: Use current time
+      env:
+        TIME: "${{ steps.date.outputs.time }}"
+        R_TIME: "${{ steps.date.outputs.readableTime }}"
+        F_TIME: "${{ steps.date.outputs.formattedTime }}"
+        YEAR: "${{ steps.date.outputs.year }}"
+        DAY: "${{ steps.date.outputs.day }}"
+      run: echo $TIME $R_TIME $F_TIME $YEAR $DAY
+
     - name: Set lower case owner name
       id: lower_owner
       run: |
@@ -257,8 +273,8 @@ jobs:
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       if: env.SKIP_TARGET == '0'
       run: |
-        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
-        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ /dev/shm/ccache ||:
+        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ /dev/shm/ccache ||:
         # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
     - name: ccache-action
@@ -276,39 +292,40 @@ jobs:
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       if: env.SKIP_TARGET == '0'
       run: |
-        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
-        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ /dev/shm/ccache ||:
+        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ /dev/shm/ccache ||:
         # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
-#    - name: Cache ccache
-#      if: env.SKIP_TARGET == '0' && env.TEST != '1'
-#      uses: actions/cache@v3
-#      with:
-#        path: |
-#          '${{github.workspace}}/.ccache'
-#          'openwrt/.ccache'
-#          ${{github.workspace}}/openwrt/.ccache
-#          '**/.ccache'
-#          '/tmp/**/.ccache'
-#          #'$HOME/**/.ccache'
-#          #'$HOME/.ccache'
-#          #'/.ccache'
-#          ${{ env.HOST_CCACHE_DIR }}
-#        #key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
-#        key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}
-#        restore-keys: |
-#          #ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
-#          ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}
-#          ccache-kernel-${{ env.BUILD_TARGET }}-
-#          ccache-kernel-
+    - name: Cache ccache
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      uses: actions/cache@v3
+      with:
+        path: |
+          '${{github.workspace}}/.ccache'
+          #'openwrt/.ccache'
+          ${{github.workspace}}/openwrt/.ccache
+          #'**/.ccache'
+          #'/tmp/**/.ccache'
+          #'$HOME/**/.ccache'
+          #'$HOME/.ccache'
+          #'/.ccache'
+          ${{ env.HOST_CCACHE_DIR }}
+        #key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+        key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}-${{ steps.current-time.outputs.formattedTime }}
+        restore-keys: |
+          #ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+          ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}-${{ steps.current-time.outputs.formattedTime }}
+          ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}-
+          ccache-kernel-${{ env.BUILD_TARGET }}-
+          ccache-kernel-
 
       # https://github.com/actions/cache/issues/133#issuecomment-599102035
     - name: Fix 3 ./.ccache/ directory permissions
       if: env.SKIP_TARGET == '0' && env.TEST != '1'
       #if: env.SKIP_TARGET == '0'
       run: |
-        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
-        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ /dev/shm/ccache ||:
+        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ /dev/shm/ccache ||:
         # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
       # https://github.com/actions/cache/issues/133#issuecomment-599102035
@@ -327,9 +344,9 @@ jobs:
           '${{github.workspace}}/DLccache'
           ${{ env.HOST_DLCCACHE_DIR }}
         #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
-        key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('${{github.workspace}}/DLccache/*') }}
+        key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('${{github.workspace}}/DLccache/*') }}-${{ steps.current-time.outputs.formattedTime }}
         restore-keys: |
-          DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('${{github.workspace}}/DLccache/*') }}
+          DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('${{github.workspace}}/DLccache/*') }}-${{ steps.current-time.outputs.formattedTime }}
           DLccache-${{ env.BUILD_TARGET }}-
           DLccache-
 
