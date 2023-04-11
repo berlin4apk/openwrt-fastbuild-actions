@@ -161,6 +161,22 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Get current time
+      uses: josStorer/get-current-time@v2.1.1
+      id: date
+      with:
+        format: x # Unix Millisecond Timestamp  # https://momentjs.com/docs/#/displaying/format/
+        #format: YYYYMMDD-HH
+        #utcOffset: "+08:00"
+    - name: Use current time
+      env:
+        TIME: "${{ steps.date.outputs.time }}"
+        R_TIME: "${{ steps.date.outputs.readableTime }}"
+        F_TIME: "${{ steps.date.outputs.formattedTime }}"
+        YEAR: "${{ steps.date.outputs.year }}"
+        DAY: "${{ steps.date.outputs.day }}"
+      run: echo $TIME $R_TIME $F_TIME $YEAR $DAY
+
     - name: Set lower case owner name
       id: lower_owner
       run: |
@@ -258,12 +274,15 @@ jobs:
           /dev/shm/1001/DLccache/
           ###${{ env.HOST_DLCCACHE_DIR }}
         #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
-        key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}-${{ steps.date.outputs.time }}
+        key: DLccache-${{ github.sha }}-${{ steps.date.outputs.time }}
         restore-keys: |
-          DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+          #DLccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+          DLccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-
+          DLccache-${{ github.sha }}-
           DLccache-${{ env.BUILD_TARGET }}-
           DLccache-
-
  
     - name: Cache /tmp/builder/dl
       uses: actions/cache@v3
@@ -272,14 +291,16 @@ jobs:
       with:
         path: |
           /tmp/builder/dl
-          #${{ env.HOST_WORK_DIR }}/openwrt/dl
-          #/home/builder/dl
+          ${{ env.HOST_WORK_DIR }}/openwrt/dl
+          /home/builder/dl
           ###${{ env.HOST_DLCCACHE_DIR }}
         #key: builderDL-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
         #key: builderDL-${{ env.BUILD_TARGET }}-${{ hashFiles('/home/builder/dl/**') }}
-        key: builderDL-${{ env.BUILD_TARGET }}-${{ hashFiles('/tmp/builder/dl/**') }}
+        #key: builderDL-${{ env.BUILD_TARGET }}-${{ steps.date.outputs.time }}
+        key: builderDL-${{ github.sha }}-${{ steps.date.outputs.time }}
         restore-keys: |
-          builderDL-${{ env.BUILD_TARGET }}-${{ hashFiles('/tmp/builder/dl/**') }}
+          builderDL-${{ env.BUILD_TARGET }}-${{ github.sha }}-
+          builderDL-${{ github.sha }}-
           builderDL-${{ env.BUILD_TARGET }}-
           builderDL-
 
