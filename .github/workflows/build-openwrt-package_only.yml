@@ -313,6 +313,9 @@ jobs:
     - name: ls /dev/shm/1001/DLccache/
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
+       set -x
+       du -hd3 ${{ env.GITHUB_WORKSPACE }} | sort -h ||:
+       du -hd3 ${{ env.HOST_WORK_DIR }} | sort -h ||:
        ls -latR ${{ env.HOST_WORK_DIR }} ||:
        ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl DL_DIR $DL_DIR ||:
        mkdir -p /home/builder/dl ||:
@@ -381,12 +384,12 @@ jobs:
         #verbose: 2
         verbose: 1
         install-from-github: true
-        dont-do-config: true
+        #dont-do-config: true
 
     - name: set cache_dir 
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
-       ccache --set-config=cache_dir=${{ env.HOST_CCACHE_DIR }} ||:
+       #ccache --set-config=cache_dir=${{ env.HOST_CCACHE_DIR }} ||:
        ccache --set-config=max_size=1500M
        ccache --set-config=compression=true
        ccache -p
