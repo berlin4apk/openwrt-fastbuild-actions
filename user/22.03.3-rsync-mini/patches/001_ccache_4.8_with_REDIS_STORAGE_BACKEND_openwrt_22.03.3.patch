@@ -1,7 +1,5 @@
-diff --git a/tools/ccache/Makefile b/tools/ccache/Makefile
-index 9b2937dccd..6eae060106 100644
---- a/tools/ccache/Makefile
-+++ b/tools/ccache/Makefile
+--- tools/ccache/Makefile
++++ tools/ccache/Makefile
 @@ -8,11 +8,11 @@ include $(TOPDIR)/rules.mk
  include $(INCLUDE_DIR)/target.mk
  
@@ -25,10 +23,8 @@ index 9b2937dccd..6eae060106 100644
  
  ifneq (docs-$(CONFIG_BUILD_DOCUMENTATION),docs-y)
  CMAKE_HOST_OPTIONS += -DENABLE_DOCUMENTATION=OFF
-diff --git a/tools/ccache/patches/100-honour-copts.patch b/tools/ccache/patches/100-honour-copts.patch
-index a7fe4e4ec6..da72af922d 100644
---- a/tools/ccache/patches/100-honour-copts.patch
-+++ b/tools/ccache/patches/100-honour-copts.patch
+--- tools/ccache/patches/100-honour-copts.patch
++++ tools/ccache/patches/100-honour-copts.patch
 @@ -1,10 +1,10 @@
  --- a/src/ccache.cpp
  +++ b/src/ccache.cpp
