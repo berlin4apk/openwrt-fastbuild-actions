@@ -5,7 +5,10 @@ echo "= default custom.sh ==== $0 ==== start ===================================
 for FILE in custom_*.sh; do
 	set -vx
 	#[ -e "$FILE" ] && . "$FILE"
-	bash "$FILE"
+	if [ -r $FILE ]; then
+          bash "$FILE"
+        fi
+	
 	set +vx
 done
 unset FILE
