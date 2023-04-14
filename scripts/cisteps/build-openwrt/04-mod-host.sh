@@ -32,6 +32,13 @@ _has_command() {
     sudo echo 2>/dev/null && export Sudo="sudo $SudoVAR" || export Sudo=""
   }
   
+docker_build_alpine_image() {
+cat <<EOF | docker build --tag alpine -
+FROM alpine:latest
+RUN set -vx && apk add --no-cache redis bind-tools musl-utils iproute2
+EOF
+}
+docker_build_alpine_image
 
 docker_redis_ip_test() {
 cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
@@ -53,6 +60,32 @@ redis://docker.for.mac.host.internal
 redis://docker.for.mac.localhost
 redis://docker.for.win.host.internal
 redis://docker.for.win.localhost
+"
+for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
+EOF
+}
+
+docker_redis_ip_test_port_26379() {
+cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+set -vx
+apk add --no-cache redis >/dev/null
+PORT=:26379
+serverlist="
+redis://172.17.0.1\$PORT
+redis://172.18.0.1\$PORT
+redis://host.docker.internal\$PORT
+redis://host-gateway\$PORT
+redis://redis-y9g98g58d\$PORT
+redis://redis-2y9g98g58d\$PORT
+redis://redis\$PORT
+redis://redis-host\$PORT
+redis://redis-server\$PORT
+redis://localhost\$PORT
+redis://gateway.docker.internal\$PORT
+redis://docker.for.mac.host.internal\$PORT
+redis://docker.for.mac.localhost\$PORT
+redis://docker.for.win.host.internal\$PORT
+redis://docker.for.win.localhost\$PORT
 "
 for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
 EOF
@@ -220,7 +253,7 @@ $Sudo tar -xJvf ccache-4.8-linux-x86_64.tar.xz --strip-components=1 -C /usr/loca
 curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/src/update-ccache-symlinks.sh
 curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/third-party/debian-ccache/debian/update-ccache-symlinks.in
 echo "98a3cb350fa4918c8f72ea3167705ef57e7fafa8c64fc0f286029e25e1867874 *update-ccache-symlinks.in" | sha256sum -c -
-echo "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 *update-ccache-symlinks.sh" | sha256sum -c -
+echo "9ba51f7f4983817980c4173282dd09cdba6b5d81d087852831d9ecb69a6cf7ad *update-ccache-symlinks.sh" | sha256sum -c -
 $Sudo chmod 755 update-ccache-symlinks.in update-ccache-symlinks.sh
 $Sudo cp -p update-ccache-symlinks.in update-ccache-symlinks.sh /usr/local/bin/
 
@@ -261,6 +294,13 @@ max_size=1500M
 # reshare=true
 EOF
 
+docker_alpine_image
+
+docker_redis_ip_test_port_26379
+docker_redis_ip_test
+docker_redis_ip2_test
+docker_redis_ip3_test
+
 set +vx
 DOCKER_HOST_IP1=$(docker_ip_fn)
 DOCKER_HOST_IP2=$(docker_ip_fn2)
@@ -290,11 +330,57 @@ redis://docker.for.mac.localhost
 redis://docker.for.win.host.internal
 redis://docker.for.win.localhost
 "
-for t in $serverlist; do redis-cli -u $t   ping ||: ; done | grep --color=always -B1 -E "PONG|$"
+for t in $serverlist; do redis-cli -u $t   ping ||: ; done
 
-docker_redis_ip_test
-docker_redis_ip2_test
-docker_redis_ip3_test
+PORT=:6379
+serverlist="
+redis://$DOCKER_HOST_IP1\$PORT
+redis://$DOCKER_HOST_IP2\$PORT
+redis://$DOCKER_HOST_IP3\$PORT
+redis://$DOCKER_HOST_IP4\$PORT
+redis://172.17.0.1\$PORT
+redis://172.18.0.1\$PORT
+redis://host.docker.internal\$PORT
+redis://host-gateway\$PORT
+redis://redis-y9g98g58d\$PORT
+redis://redis-2y9g98g58d\$PORT
+redis://redis\$PORT
+redis://redis-host\$PORT
+redis://redis-server\$PORT
+redis://localhost\$PORT
+redis://gateway.docker.internal\$PORT
+redis://docker.for.mac.host.internal\$PORT
+redis://docker.for.mac.localhost\$PORT
+redis://docker.for.win.host.internal\$PORT
+redis://docker.for.win.localhost\$PORT
+"
+for t in $serverlist; do redis-cli -u $t   ping ||: ; done
+
+PORT=:26379
+serverlist="
+redis://$DOCKER_HOST_IP1\$PORT
+redis://$DOCKER_HOST_IP2\$PORT
+redis://$DOCKER_HOST_IP3\$PORT
+redis://$DOCKER_HOST_IP4\$PORT
+redis://172.17.0.1\$PORT
+redis://172.18.0.1\$PORT
+redis://host.docker.internal\$PORT
+redis://host-gateway\$PORT
+redis://redis-y9g98g58d\$PORT
+redis://redis-2y9g98g58d\$PORT
+redis://redis\$PORT
+redis://redis-host\$PORT
+redis://redis-server\$PORT
+redis://localhost\$PORT
+redis://gateway.docker.internal\$PORT
+redis://docker.for.mac.host.internal\$PORT
+redis://docker.for.mac.localhost\$PORT
+redis://docker.for.win.host.internal\$PORT
+redis://docker.for.win.localhost\$PORT
+"
+for t in $serverlist; do redis-cli -u $t   ping ||: ; done
+
+
 
 echo "= UIDs on Host ==== $0 ==============================================="
 	set -vx
