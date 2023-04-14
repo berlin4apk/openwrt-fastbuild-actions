@@ -53,7 +53,13 @@ _install_if_not_has_command tree
 # _install_if_not_has_command python3-progressbar
 # _install_if_not_has_command python3-humanize
 
-_install_apt_deb redis-cli python3-redis python3-progress python3-progressbar python3-humanize
+#_install_apt_deb redis-cli python3-redis python3-progress python3-progressbar python3-humanize
+_install_apt_deb redis-tools
+_install_apt_deb python3-redis 
+_install_apt_deb python3-progress 
+_install_apt_deb python3-progressbar 
+_install_apt_deb python3-humanize
+
 
 wget -O ccache-download-redis https://github.com/ccache/ccache/raw/v4.8/misc/download-redis
 wget -O ccache-upload-redis https://github.com/ccache/ccache/raw/v4.8/misc/upload-redis
