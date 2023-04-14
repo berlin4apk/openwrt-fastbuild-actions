@@ -24,6 +24,69 @@ env:
   #RD_TARGET: ${{ github.event.inputs.rd_target }}
 
 
+name: package_only redis Build OpenWrt
+
+on:
+  deployment:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      RD_TARGET:
+#      BUILD_TARGET:
+        description: 'target to use'
+        #required: true
+        default: 22.03.3-rsync-mini
+        type: choice
+        options:
+        - all
+        - 21.02.5
+        - 22.03.3
+        - 22.03.3-rsync-test
+        - 22.03.3-rsync-test2
+        - 22.03.3-rsync-mini
+        - snapshot
+      RD_TASK:
+#      BUILD_TARGET:
+        description: 'Task to run'
+        #required: true
+        default: build
+        type: choice
+        options:
+        - build
+        - squash
+        - test
+      OPT_UPDATE_FEEDS:
+        #description: 'target to use'
+        #required: true
+        #default: 22.03.3-rsync-mini
+        type: boolean
+        default: true
+      OPT_REBUILD:
+        type: boolean
+      OPT_PACKAGE_ONLY:
+        type: boolean
+        default: true
+      OPT_PUSH_WHEN_FAIL:
+        type: boolean
+        default: false
+      OPT_DEBUG:
+        type: boolean
+##      continue-on-error:
+##        type: boolean
+#    env:
+#        OPT_DEBUG: 1
+  pull_request:
+  push:
+    paths:
+      - 'user/**'
+  # # For 'schedule', see examples in: https://crontab.guru/examples.html
+  # #     e.g. every sunday midnight: '0 0 * * 0' every midnight: '0 0 * * *'
+  # schedule:
+  #   - cron: '0 0 * * 0'
+  # watch:
+  #   types: [started]
+
+
   # Label of the container job
   container-job:
     # Containers must run in Linux based operating systems
@@ -95,67 +158,6 @@ env:
 
 
 
-name: package_only redis Build OpenWrt
-
-on:
-  deployment:
-  repository_dispatch:
-  workflow_dispatch:
-    inputs:
-      RD_TARGET:
-#      BUILD_TARGET:
-        description: 'target to use'
-        #required: true
-        default: 22.03.3-rsync-mini
-        type: choice
-        options:
-        - all
-        - 21.02.5
-        - 22.03.3
-        - 22.03.3-rsync-test
-        - 22.03.3-rsync-test2
-        - 22.03.3-rsync-mini
-        - snapshot
-      RD_TASK:
-#      BUILD_TARGET:
-        description: 'Task to run'
-        #required: true
-        default: build
-        type: choice
-        options:
-        - build
-        - squash
-        - test
-      OPT_UPDATE_FEEDS:
-        #description: 'target to use'
-        #required: true
-        #default: 22.03.3-rsync-mini
-        type: boolean
-        default: true
-      OPT_REBUILD:
-        type: boolean
-      OPT_PACKAGE_ONLY:
-        type: boolean
-        default: true
-      OPT_PUSH_WHEN_FAIL:
-        type: boolean
-        default: 1
-      OPT_DEBUG:
-        type: boolean
-##      continue-on-error:
-##        type: boolean
-#    env:
-#        OPT_DEBUG: 1
-  pull_request:
-  push:
-    paths:
-      - 'user/**'
-  # # For 'schedule', see examples in: https://crontab.guru/examples.html
-  # #     e.g. every sunday midnight: '0 0 * * 0' every midnight: '0 0 * * *'
-  # schedule:
-  #   - cron: '0 0 * * 0'
-  # watch:
-  #   types: [started]
 
 jobs:
   build:
