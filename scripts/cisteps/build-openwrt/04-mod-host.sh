@@ -15,11 +15,11 @@ _has_command() {
     #hash -- "$1" 2>/dev/null
 }
 
-  if [ _has_command sudo ] && {
+  [ _has_command sudo ] && {
     sudo -n echo 2>/dev/null && SudoE="sudo -E" || Sudo=""
   }
 
-  if [ _has_command sudo ]  && {
+  [ _has_command sudo ]  && {
     sudo -n echo 2>/dev/null && Sudo="sudo -n" || Sudo=""
   }
 
