@@ -11,15 +11,15 @@ echo "= 04-mod-host.sh ==== $0 ==== start ======================================
 
 set -vx 
 _has_command() {
-    #command -v -- "$1" 2>/dev/null || hash -- "$1" 2>/dev/null
-    hash -- "$1" 2>/dev/null
+    command -v -- "$1" 2>/dev/null || hash -- "$1" 2>/dev/null
+    #hash -- "$1" 2>/dev/null
 }
 
-  [ _has_command sudo ] && {
+  if [ _has_command sudo ] && {
     sudo -n echo 2>/dev/null && SudoE="sudo -E" || Sudo=""
   }
 
-  [ _has_command sudo ] && {
+  if [ _has_command sudo ]  && {
     sudo -n echo 2>/dev/null && Sudo="sudo -n" || Sudo=""
   }
 
