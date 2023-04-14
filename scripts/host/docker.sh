@@ -23,6 +23,25 @@
 #   _exit_if_empty DK_PASSWORD "${DK_PASSWORD}"
 # }
 
+docker_ip_fn() {
+	# from https://github.com/scionproto/scion/raw/764d6e2afe4765acf24492746c197c32417a57c9/tools/docker-ip
+
+	# Small script to determine the IP of the docker interface. It will use the
+	# $DOCKER_IF var if set, otherwise it defaults to docker0.
+
+	set -e -o pipefail
+
+	[ $# -eq 0 ] || { echo "ERROR: set \$DOCKER_IF if you want to specify an interface"; exit 1; }
+
+	DOCKER_HOST_IP=$(ip -o -4 addr ls dev ${DOCKER_IF:-docker0} 2> /dev/null | awk '{print $4}' | cut -f1 -d'/')
+	#DOCKER_HOST_IP=$(ip -4 -o addr show docker0 | awk '{print $4}' | cut -d "/" -f 1)
+        if test "${DOCKER_HOST_IP}" = ""; then
+            exit 1
+        else
+            echo "${DOCKER_HOST_IP}"
+        fi
+}
+
 configure_docker() {
   echo '{
     "default-shm-size": "2G",
@@ -32,6 +51,8 @@ configure_docker() {
   }' | sudo tee /etc/docker/daemon.json
   sudo service docker restart
 }
+
+
 
 login_to_registry() {
   echo "${DK_PASSWORD}" | docker login -u "${DK_USERNAME}" --password-stdin "${DK_REGISTRY}"
