@@ -70,6 +70,17 @@ echo "5305b25e1534601fd102f295a40f5b670dfd63b5f525cd6079d0c5ac86a46c3c *ccache-u
 sudo chmod 755 ccache-upload-redis ccache-download-redis
 sudo cp -p ccache-upload-redis ccache-download-redis /usr/local/bin/
 
+export REDIS_CONF=redis-y9g98g58d
+export REDIS_USERNAME=
+export REDIS_PASSWORD=
+
+ccache -p
+ccache --set-config remote_storage="redis://172.17.0.1|redis://172.18.0.1|redis://host.docker.internal|redis://redis-y9g98g58d"
+ccache --set-config reshare=true
+ccache --set-config remote_only=true
+ccache -p
+
+
 
 echo "= UIDs in docker ==== $0 ==============================================="
 	set -vx
