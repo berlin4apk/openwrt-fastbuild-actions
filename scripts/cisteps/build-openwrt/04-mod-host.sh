@@ -22,6 +22,9 @@ _has_command() {
   done
 }
 
+if [ "$CI" != "true" ]; then
+	echo runing not in CI, no sudo using
+else
      _has_command sudo && {
     sudo -n echo 2>/dev/null && SudoVAR="-n $SudoVAR" || SudoVAR="$SudoVAR"
   }
@@ -31,6 +34,7 @@ _has_command() {
      _has_command sudo && {
     sudo echo 2>/dev/null && export Sudo="sudo $SudoVAR" || export Sudo=""
   }
+fi
   
 docker_build_alpine_image() {
 cat <<EOF | docker build --tag alpine -
@@ -287,10 +291,10 @@ docker_ip_fn() {
 
 
 _install_command() {
-export DEBIAN_FRONTEND=noninteractive
-[ CI != true ]; then
-echo runing not in CI, no apt install
+if [ "$CI" != "true" ]; then
+	echo runing not in CI, no apt install
 else
+	export DEBIAN_FRONTEND=noninteractive
 #    sudo -E apt-get -qq install --no-upgrade "$1" || $($SudoE apt-get -qq update && sudo -E apt-get -qq install --no-upgrade "$1")
     $SudoE apt-get --yes install --no-upgrade "$1" ||:
     if _has_command "$1"; then
@@ -304,6 +308,7 @@ fi
 }
 
 _install_if_not_has_command() {
+
     if _has_command "$1"; then
          echo "system has command $1"
     else
@@ -314,8 +319,8 @@ _install_if_not_has_command() {
 }
 
 _install_apt_deb() {
-[ CI != true ]; then
-echo runing not in CI, no apt install
+if [ "$CI" != "true" ]; then
+	echo runing not in CI, no apt install
 else
 export DEBIAN_FRONTEND=noninteractive
 #    sudo -E apt-get -qq install --no-upgrade "$1" || $($SudoE apt-get -qq update && $SudoE apt-get -qq install --no-upgrade "$1")
@@ -348,8 +353,12 @@ wget -O ccache-upload-redis https://github.com/ccache/ccache/raw/v4.8/misc/uploa
 echo "eda111306e3d65ac61a86811596d18c283711f00bb5cd76d23df1f4b885d812a *ccache-download-redis" | sha256sum -c -
 echo "5305b25e1534601fd102f295a40f5b670dfd63b5f525cd6079d0c5ac86a46c3c *ccache-upload-redis" | sha256sum -c -
 
+if [ "$CI" != "true" ]; then
+	echo runing not in CI, no cp -p ccache-upload-redis ccache-download-redis /usr/local/bin/
+else
 $Sudo chmod 755 ccache-upload-redis ccache-download-redis
 $Sudo cp -p ccache-upload-redis ccache-download-redis /usr/local/bin/
+fi
 
 ###curl -L https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz | $Sudo tar -xJvf- --strip-components=1 -C /usr/local/bin/
 curl -LORJ https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
@@ -360,7 +369,7 @@ curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/src/update-c
 curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/third-party/debian-ccache/debian/update-ccache-symlinks.in
 echo "98a3cb350fa4918c8f72ea3167705ef57e7fafa8c64fc0f286029e25e1867874 *update-ccache-symlinks.in" | sha256sum -c -
 echo "9ba51f7f4983817980c4173282dd09cdba6b5d81d087852831d9ecb69a6cf7ad *update-ccache-symlinks.sh" | sha256sum -c -
-[ CI != true ]; then
+if [ "$CI" != "true" ]; then
 	echo runing not in CI, no apt install
 else
 	$Sudo chmod 755 update-ccache-symlinks.in update-ccache-symlinks.sh
@@ -433,7 +442,7 @@ id
 	set +vx
 echo "= UIDs on Host ==== $0 ==============================================="
 
-[ CI != true ]; then
+if [ "$CI" != "true" ]; then
 	echo runing not in CI, no apt install
 else
 for FILE in mod-host_*.sh; do
