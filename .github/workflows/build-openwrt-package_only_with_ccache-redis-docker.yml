@@ -374,6 +374,10 @@ jobs:
 #        docker ps
 #        docker ps -a
 
+    - name: 'exit 1'
+      run: 'exit 1'
+      shell: bash
+
     - name: 🧰 Get builder
       if: env.SKIP_TARGET == '0'
       run: scripts/cisteps/build-openwrt/06-get_builder.sh
