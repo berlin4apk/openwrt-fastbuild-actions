@@ -86,7 +86,7 @@ curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.102/third-party/
 echo "98a3cb350fa4918c8f72ea3167705ef57e7fafa8c64fc0f286029e25e1867874 *update-ccache-symlinks.in" | sha256sum -c -
 echo "1c011f240dc5a2ab66e6d42fa02b4464ec1488abd877c47e79b367219341a6f9 *update-ccache-symlinks.sh" | sha256sum -c -
 sudo chmod 755 update-ccache-symlinks.in update-ccache-symlinks.sh
-sudo cp -p ccache-upload-redis ccache-download-redis /usr/local/bin/
+sudo cp -p update-ccache-symlinks.in update-ccache-symlinks.sh /usr/local/bin/
 
 sudo -l
 
