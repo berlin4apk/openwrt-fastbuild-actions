@@ -9,7 +9,6 @@ set -eo pipefail
 
 echo "= 04-mod-host.sh ==== $0 ==== start ==========================================="
 
-
 set -vx 
 _has_command() {
     #command -v -- "$1" 2>/dev/null || hash -- "$1" 2>/dev/null
@@ -23,6 +22,128 @@ _has_command() {
   [ "$Sudo" ] && {
     sudo -n echo 2>/dev/null && Sudo="sudo -n" || Sudo=""
   }
+
+docker_redis_ip_test() {
+cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+set -vx
+apk add --no-cache redis >/dev/null
+serverlist="
+redis://172.17.0.1
+redis://172.18.0.1
+redis://host.docker.internal
+redis://host-gateway
+redis://redis-y9g98g58d
+redis://redis-2y9g98g58d
+redis://redis
+redis://redis-host
+redis://redis-server
+redis://localhost
+redis://gateway.docker.internal
+redis://docker.for.mac.host.internal
+redis://docker.for.mac.localhost
+redis://docker.for.win.host.internal
+redis://docker.for.win.localhost
+"
+for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
+EOF
+}
+
+# https://github.com/kraj/uclibc-ng/blob/master/extra/scripts/getent
+docker_redis_ip2_test() {
+cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+set -vx
+apk add --no-cache bind-tools >/dev/null
+serverlist="
+172.17.0.1
+172.18.0.1
+host.docker.internal
+host-gateway
+redis-y9g98g58d
+redis-2y9g98g58d
+redis
+redis-host
+redis-server
+localhost
+gateway.docker.internal
+docker.for.mac.host.internal
+docker.for.mac.localhost
+docker.for.win.host.internal
+docker.for.win.localhost
+"
+for t in \$serverlist; do dig +short \$t | grep -E '^[0-9.]+$' | head -n 1 ; done
+EOF
+}
+
+docker_redis_ip3_test() {
+cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+set -vx
+apk add --no-cache musl-utils >/dev/null
+serverlist="
+172.17.0.1
+172.18.0.1
+host.docker.internal
+host-gateway
+redis-y9g98g58d
+redis-2y9g98g58d
+redis
+redis-host
+redis-server
+localhost
+gateway.docker.internal
+docker.for.mac.host.internal
+docker.for.mac.localhost
+docker.for.win.host.internal
+docker.for.win.localhost
+"
+for t in \$serverlist; do getent ahosts \$t ; done
+EOF
+}
+
+docker_alpine_ip() {
+cat <<EOF | docker run --rm -i alpine:latest sh
+apk add --no-cache iproute2 >/dev/null
+ip -4 route show default | cut -d' ' -f3
+EOF
+}
+
+docker_ip_fn2() {
+cat <<EOF | docker run --rm -i busybox:latest sh
+ip -4 route show default | cut -d' ' -f3
+EOF
+}
+
+docker_ip_fn3() {
+cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway busybox:latest sh
+hostname -i host.docker.internal
+EOF
+}
+
+docker_ip_fn4() {
+cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway busybox:latest sh
+hostname -i host-gateway
+EOF
+}
+
+## docker run -it --add-host=host.docker.internal:host-gateway ubuntu bash
+docker_ip_fn() {
+	# from https://github.com/scionproto/scion/raw/764d6e2afe4765acf24492746c197c32417a57c9/tools/docker-ip
+
+	# Small script to determine the IP of the docker interface. It will use the
+	# $DOCKER_IF var if set, otherwise it defaults to docker0.
+
+	set -e -o pipefail
+
+	[ $# -eq 0 ] || { echo "ERROR: set \$DOCKER_IF if you want to specify an interface"; exit 1; }
+
+	DOCKER_HOST_IP=$(ip -o -4 addr ls dev ${DOCKER_IF:-docker0} 2> /dev/null | awk '{print $4}' | cut -f1 -d'/')
+	#DOCKER_HOST_IP=$(ip -4 -o addr show docker0 | awk '{print $4}' | cut -d "/" -f 1)
+        if test "${DOCKER_HOST_IP}" = ""; then
+            exit 1
+        else
+            echo "${DOCKER_HOST_IP}"
+        fi
+}
+
 
 _install_command() {
 export DEBIAN_FRONTEND=noninteractive
@@ -61,18 +182,15 @@ export DEBIAN_FRONTEND=noninteractive
 _install_if_not_has_command tree
 #_install_if_not_has_command foofeeoo
 #
-# _install_if_not_has_command redis-cli
-# _install_if_not_has_command python3-redis
-# _install_if_not_has_command python3-progress
-# _install_if_not_has_command python3-progressbar
-# _install_if_not_has_command python3-humanize
 
-#_install_apt_deb redis-cli python3-redis python3-progress python3-progressbar python3-humanize
-_install_apt_deb redis-tools
-_install_apt_deb python3-redis 
-_install_apt_deb python3-progress 
-_install_apt_deb python3-progressbar 
-_install_apt_deb python3-humanize
+#_install_apt_deb redis-tools
+#_install_apt_deb python3-redis 
+#_install_apt_deb python3-progress 
+#_install_apt_deb python3-progressbar 
+#_install_apt_deb python3-humanize
+#
+_install_apt_deb redis-tools python3-redis python3-progress python3-progressbar python3-humanize
+
 
 
 wget -O ccache-download-redis https://github.com/ccache/ccache/raw/v4.8/misc/download-redis
@@ -133,6 +251,40 @@ max_size=1500M
 # reshare=true
 EOF
 
+set +vx
+DOCKER_HOST_IP1=$(docker_ip_fn)
+DOCKER_HOST_IP2=$(docker_ip_fn2)
+DOCKER_HOST_IP3=$(docker_ip_fn3)
+DOCKER_HOST_IP4=$(docker_ip_fn4)
+set -vx
+
+
+serverlist="
+redis://172.17.0.1
+redis://172.18.0.1
+redis://host.docker.internal
+redis://host-gateway
+redis://redis-y9g98g58d
+redis://redis-2y9g98g58d
+redis://redis
+redis://redis-host
+redis://redis-server
+redis://localhost
+redis://$DOCKER_HOST_IP1
+redis://$DOCKER_HOST_IP2
+redis://$DOCKER_HOST_IP3
+redis://$DOCKER_HOST_IP4
+redis://gateway.docker.internal
+redis://docker.for.mac.host.internal
+redis://docker.for.mac.localhost
+redis://docker.for.win.host.internal
+redis://docker.for.win.localhost
+"
+for t in $serverlist; do redis-cli -u $t   ping ||: ; done | grep --color=always -B1 -E "PONG|$"
+
+docker_redis_ip_test
+docker_redis_ip2_test
+docker_redis_ip3_test
 
 echo "= UIDs on Host ==== $0 ==============================================="
 	set -vx
