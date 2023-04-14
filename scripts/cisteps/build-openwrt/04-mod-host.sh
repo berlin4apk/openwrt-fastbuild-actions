@@ -390,12 +390,16 @@ id
 	set +vx
 echo "= UIDs on Host ==== $0 ==============================================="
 
+if [ -r mod-host_*.sh ]; then
 for FILE in mod-host_*.sh; do
 	set -vx
 	#[ -e "$FILE" ] && . "$FILE"
-	bash "$FILE"
+	if [ -r $FILE ]; then
+		bash "$FILE"
+        fi
 	set +vx
 done
 unset FILE
+fi
 
 echo "= 04-mod-host.sh ==== $0 ==== end ==========================================="
