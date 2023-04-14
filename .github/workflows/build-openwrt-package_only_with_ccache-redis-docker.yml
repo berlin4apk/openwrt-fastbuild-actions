@@ -23,6 +23,78 @@ env:
   EVENT_INPUTS_RD_TASK: ${{ github.event.inputs.rd_task }}
   #RD_TARGET: ${{ github.event.inputs.rd_target }}
 
+
+  # Label of the container job
+  container-job:
+    # Containers must run in Linux based operating systems
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+    # Docker Hub image that `container-job` executes in
+    #container: node:10.18-jessie
+    #container: _/redis
+    #container: redis:6.2.4-alpine3.13
+    #container: redis:6.2.4
+####    container: ubuntu:latest
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      redis-y9g98g58d:
+        # Docker Hub image
+        #image: _/redis
+        #image: redis:6.2.6-alpine3.14
+        image: redis:6.2.6
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        # https://hub.docker.com/_/redis
+#        args: --save 60 1 --loglevel verbose
+#        with:
+#          args: --save 60 1 --loglevel verbose
+          # --loglevel # argument must be one of the following: debug, verbose, notice, warning
+#          args: --save 60 1 --loglevel warning
+#          https://redis.io/topics/persistence
+        # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
+        # https://cdmana.com/2021/01/20210119024925732p.html
+        # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
+        # https://docs.github.com/en/actions/using-containerized-services/creating-postgresql-service-containers
+        # https://docs.github.com/en/actions/using-containerized-services/creating-redis-service-containers
+        volumes:
+          - /tmp/docker_volume_mount:/data:rw
+#          - /tmp/docker_volume_mount_my_data:/data/my_data
+#          - my_docker_volume:/volume_mount
+#          - /source/directory:/destination/directory
+        ports:
+          # Maps port 6379 on service container to the host
+          - 6379:6379
+
+    steps:
+#      - uses: docker-practice/actions-setup-docker@1.0.8
+      - name: "Set some redis settings"
+        run: |
+          export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
+          uname -a
+          cat /etc/*-release
+          /usr/bin/lsb_release -a ||:
+          /usr/bin/docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
+          command -v docker ||:
+          command -v -p -V docker ||:
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -c 'echo "cat /etc/redis/redis.conf ||:" '
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'mkdir -p /etc/redis ||: '
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "save 60 100" >> /etc/redis/redis.conf'
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "loglevel verbose" >> /etc/redis/redis.conf'
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "# see https://github.community/t/how-do-i-properly-override-a-service-entrypoint/17435/8" >> /etc/redis/redis.conf'
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "# https://hub.docker.com/_/redis" >> /etc/redis/redis.conf'
+          docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
+
+
+
+
+
 name: package_only Build OpenWrt
 
 on:
@@ -87,6 +159,38 @@ on:
 
 jobs:
   build:
+  
+  
+    services:
+      # Label used to access the service container
+      redis-y9g98g58d:
+        # Docker Hub image
+        #image: _/redis
+        image: redis:6.2.6-alpine3.14
+        #image: redis:6.2.6
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        # https://hub.docker.com/_/redis
+#        args: --save 60 1 --loglevel verbose
+#        with:
+#          args: --save 60 1 --loglevel verbose
+          # --loglevel # argument must be one of the following: debug, verbose, notice, warning
+#          args: --save 60 1 --loglevel warning
+#          https://redis.io/topics/persistence
+        # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
+        # https://cdmana.com/2021/01/20210119024925732p.html
+        # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
+        # https://docs.github.com/en/actions/using-containerized-services/creating-postgresql-service-containers
+        # https://docs.github.com/en/actions/using-containerized-services/creating-redis-service-containers
+        volumes:
+          - /tmp/docker_volume_mount:/data:rw
+
+###    needs: container-job
+  
     runs-on: ubuntu-22.04
 #    if: ${{ github.event.inputs.continue-on-error }}
 #    continue-on-error: true
