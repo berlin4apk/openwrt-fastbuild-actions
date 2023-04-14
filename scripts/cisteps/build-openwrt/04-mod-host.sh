@@ -217,16 +217,16 @@ curl -LORJ https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-li
 echo "3b35ec9e8af0f849e66e7b5392e2d436d393adbb0574b7147b203943258c6205 *ccache-4.8-linux-x86_64.tar.xz" | sha256sum -c -
 $Sudo tar -xJvf ccache-4.8-linux-x86_64.tar.xz --strip-components=1 -C /usr/local/bin/
 
-curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.104/src/update-ccache-symlinks.sh
-curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.104/third-party/debian-ccache/debian/update-ccache-symlinks.in
+curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/src/update-ccache-symlinks.sh
+curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/third-party/debian-ccache/debian/update-ccache-symlinks.in
 echo "98a3cb350fa4918c8f72ea3167705ef57e7fafa8c64fc0f286029e25e1867874 *update-ccache-symlinks.in" | sha256sum -c -
-echo "2d93d62b2eb4fab435b4d2ab4128c758c1cbc449262aebe35474882e44a0e47d *update-ccache-symlinks.sh" | sha256sum -c -
+echo "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 *update-ccache-symlinks.sh" | sha256sum -c -
 $Sudo chmod 755 update-ccache-symlinks.in update-ccache-symlinks.sh
 $Sudo cp -p update-ccache-symlinks.in update-ccache-symlinks.sh /usr/local/bin/
 
 $Sudo -l ||:
 
-/usr/local/bin/update-ccache-symlinks.sh
+/usr/local/bin/update-ccache-symlinks.sh ||:
 
 export REDIS_CONF=redis-y9g98g58d
 export REDIS_USERNAME=
