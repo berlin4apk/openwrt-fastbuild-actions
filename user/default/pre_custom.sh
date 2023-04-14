@@ -95,7 +95,9 @@ bash -xc "wc -l .config"
 for FILE in pre_custom_*.sh; do
 	set -vx
 	#[ -e "$FILE" ] && . "$FILE"
-	bash "$FILE"
+	if [ -r $FILE ]; then
+		bash "$FILE"
+        fi
 	set +vx
 done
 unset FILE
