@@ -88,7 +88,7 @@ echo "9ab203d9ccbb847165574388b6fb647d487cfa4777b31fdcc98590525be64011 *update-c
 sudo chmod 755 update-ccache-symlinks.in update-ccache-symlinks.sh
 sudo cp -p ccache-upload-redis ccache-download-redis /usr/local/bin/
 
-sudo -L
+sudo -l
 
 sudo /usr/local/bin/update-ccache-symlinks.sh
 
