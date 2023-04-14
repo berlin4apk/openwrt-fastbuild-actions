@@ -157,30 +157,18 @@ jobs:
           docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "# see https://github.community/t/how-do-i-properly-override-a-service-entrypoint/17435/8" >> /etc/redis/redis.conf'
           docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "# https://hub.docker.com/_/redis" >> /etc/redis/redis.conf'
           docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
-      - name: Sleep for 30 seconds
-        run: sleep 300s
-        shell: bash
-
-
-      - name: "wait for job finish"
-        run: |
-          export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
-          uname -a
-          cat /etc/*-release
-          /usr/bin/lsb_release -a ||:
-          /usr/bin/docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
-          command -v docker ||:
-          command -v -p -V docker ||:
-          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -c 'echo "cat /etc/redis/redis.conf ||:" '
-          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'mkdir -p /etc/redis ||: '
-          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "save 60 100" >> /etc/redis/redis.conf'
-          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "loglevel verbose" >> /etc/redis/redis.conf'
-          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "# see https://github.community/t/how-do-i-properly-override-a-service-entrypoint/17435/8" >> /etc/redis/redis.conf'
-          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "# https://hub.docker.com/_/redis" >> /etc/redis/redis.conf'
-          # docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
-
-
-
+    #  - name: Sleep for 30 seconds
+    #    run: sleep 300s
+    #    shell: bash
+      - name: Wait for tests to succeed
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.ref }}
+          #check-name: 'Run tests'
+          #running-workflow-name: 'Publish the package'
+          running-workflow-name: 'build'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
 
 
 #jobs:
