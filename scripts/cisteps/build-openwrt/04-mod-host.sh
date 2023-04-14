@@ -10,18 +10,28 @@ set -eo pipefail
 echo "= 04-mod-host.sh ==== $0 ==== start ==========================================="
 
 set -vx 
-_has_command() {
+_has_command2() {
     command -v -- "$1" 2>/dev/null || hash -- "$1" 2>/dev/null
     #hash -- "$1" 2>/dev/null
 }
 
-  [ _has_command sudo ] && {
-    sudo -n echo 2>/dev/null && SudoE="sudo -E" || Sudo=""
-  }
+_has_command() {
+  # well, this is exactly `for cmd in "$@"; do`
+  for cmd do
+    command -v "$cmd" >/dev/null 2>&1 || return 1
+  done
+}
 
-  [ _has_command sudo ]  && {
-    sudo -n echo 2>/dev/null && Sudo="sudo -n" || Sudo=""
+     _has_command sudo && {
+    sudo -E echo 2>/dev/null && SudoVAR="-E $SudoVAR"
   }
+     _has_command sudo && {
+    sudo -n echo 2>/dev/null && SudoVAR="-n $SudoVAR"
+  }
+     _has_command sudo && {
+    sudo echo 2>/dev/null && Sudo="sudo $SudoVAR" || Sudo=""
+  }
+  
 
 docker_redis_ip_test() {
 cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
