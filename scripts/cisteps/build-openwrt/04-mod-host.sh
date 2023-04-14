@@ -288,6 +288,9 @@ docker_ip_fn() {
 
 _install_command() {
 export DEBIAN_FRONTEND=noninteractive
+[ CI != true ]; then
+echo runing not in CI, no apt install
+else
 #    sudo -E apt-get -qq install --no-upgrade "$1" || $($SudoE apt-get -qq update && sudo -E apt-get -qq install --no-upgrade "$1")
     $SudoE apt-get --yes install --no-upgrade "$1" ||:
     if _has_command "$1"; then
@@ -297,6 +300,7 @@ export DEBIAN_FRONTEND=noninteractive
          $SudoE apt-get -qq --yes update
          $SudoE apt-get --yes install --no-upgrade "$1"
     fi
+fi    
 }
 
 _install_if_not_has_command() {
@@ -310,6 +314,9 @@ _install_if_not_has_command() {
 }
 
 _install_apt_deb() {
+[ CI != true ]; then
+echo runing not in CI, no apt install
+else
 export DEBIAN_FRONTEND=noninteractive
 #    sudo -E apt-get -qq install --no-upgrade "$1" || $($SudoE apt-get -qq update && $SudoE apt-get -qq install --no-upgrade "$1")
     $SudoE apt-get --yes install --no-upgrade "$1" ||:
@@ -317,6 +324,7 @@ export DEBIAN_FRONTEND=noninteractive
          $SudoE apt-get -qq --yes update
          $SudoE apt-get --yes install --no-upgrade "$1"
     fi
+fi
 }
 
 ### _install_if_not_has_command genisoimage
@@ -352,8 +360,12 @@ curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/src/update-c
 curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/third-party/debian-ccache/debian/update-ccache-symlinks.in
 echo "98a3cb350fa4918c8f72ea3167705ef57e7fafa8c64fc0f286029e25e1867874 *update-ccache-symlinks.in" | sha256sum -c -
 echo "9ba51f7f4983817980c4173282dd09cdba6b5d81d087852831d9ecb69a6cf7ad *update-ccache-symlinks.sh" | sha256sum -c -
-$Sudo chmod 755 update-ccache-symlinks.in update-ccache-symlinks.sh
-$Sudo cp -p update-ccache-symlinks.in update-ccache-symlinks.sh /usr/local/bin/
+[ CI != true ]; then
+	echo runing not in CI, no apt install
+else
+	$Sudo chmod 755 update-ccache-symlinks.in update-ccache-symlinks.sh
+	$Sudo cp -p update-ccache-symlinks.in update-ccache-symlinks.sh /usr/local/bin/
+fi
 
 $Sudo -l ||:
 
@@ -421,6 +433,9 @@ id
 	set +vx
 echo "= UIDs on Host ==== $0 ==============================================="
 
+[ CI != true ]; then
+	echo runing not in CI, no apt install
+else
 for FILE in mod-host_*.sh; do
 	set -vx
 	#[ -e "$FILE" ] && . "$FILE"
@@ -430,5 +445,6 @@ for FILE in mod-host_*.sh; do
 	set +vx
 done # not needed?? || echo "files mod-host_*.sh not exist"
 unset FILE
+fi
 
 echo "= 04-mod-host.sh ==== $0 ==== end ==========================================="
