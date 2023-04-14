@@ -44,6 +44,7 @@ docker_redis_ip_test() {
 cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
 set -vx
 apk add --no-cache redis >/dev/null
+echo docker_redis_ip_test
 serverlist="
 redis://172.17.0.1
 redis://172.18.0.1
@@ -69,6 +70,7 @@ docker_redis_ip_test_port_26379() {
 cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
 set -vx
 apk add --no-cache redis >/dev/null
+echo docker_redis_ip_test_port_26379
 PORT=:26379
 serverlist="
 redis://172.17.0.1\$PORT
@@ -96,6 +98,7 @@ docker_redis_ip2_test() {
 cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
 set -vx
 apk add --no-cache bind-tools >/dev/null
+echo docker_redis_ip2_test
 serverlist="
 172.17.0.1
 172.18.0.1
@@ -121,6 +124,7 @@ docker_redis_ip3_test() {
 cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
 set -vx
 apk add --no-cache musl-utils >/dev/null
+echo docker_redis_ip3_test
 serverlist="
 172.17.0.1
 172.18.0.1
@@ -141,6 +145,100 @@ docker.for.win.localhost
 for t in \$serverlist; do getent ahosts \$t ; done
 EOF
 }
+
+
+HOST_SELF_redis_ip_test() {
+cat <<EOF | bash
+set -vx
+echo HOST_SELF_redis_ip_test
+serverlist="
+redis://172.17.0.1
+redis://172.18.0.1
+redis://host.docker.internal
+redis://host-gateway
+redis://redis-y9g98g58d
+redis://redis-2y9g98g58d
+redis://redis
+redis://redis-host
+redis://redis-server
+redis://localhost
+redis://$DOCKER_HOST_IP1
+redis://$DOCKER_HOST_IP2
+redis://$DOCKER_HOST_IP3
+redis://$DOCKER_HOST_IP4
+redis://gateway.docker.internal
+redis://docker.for.mac.host.internal
+redis://docker.for.mac.localhost
+redis://docker.for.win.host.internal
+redis://docker.for.win.localhost
+"
+for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
+EOF
+}
+
+HOST_SELF_redis_ip_test_port_6379() {
+cat <<EOF | bash
+set -vx
+echo HOST_SELF_redis_ip_test_port_6379
+PORT=:6379
+serverlist="
+redis://\$DOCKER_HOST_IP1\$PORT
+redis://\$DOCKER_HOST_IP2\$PORT
+redis://\$DOCKER_HOST_IP3\$PORT
+redis://\$DOCKER_HOST_IP4\$PORT
+redis://172.17.0.1\$PORT
+redis://172.18.0.1\$PORT
+redis://host.docker.internal\$PORT
+redis://host-gateway\$PORT
+redis://redis-y9g98g58d\$PORT
+redis://redis-2y9g98g58d\$PORT
+redis://redis\$PORT
+redis://redis-host\$PORT
+redis://redis-server\$PORT
+redis://localhost\$PORT
+redis://gateway.docker.internal\$PORT
+redis://docker.for.mac.host.internal\$PORT
+redis://docker.for.mac.localhost\$PORT
+redis://docker.for.win.host.internal\$PORT
+redis://docker.for.win.localhost\$PORT
+"
+for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
+EOF
+}
+
+
+HOST_SELF_redis_ip_test_port_26379() {
+cat <<EOF | bash
+PORT=:26379
+echo HOST_SELF_redis_ip_test_port_26379
+serverlist="
+redis://$DOCKER_HOST_IP1\$PORT
+redis://$DOCKER_HOST_IP2\$PORT
+redis://$DOCKER_HOST_IP3\$PORT
+redis://$DOCKER_HOST_IP4\$PORT
+redis://172.17.0.1\$PORT
+redis://172.18.0.1\$PORT
+redis://host.docker.internal\$PORT
+redis://host-gateway\$PORT
+redis://redis-y9g98g58d\$PORT
+redis://redis-2y9g98g58d\$PORT
+redis://redis\$PORT
+redis://redis-host\$PORT
+redis://redis-server\$PORT
+redis://localhost\$PORT
+redis://gateway.docker.internal\$PORT
+redis://docker.for.mac.host.internal\$PORT
+redis://docker.for.mac.localhost\$PORT
+redis://docker.for.win.host.internal\$PORT
+redis://docker.for.win.localhost\$PORT
+"
+for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
+EOF
+}
+
+set -eo pipefail
+
+
 
 docker_alpine_ip() {
 cat <<EOF | docker run --rm -i alpine:latest sh
@@ -309,77 +407,10 @@ DOCKER_HOST_IP4=$(docker_ip_fn4)
 set -vx
 
 
-serverlist="
-redis://172.17.0.1
-redis://172.18.0.1
-redis://host.docker.internal
-redis://host-gateway
-redis://redis-y9g98g58d
-redis://redis-2y9g98g58d
-redis://redis
-redis://redis-host
-redis://redis-server
-redis://localhost
-redis://$DOCKER_HOST_IP1
-redis://$DOCKER_HOST_IP2
-redis://$DOCKER_HOST_IP3
-redis://$DOCKER_HOST_IP4
-redis://gateway.docker.internal
-redis://docker.for.mac.host.internal
-redis://docker.for.mac.localhost
-redis://docker.for.win.host.internal
-redis://docker.for.win.localhost
-"
-for t in $serverlist; do redis-cli -u $t   ping ||: ; done
+HOST_SELF_redis_ip_test
+HOST_SELF_redis_ip_test_port_6379
+HOST_SELF_redis_ip_test_port_26379
 
-PORT=:6379
-serverlist="
-redis://$DOCKER_HOST_IP1\$PORT
-redis://$DOCKER_HOST_IP2\$PORT
-redis://$DOCKER_HOST_IP3\$PORT
-redis://$DOCKER_HOST_IP4\$PORT
-redis://172.17.0.1\$PORT
-redis://172.18.0.1\$PORT
-redis://host.docker.internal\$PORT
-redis://host-gateway\$PORT
-redis://redis-y9g98g58d\$PORT
-redis://redis-2y9g98g58d\$PORT
-redis://redis\$PORT
-redis://redis-host\$PORT
-redis://redis-server\$PORT
-redis://localhost\$PORT
-redis://gateway.docker.internal\$PORT
-redis://docker.for.mac.host.internal\$PORT
-redis://docker.for.mac.localhost\$PORT
-redis://docker.for.win.host.internal\$PORT
-redis://docker.for.win.localhost\$PORT
-"
-for t in $serverlist; do redis-cli -u $t   ping ||: ; done
-
-PORT=:26379
-serverlist="
-redis://$DOCKER_HOST_IP1\$PORT
-redis://$DOCKER_HOST_IP2\$PORT
-redis://$DOCKER_HOST_IP3\$PORT
-redis://$DOCKER_HOST_IP4\$PORT
-redis://172.17.0.1\$PORT
-redis://172.18.0.1\$PORT
-redis://host.docker.internal\$PORT
-redis://host-gateway\$PORT
-redis://redis-y9g98g58d\$PORT
-redis://redis-2y9g98g58d\$PORT
-redis://redis\$PORT
-redis://redis-host\$PORT
-redis://redis-server\$PORT
-redis://localhost\$PORT
-redis://gateway.docker.internal\$PORT
-redis://docker.for.mac.host.internal\$PORT
-redis://docker.for.mac.localhost\$PORT
-redis://docker.for.win.host.internal\$PORT
-redis://docker.for.win.localhost\$PORT
-"
-for t in $serverlist; do redis-cli -u $t   ping ||: ; done
-set -eo pipefail
 
 
 echo "= UIDs on Host ==== $0 ==============================================="
