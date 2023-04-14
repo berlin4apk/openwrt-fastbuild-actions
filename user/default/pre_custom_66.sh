@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ### _install_if_not_has_command ccache
 
 # curl -LORJ https://github.com/ccache/ccache/releases/download/v4.7.5/ccache-4.7.5-linux-x86_64.tar.xz.asc

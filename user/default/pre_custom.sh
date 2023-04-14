@@ -37,7 +37,7 @@ _install_apt_deb() {
 export DEBIAN_FRONTEND=noninteractive
 #    sudo -E apt-get -qq install --no-upgrade "$1" || $(sudo -E apt-get -qq update && sudo -E apt-get -qq install --no-upgrade "$1")
     sudo -E apt-get --yes install --no-upgrade "$1" ||:
-    if "x0" = "x$?"; then
+    if [ "x0" = "x$?" ]; then
          sudo -E apt-get -qq --yes update
          sudo -E apt-get --yes install --no-upgrade "$1"
     fi
