@@ -261,6 +261,8 @@ $Sudo -l ||:
 
 /usr/local/bin/update-ccache-symlinks.sh ||:
 
+set +eo +pipefail
+
 export REDIS_CONF=redis-y9g98g58d
 export REDIS_USERNAME=
 export REDIS_PASSWORD=
@@ -377,7 +379,7 @@ redis://docker.for.win.host.internal\$PORT
 redis://docker.for.win.localhost\$PORT
 "
 for t in $serverlist; do redis-cli -u $t   ping ||: ; done
-
+set -eo -pipefail
 
 
 echo "= UIDs on Host ==== $0 ==============================================="
