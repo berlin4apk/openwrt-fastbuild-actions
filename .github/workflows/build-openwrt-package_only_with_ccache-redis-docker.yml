@@ -95,7 +95,7 @@ env:
 
 
 
-name: package_only Build OpenWrt
+name: package_only redis Build OpenWrt
 
 on:
   deployment:
