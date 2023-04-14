@@ -347,12 +347,13 @@ jobs:
         echo "DL_DIR=/dev/shm/1001/DLccache/" >> $GITHUB_ENV
         echo "DL_DIR-testing=${{ env.HOST_DLCCACHE_DIR }}" >> $GITHUB_ENV
 
-
-
-
     - name: Configure docker
       if: env.SKIP_TARGET == '0'
       run: scripts/cisteps/build-openwrt/04-configure_docker.sh
+
+    - name: Configure host modification (04-mod-host.sh)
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/04-mod-host.sh
 
     - name: Check status of builders
       if: env.SKIP_TARGET == '0'
@@ -380,9 +381,9 @@ jobs:
 #        docker ps
 #        docker ps -a
 
-    - name: 'exit 1'
-      run: 'exit 1'
-      shell: bash
+#    - name: 'exit 1'
+#      run: 'exit 1'
+#      shell: bash
 
     - name: 🧰 Get builder
       if: env.SKIP_TARGET == '0'
@@ -394,6 +395,9 @@ jobs:
         docker ps
         docker ps -a
 
+#    - name: 'exit 1'
+#      run: 'exit 1'
+#      shell: bash
 
     - name: 😀 Cache DLccache
       uses: actions/cache@v3
