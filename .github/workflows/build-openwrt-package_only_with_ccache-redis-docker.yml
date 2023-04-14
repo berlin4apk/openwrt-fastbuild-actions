@@ -91,6 +91,8 @@ jobs:
   container-job:
     # Containers must run in Linux based operating systems
     runs-on: ubuntu-latest
+    needs: build
+    if: ${{ !cancelled() && (success() || failure() || needs.previous-job.result == 'skipped') }}
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -156,6 +158,22 @@ jobs:
           docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "# https://hub.docker.com/_/redis" >> /etc/redis/redis.conf'
           # docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
 
+      - name: "wait for job finish"
+        run: |
+          export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
+          uname -a
+          cat /etc/*-release
+          /usr/bin/lsb_release -a ||:
+          /usr/bin/docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
+          command -v docker ||:
+          command -v -p -V docker ||:
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -c 'echo "cat /etc/redis/redis.conf ||:" '
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'mkdir -p /etc/redis ||: '
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "save 60 100" >> /etc/redis/redis.conf'
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "loglevel verbose" >> /etc/redis/redis.conf'
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "# see https://github.community/t/how-do-i-properly-override-a-service-entrypoint/17435/8" >> /etc/redis/redis.conf'
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "# https://hub.docker.com/_/redis" >> /etc/redis/redis.conf'
+          # docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
 
 
 
