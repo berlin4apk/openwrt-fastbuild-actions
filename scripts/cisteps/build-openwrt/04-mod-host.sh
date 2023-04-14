@@ -23,10 +23,10 @@ _has_command() {
 }
 
      _has_command sudo && {
-    sudo -n echo 2>/dev/null && SudoVAR="-n $SudoVAR" || SudoVAR="$SudoVAR"
+    sudo -n echo 2>/dev/null && SudoVAR="$SudoVAR-n" || SudoVAR="$SudoVAR"
   }
      _has_command sudo && {
-    sudo -E echo 2>/dev/null && SudoE="-E $SudoVAR" || SudoVAR="$SudoVAR"
+    sudo -E echo 2>/dev/null && SudoE="sudo $SudoVAR-E" || SudoVAR="$SudoVAR"
   }
      _has_command sudo && {
     sudo echo 2>/dev/null && Sudo="sudo $SudoVAR" || Sudo=""
