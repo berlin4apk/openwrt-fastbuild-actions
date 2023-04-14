@@ -390,7 +390,6 @@ id
 	set +vx
 echo "= UIDs on Host ==== $0 ==============================================="
 
-if [ -r mod-host_*.sh ]; then
 for FILE in mod-host_*.sh; do
 	set -vx
 	#[ -e "$FILE" ] && . "$FILE"
@@ -398,8 +397,7 @@ for FILE in mod-host_*.sh; do
 		bash "$FILE"
         fi
 	set +vx
-done
+done # not needed?? || echo "files mod-host_*.sh not exist"
 unset FILE
-fi
 
 echo "= 04-mod-host.sh ==== $0 ==== end ==========================================="
