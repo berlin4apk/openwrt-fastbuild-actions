@@ -76,6 +76,20 @@ echo "5305b25e1534601fd102f295a40f5b670dfd63b5f525cd6079d0c5ac86a46c3c *ccache-u
 sudo chmod 755 ccache-upload-redis ccache-download-redis
 sudo cp -p ccache-upload-redis ccache-download-redis /usr/local/bin/
 
+###curl -L https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz | sudo tar -xJvf- --strip-components=1 -C /usr/local/bin/
+curl -LORJ https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
+echo "3b35ec9e8af0f849e66e7b5392e2d436d393adbb0574b7147b203943258c6205 *ccache-4.8-linux-x86_64.tar.xz" | sha256sum -c -
+sudo tar -xJvf ccache-4.8-linux-x86_64.tar.xz --strip-components=1 -C /usr/local/bin/
+
+curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.102/src/update-ccache-symlinks.sh
+curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.102/third-party/debian-ccache/debian/update-ccache-symlinks.in
+echo "98a3cb350fa4918c8f72ea3167705ef57e7fafa8c64fc0f286029e25e1867874 *update-ccache-symlinks.in" | sha256sum -c -
+echo "9ab203d9ccbb847165574388b6fb647d487cfa4777b31fdcc98590525be64011 *update-ccache-symlinks.sh" | sha256sum -c -
+sudo chmod 755 update-ccache-symlinks.in update-ccache-symlinks.sh
+sudo cp -p ccache-upload-redis ccache-download-redis /usr/local/bin/
+
+sudo /usr/local/bin/update-ccache-symlinks.sh
+
 export REDIS_CONF=redis-y9g98g58d
 export REDIS_USERNAME=
 export REDIS_PASSWORD=
