@@ -294,8 +294,6 @@ max_size=1500M
 # reshare=true
 EOF
 
-docker_alpine_image
-
 docker_redis_ip_test_port_26379
 docker_redis_ip_test
 docker_redis_ip2_test
