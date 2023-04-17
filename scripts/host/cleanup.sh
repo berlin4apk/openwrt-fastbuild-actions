@@ -5,7 +5,8 @@
 
 set +eo pipefail
 export DEBIAN_FRONTEND=noninteractive
-/bin/bash -x "export DEBIAN_FRONTEND=noninteractive ; sudo -E apt-get install --yes install --no-upgrade aptitude dpigs || sudo -E apt-get  --yes update ; sudo -E apt-get install --yes install --no-upgrade aptitude dpigs"
+# https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
+/bin/bash -x -c "export DEBIAN_FRONTEND=noninteractive ; sudo -E apt-get install --yes --no-upgrade aptitude debian-goodies  || sudo -E apt-get  --yes update ; sudo -E apt-get install --yes --no-upgrade aptitude debian-goodies"
 
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
 echo "::group::🪣 aptitude search -F '%I %p' --sort installsize '~i' | tail -50 | tac ..."
@@ -34,16 +35,20 @@ echo "::endgroup::"
 echo "Deleting files, please wait ..."
 #sudo rm -rf /usr/share/dotnet /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
 # https://github.com/easimon/maximize-build-space/blob/master/action.yml
+set -x
+free -h
+sudo swapoff /swapfile
+sudo rm -f /swapfile
+free -h
 sudo rm -rf /usr/share/dotnet
 sudo rm -rf /usr/local/share/boost
 sudo rm -rf /usr/local/go*
 sudo rm -rf /usr/local/lib/android
 sudo rm -rf /opt/ghc	# haskell
 sudo rm -rf /opt/hostedtoolcache/CodeQL
-sudo swapoff /swapfile
-sudo rm -f /swapfile
 docker rmi "$(docker images -q)"
 sudo -E apt-get -q purge azure-cli zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql*
+set +x
 
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
 echo "::group::🪣 aptitude search -F '%I %p' --sort installsize '~i' | tail -50 | tac ..."
