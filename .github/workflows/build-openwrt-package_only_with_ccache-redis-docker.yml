@@ -551,11 +551,14 @@ jobs:
         #verbose: 2
         verbose: 1
         install-from-github: true
-        dont-do-config: true
+        dont-do-config: false
+        #dont-do-config: true
 
     - name: set cache_dir 
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
+       ccache -V
+       ccache -p
        ccache --set-config=cache_dir=${{ env.HOST_CCACHE_DIR }} ||:
        ccache --set-config=max_size=1500M
        ccache --set-config=compression=true
