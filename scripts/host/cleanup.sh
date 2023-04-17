@@ -56,7 +56,9 @@ echo "$SudoE $Eatmydata $*"
 /bin/bash -c "$SudoE $Eatmydata $*"
 Vtotal=$(df --total | awk 'END {print $4}')
 VtotalDiff=$(bc <<<"$Vtotal-$Vtotalold" | numfmt --to=iec)
-printf "\t\t\t\t VtotalDiff=$VtotalDiff\n"
+#printf "\t\t\t\t VtotalDiff=$VtotalDiff\n"
+printf "\t\t\t\t VtotalDiff= %s\n" "$VtotalDiff"
+#printf "Hello, %s\n" "$NAME"
 }
 
 
