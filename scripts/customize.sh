@@ -23,19 +23,25 @@ if [ "x${TEST}" = "x1" ]; then
   exit 0
 fi
 
-echo "Executing cat config_*.custom"
+echo "Executing cat config_*.diff"
 bash -xc "wc -l ${BUILDER_PROFILE_DIR}/config.diff" ||:
 bash -xc "wc -l ${BUILDER_PROFILE_DIR}/.config.diff" ||:
 bash -xc "wc -l ${BUILDER_PROFILE_DIR}/.config" ||:
 set -vx
-for FILE in "${BUILDER_PROFILE_DIR}/config_*.custom"; do
+for FILE in "${BUILDER_PROFILE_DIR}/config_*.diff"; do
 	set -vx
-	#[ -e "$FILE" ] && . "$FILE"
-	#bash "$FILE"
-	ls -la *config* *.config* ||:
-	#mv .config .config.diff
-	#cat .config.diff | tee -a .config
-	cat "$FILE" | tee -a .config.diff
+	if [ -f "$FILE" ]; then
+	  (
+		#[ -e "$FILE" ] && . "$FILE"
+		#bash "$FILE"
+		ls -la *config* *.config* ||:
+		#mv .config .config.diff
+		#cat .config.diff | tee -a .config
+		ls -la "$FILE" ||:
+		cat "$FILE" | tee -a .config.diff
+	    # To set final status of the subprocess to 0, because outside the parentheses the '-eo pipefail' is still on
+	    true
+	  )
 	set +vx
 done
 unset FILE
