@@ -132,7 +132,7 @@ echo "Deleting files, please wait ..."
 set -x
 free -h
 $Sudo swapoff /swapfile
-"$SudoE" "$Eatmydata" rm -f /swapfile
+$SudoE $Eatmydata rm -f /swapfile
 free -h
 # _got_more_space
 _exec_with_df_sudo rm -rf /usr/share/dotnet
@@ -153,7 +153,9 @@ _got_more_space
 docker images -q | xargs --max-args=1 --no-run-if-empty docker rmi ||:
 _got_more_space
 #sudo -E apt-get -q purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
-_exec_with_df_sudo apt-get purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
+echo "azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk *jdk mysql*" | xargs --max-args=1 --no-run-if-empty apt-get purge ;
+_got_more_space
+### _exec_with_df_sudo apt-get purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
 # _got_more_space
 _exec_with_df_sudo apt-get clean 
 # _got_more_space
