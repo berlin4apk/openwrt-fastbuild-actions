@@ -46,12 +46,14 @@ touch test.h
 echo '#include "test.h"' >test.c
 backdate test.h ||:
 #$CCACHE_COMPILE -c test.c
-ccache48 -vs
+ccache -vs
 gcc -c test.c
-ccache48 -vs
+ccache -vs
 
 
 export CONFIG_CCACHE=y
+ccache -V
+ccache -p
 ccache -svvv
 ## CONFIG_CCACHE=y make tools/ccache/compile
 
