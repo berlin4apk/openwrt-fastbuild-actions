@@ -16,8 +16,8 @@ env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
   OPT_UPDATE_FEEDS: "1"
   # OPT_REBUILD: "1"
-  OPT_PACKAGE_ONLY: "1"
-  OPT_PUSH_WHEN_FAIL: "1"
+#  OPT_PACKAGE_ONLY: "1"
+#  OPT_PUSH_WHEN_FAIL: "1"
   REPOSITORY_GH_PAGES_RELEASES: ${{vars.VARG_REPOSITORY_GH_PAGES}} # eg berlin4apk/openwrt-releases or openlumi/releases 
   EVENT_INPUTS_RD_TARGET: ${{ github.event.inputs.rd_target }}
   EVENT_INPUTS_RD_TASK: ${{ github.event.inputs.rd_task }}
@@ -35,7 +35,7 @@ on:
 #      BUILD_TARGET:
         description: 'target to use'
         #required: true
-        default: 22.03.3-rsync-mini
+        default: 22.03.4-rsync
         type: choice
         options:
         - all
@@ -61,17 +61,23 @@ on:
         #required: true
         #default: 22.03.3-rsync-mini
         type: boolean
-        default: true
+        #default: true
+        default: false
       OPT_REBUILD:
         type: boolean
+        default: false
       OPT_PACKAGE_ONLY:
         type: boolean
         default: true
       OPT_PUSH_WHEN_FAIL:
         type: boolean
         default: false
+      OPT_IGNORE_ERRORS:
+        type: boolean
+        default: false
       OPT_DEBUG:
         type: boolean
+        default: false
 ##      continue-on-error:
 ##        type: boolean
 #    env:
@@ -280,6 +286,8 @@ jobs:
       run: echo "OPT_PACKAGE_ONLY=1" >> $GITHUB_OUTPUT
     - if: ${{ github.event.inputs.OPT_PUSH_WHEN_FAIL && github.event.inputs.OPT_PUSH_WHEN_FAIL != 'false' }}
       run: echo "OPT_PUSH_WHEN_FAIL=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_IGNORE_ERRORS && github.event.inputs.OPT_IGNORE_ERRORS != 'false' }}
+      run: echo "OPT_IGNORE_ERRORS=1" >> $GITHUB_OUTPUT
     - if: ${{ github.event.inputs.OPT_DEBUG && github.event.inputs.OPT_DEBUG != 'false' }}
       run: echo "OPT_DEBUG=1" >> $GITHUB_OUTPUT
 #    - if: ${{ github.event.inputs.continue-on-error }}
