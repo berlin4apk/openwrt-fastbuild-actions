@@ -32,7 +32,7 @@ for FILE in "${BUILDER_PROFILE_DIR}/config_*.custom"; do
 	set -vx
 	#[ -e "$FILE" ] && . "$FILE"
 	#bash "$FILE"
-	ls -la *config* *.config* 
+	ls -la *config* *.config* ||:
 	#mv .config .config.diff
 	#cat .config.diff | tee -a .config
 	cat "$FILE" | tee -a .config.diff
