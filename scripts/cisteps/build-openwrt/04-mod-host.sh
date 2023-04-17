@@ -388,7 +388,7 @@ export REDIS_PASSWORD=
 
 ccache -p
 ###ccache --set-config remote_storage="file://home/builder/.ccache|redis://172.17.0.1|redis://172.18.0.1|redis://host.docker.internal|redis://redis-y9g98g58d|redis://redis-2y9g98g58d|redis://redis"
-ccache --set-config remote_storage="file:/${{ env.HOST_CCACHE_DIR }}|file:/${{ env.BUILDER_CCACHE_DIR }}"
+ccache --set-config remote_storage="file:/${HOST_CCACHE_DIR}|file:/${BUILDER_CCACHE_DIR}"
 #ccache --set-config reshare=true
 #ccache --set-config remote_only=true
 ccache --set-config hard_link=false
