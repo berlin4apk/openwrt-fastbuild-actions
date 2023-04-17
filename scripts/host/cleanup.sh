@@ -4,6 +4,9 @@
 # From https://github.com/P3TERX/Actions-OpenWrt
 
 set +eo pipefail
+
+set -vx 
+
 export DEBIAN_FRONTEND=noninteractive
 export LANG=C
 
@@ -41,7 +44,7 @@ bc <<<"$Vtotal2-$Vtotalold2" | numfmt --to=iec
 #    command -v "$cmd" >/dev/null 2>&1 || return 1
 #  done
 }
-_got_more_space
+# _got_more_space
 
 _exec_with_df_sudo() {
 set +vx
@@ -139,7 +142,8 @@ _exec_with_df_sudo rm -rf /opt/ghc	# haskell
 # _got_more_space
 _exec_with_df_sudo rm -rf /opt/hostedtoolcache/CodeQL
 # _got_more_space
-_exec_with_df docker rmi "$(docker images -q | tr "\n" " " )"
+#_exec_with_df docker rmi "$(docker images -q | tr "\n" " " )"
+_exec_with_df $(docker images -q | xargs docker rmi ||: )
 # _got_more_space
 #sudo -E apt-get -q purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
 _exec_with_df_sudo apt-get purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
