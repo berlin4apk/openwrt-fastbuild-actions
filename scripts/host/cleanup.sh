@@ -46,14 +46,15 @@ _got_more_space
 _exec_with_df_sudo() {
 set +vx
 export LANG=C
-local Vtotal Vtotalold
+local Vtotal Vtotalold PARA
+PARA="$*"
   # well, this is exactly `for cmd in "$@"; do`
 #Vtotal=${Vtotal:-0}
 #Vtotalold="$Vtotal"
 #Vtotal=$(df --total | awk 'END {print $4}')
 Vtotalold=$(df --total | awk 'END {print $4}')
-echo "$SudoE $Eatmydata $*"
-/bin/bash -c "$SudoE $Eatmydata $*"
+echo "$SudoE $Eatmydata $PARA"
+/bin/bash -c "$SudoE $Eatmydata $PARA"
 Vtotal=$(df --total | awk 'END {print $4}')
 VtotalDiff=$(bc <<<"$Vtotal-$Vtotalold" | numfmt --to=iec)
 #printf "\t\t\t\t VtotalDiff=$VtotalDiff\n"
@@ -64,10 +65,11 @@ printf "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t VtotalDiff=%s\n" "$VtotalDiff"
 _exec_with_df() {
 set +vx
 export LANG=C
-local Vtotal Vtotalold
+local Vtotal Vtotalold PARA
+PARA="$*"
 Vtotalold=$(df --total | awk 'END {print $4}')
-echo "$Eatmydata $*"
-/bin/bash -c "$Eatmydata $*"
+echo "$Eatmydata $PARA"
+/bin/bash -c "$Eatmydata $PARA"
 Vtotal=$(df --total | awk 'END {print $4}')
 VtotalDiff=$(bc <<<"$Vtotal-$Vtotalold" | numfmt --to=iec)
 printf "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t VtotalDiff=%s\n" "$VtotalDiff"
@@ -147,14 +149,14 @@ _exec_with_df_sudo apt-get clean
 set +x
 
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
-echo "::group::🪣 aptitude search -F '%I %p' --sort installsize '~i' | tail -50 | tac ..."
+echo "::group::🪣 aptitude search -F %I %p--sort installsize ~i | tail -50 | tac ..."
 #aptitude search -F '%I %p' --sort installsize '~i' | tail -15 | tac
 aptitude search -F '%I %p' --sort installsize '~i' | tail -50 | tac ||:
 echo "::endgroup::"
 echo "::group::🪣 dpigs -S -n15 -H  ..."
 dpigs -S -n50 -H ||:
 echo "::endgroup::"
-echo "::group::🪣 dpkg-query -Wf '${Installed-size}\t${Package}\n' | column -t | sort -nr | head -50   ..."
+echo "::group::🪣 dpkg-query -Wf Installed-size Package | column -t | sort -nr | head -50   ..."
 dpkg-query -Wf '${Installed-size}\t${Package}\n' | column -t | sort -nr | head -50 | numfmt --to=iec ||:
 echo "::endgroup::"
 
@@ -166,5 +168,5 @@ head -1 "$(basename "$0")_df-hT.out" ; diff --new-line-format="%L" --old-line-fo
 set +vx
 
 #sudo rm -rf /etc/apt/sources.list.d/* /var/cache/apt/archives
-sudo $Eatmydata rm -rf /var/cache/apt/archives
+_exec_with_df_sudo rm -rf /var/cache/apt/archives
 exit 0
