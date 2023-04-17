@@ -5,7 +5,7 @@
 
 set +eo pipefail
 export DEBIAN_FRONTEND=noninteractive
-
+sudo -E apt-get install aptitude dpigs
 
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
 echo "::group::🪣 aptitude search -F '%I %p' --sort installsize '~i' | tail -50 | tac ..."
@@ -16,7 +16,7 @@ echo "::group::🪣 dpigs -S -n15 -H  ..."
 dpigs -S -n50 -H ||:
 echo "::endgroup::"
 echo "::group::🪣 dpkg-query -Wf '${Installed-size}\t${Package}\n' | column -t | sort -nr | head -50   ..."
-dpkg-query -Wf '${Installed-size}\t${Package}\n' | column -t | sort -nr | head -50 ||:
+dpkg-query -Wf '${Installed-size}\t${Package}\n' | column -t | sort -nr | head -50 | numfmt --to=iec  ||:
 echo "::endgroup::"
 
 echo "::group::🪣 df -ia  ..."
@@ -54,7 +54,7 @@ echo "::group::🪣 dpigs -S -n15 -H  ..."
 dpigs -S -n50 -H ||:
 echo "::endgroup::"
 echo "::group::🪣 dpkg-query -Wf '${Installed-size}\t${Package}\n' | column -t | sort -nr | head -50   ..."
-dpkg-query -Wf '${Installed-size}\t${Package}\n' | column -t | sort -nr | head -50 ||:
+dpkg-query -Wf '${Installed-size}\t${Package}\n' | column -t | sort -nr | head -50 | numfmt --to=iec ||:
 echo "::endgroup::"
 
 df -ah > "$(basename "$0")_df-ah2.out"
