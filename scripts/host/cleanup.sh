@@ -43,7 +43,7 @@ bc <<<"$Vtotal2-$Vtotalold2" | numfmt --to=iec
 }
 _got_more_space
 
-_exec_with_df() {
+_exec_with_df_sudo() {
 set +vx
 export LANG=C
 local Vtotal Vtotalold
@@ -57,10 +57,21 @@ echo "$SudoE $Eatmydata $*"
 Vtotal=$(df --total | awk 'END {print $4}')
 VtotalDiff=$(bc <<<"$Vtotal-$Vtotalold" | numfmt --to=iec)
 #printf "\t\t\t\t VtotalDiff=$VtotalDiff\n"
-printf "\t\t\t\t VtotalDiff= %s\n" "$VtotalDiff"
+printf "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t VtotalDiff=%s\n" "$VtotalDiff"
 #printf "Hello, %s\n" "$NAME"
 }
 
+_exec_with_df() {
+set +vx
+export LANG=C
+local Vtotal Vtotalold
+Vtotalold=$(df --total | awk 'END {print $4}')
+echo "$Eatmydata $*"
+/bin/bash -c "$Eatmydata $*"
+Vtotal=$(df --total | awk 'END {print $4}')
+VtotalDiff=$(bc <<<"$Vtotal-$Vtotalold" | numfmt --to=iec)
+printf "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t VtotalDiff=%s\n" "$VtotalDiff"
+}
 
 
      _has_command sudo && {
@@ -114,24 +125,24 @@ $Sudo swapoff /swapfile
 $SudoE $Eatmydata rm -f /swapfile
 free -h
 # _got_more_space
-_exec_with_df $SudoE $Eatmydata rm -rf /usr/share/dotnet
+_exec_with_df_sudo rm -rf /usr/share/dotnet
 # _got_more_space
-_exec_with_df $SudoE $Eatmydata rm -rf /usr/local/share/boost
+_exec_with_df_sudo rm -rf /usr/local/share/boost
 # _got_more_space
-_exec_with_df $SudoE $Eatmydata rm -rf /usr/local/go*
+_exec_with_df_sudo rm -rf /usr/local/go*
 # _got_more_space
-_exec_with_df $SudoE $Eatmydata rm -rf /usr/local/lib/android
+_exec_with_df_sudo rm -rf /usr/local/lib/android
 # _got_more_space
-_exec_with_df $SudoE $Eatmydata rm -rf /opt/ghc	# haskell
+_exec_with_df_sudo rm -rf /opt/ghc	# haskell
 # _got_more_space
-_exec_with_df rm -rf /opt/hostedtoolcache/CodeQL
+_exec_with_df_sudo rm -rf /opt/hostedtoolcache/CodeQL
 # _got_more_space
-_exec_with_df $Eatmydata docker rmi "$(docker images -q)"
+_exec_with_df docker rmi "$(docker images -q)"
 # _got_more_space
 #sudo -E apt-get -q purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
-_exec_with_df $SudoE $Eatmydata apt-get purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
+_exec_with_df_sudo apt-get purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
 # _got_more_space
-_exec_with_df $SudoE $Eatmydata apt-get clean 
+_exec_with_df_sudo apt-get clean 
 # _got_more_space
 set +x
 
