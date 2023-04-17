@@ -10,6 +10,25 @@ _has_command() {
     hash -- "$1" 2>/dev/null
 }
 
+_has_package_installed() {
+    dpkg-query -s "$1" > /dev/null 2>&1
+    case $? in
+    0) 
+    echo $1 is installed
+    return 0
+    ;;
+    1)
+    echo $1 is not installed
+    return 1
+    ;;
+    2)
+    echo An error occurred
+    return 2
+    ;;
+    esac
+}
+
+
 _install_command() {
 export DEBIAN_FRONTEND=noninteractive
 #    sudo -E apt-get -qq install --no-upgrade "$1" || $(sudo -E apt-get -qq update && sudo -E apt-get -qq install --no-upgrade "$1")
@@ -33,12 +52,39 @@ _install_if_not_has_command() {
     fi
 }
 
+
+_install_if_package_not_installed() {
+    if _has_package_installed "$1"; then
+         echo "system has package $1"
+    else
+         echo "system has NOT package $1"
+         echo "installing package $1"
+        _install_package "$1"
+    fi
+}
+
+
+_install_package() {
+export DEBIAN_FRONTEND=noninteractive
+#    sudo -E apt-get -qq install --no-upgrade "$1" || $(sudo -E apt-get -qq update && sudo -E apt-get -qq install --no-upgrade "$1")
+    sudo -E apt-get --yes install --no-upgrade "$1" ||:
+    if _has_package_installed "$1"; then
+         echo "system has now package $1"
+    else
+         echo "system has still NOT package $1"
+#         sudo -E apt-get -qq --yes update
+         sudo -E apt-get --yes update
+         sudo -E apt-get --yes install --no-upgrade "$1"
+    fi
+}
+
 _install_apt_deb() {
 export DEBIAN_FRONTEND=noninteractive
 #    sudo -E apt-get -qq install --no-upgrade "$1" || $(sudo -E apt-get -qq update && sudo -E apt-get -qq install --no-upgrade "$1")
     sudo -E apt-get --yes install --no-upgrade "$1" ||:
-    if [ "x0" = "x$?" ]; then
-         sudo -E apt-get -qq --yes update
+    if [ "x0" != "x$?" ]; then
+         #sudo -E apt-get -qq --yes update
+         sudo -E apt-get --yes update
          sudo -E apt-get --yes install --no-upgrade "$1"
     fi
 }
@@ -54,11 +100,18 @@ _install_if_not_has_command tree
 # _install_if_not_has_command python3-humanize
 
 #_install_apt_deb redis-cli python3-redis python3-progress python3-progressbar python3-humanize
-_install_apt_deb redis-tools
-_install_apt_deb python3-redis 
-_install_apt_deb python3-progress 
-_install_apt_deb python3-progressbar 
-_install_apt_deb python3-humanize
+#_install_apt_deb redis-tools
+#_install_apt_deb python3-redis 
+#_install_apt_deb python3-progress 
+#_install_apt_deb python3-progressbar 
+#_install_apt_deb python3-humanize
+
+
+_install_if_package_not_installed redis-tools
+_install_if_package_not_installed python3-redis 
+_install_if_package_not_installed python3-progress 
+_install_if_package_not_installed python3-progressbar 
+_install_if_package_not_installed python3-humanize
 
 
 wget -O ccache-download-redis https://github.com/ccache/ccache/raw/v4.8/misc/download-redis
