@@ -92,15 +92,17 @@ echo "= UIDs in docker ==== $0 ==============================================="
 
 bash -xc "wc -l .config.diff"
 bash -xc "wc -l .config"
+set -vx
 for FILE in pre_custom_*.sh; do
 	set -vx
 	#[ -e "$FILE" ] && . "$FILE"
 	if [ -r $FILE ]; then
-		bash "$FILE"
+		bash -x "$FILE"
         fi
 	set +vx
 done
 unset FILE
+set +vx
 bash -xc "wc -l .config.diff"
 bash -xc "wc -l .config"
 

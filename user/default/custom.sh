@@ -1,20 +1,22 @@
 #!/bin/bash
 
 echo "= default custom.sh ==== $0 ==== start ==========================================="
-
+set -vx
 for FILE in custom_*.sh; do
 	set -vx
 	#[ -e "$FILE" ] && . "$FILE"
 	if [ -r $FILE ]; then
-          bash "$FILE"
+          bash -x "$FILE"
         fi
 	
 	set +vx
 done
 unset FILE
+set +vx
 
 bash -xc "wc -l .config.diff"
 bash -xc "wc -l .config"
+set -vx
 for FILE in config_*.custom; do
 	set -vx
 	#[ -e "$FILE" ] && . "$FILE"
@@ -26,8 +28,10 @@ for FILE in config_*.custom; do
 	set +vx
 done
 unset FILE
+set +vx
 bash -xc "wc -l .config.diff"
 bash -xc "wc -l .config"
+
 
 set -vx
 #mv .config .config.diff

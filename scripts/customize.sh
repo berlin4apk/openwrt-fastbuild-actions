@@ -76,12 +76,15 @@ fi
 # Restore build cache and timestamps
 if [ "x${OPENWRT_CUR_DIR}" != "x${OPENWRT_COMPILE_DIR}" ]; then
   echo "Syncing rebuilt source code to work directory..."
+echo "::group::🪣 rsync Syncing rebuilt source code to work directory..."
   # sync files by comparing checksum --delete
   rsync -camv --no-t --delete "${sync_exclude_opts[@]}" \
     "${OPENWRT_CUR_DIR}/" "${OPENWRT_COMPILE_DIR}/"
-
+echo "::endgroup::"
+echo "::group::🪣 rm -rf --verbose ${OPENWRT_CUR_DIR} Syncing rebuilt source code to work directory..."
 #  rm -rf "${OPENWRT_CUR_DIR}"
   rm -rf --verbose "${OPENWRT_CUR_DIR}"
+echo "::endgroup::"
   OPENWRT_CUR_DIR="${OPENWRT_COMPILE_DIR}"
   _set_env OPENWRT_CUR_DIR
 fi
