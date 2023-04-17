@@ -5,7 +5,7 @@
 
 set +eo pipefail
 export DEBIAN_FRONTEND=noninteractive
-sudo -E apt-get install aptitude dpigs
+/bin/bash -x "export DEBIAN_FRONTEND=noninteractive ; sudo -E apt-get install --yes install --no-upgrade aptitude dpigs || sudo -E apt-get  --yes update ; sudo -E apt-get install --yes install --no-upgrade aptitude dpigs"
 
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
 echo "::group::🪣 aptitude search -F '%I %p' --sort installsize '~i' | tail -50 | tac ..."
