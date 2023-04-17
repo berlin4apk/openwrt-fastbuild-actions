@@ -23,6 +23,27 @@ if [ "x${TEST}" = "x1" ]; then
   exit 0
 fi
 
+echo "Executing cat config_*.custom"
+bash -xc "wc -l ${BUILDER_PROFILE_DIR}/config.diff" ||:
+bash -xc "wc -l ${BUILDER_PROFILE_DIR}/.config.diff" ||:
+bash -xc "wc -l ${BUILDER_PROFILE_DIR}/.config" ||:
+set -vx
+for FILE in "${BUILDER_PROFILE_DIR}/config_*.custom"; do
+	set -vx
+	#[ -e "$FILE" ] && . "$FILE"
+	#bash "$FILE"
+	ls -la *config* *.config* 
+	#mv .config .config.diff
+	#cat .config.diff | tee -a .config
+	cat "$FILE" | tee -a .config.diff
+	set +vx
+done
+unset FILE
+set +vx
+bash -xc "wc -l ${BUILDER_PROFILE_DIR}/config.diff" ||:
+bash -xc "wc -l ${BUILDER_PROFILE_DIR}/.config.diff" ||:
+bash -xc "wc -l ${BUILDER_PROFILE_DIR}/.config" ||:
+
 cp "${BUILDER_PROFILE_DIR}/config.diff" "${OPENWRT_CUR_DIR}/.config"
 
 echo "Applying patches..."
