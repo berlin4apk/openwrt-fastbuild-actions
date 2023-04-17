@@ -5,8 +5,9 @@
 
 set +eo pipefail
 export DEBIAN_FRONTEND=noninteractive
+export LANG=C
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
-/bin/bash -x -c "export DEBIAN_FRONTEND=noninteractive ; sudo -E apt-get install --yes --no-upgrade aptitude debian-goodies  || sudo -E apt-get  --yes update ; sudo -E apt-get install --yes --no-upgrade aptitude debian-goodies"
+/bin/bash -x -c "export DEBIAN_FRONTEND=noninteractive ; sudo -E apt-get install --yes --no-upgrade --no-install-recommends --no-install-suggests aptitude debian-goodies  || sudo -E apt-get  --yes update ; sudo -E apt-get install --yes --no-upgrade --no-install-recommends --no-install-suggests aptitude debian-goodies"
 
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
 echo "::group::🪣 aptitude search -F '%I %p' --sort installsize '~i' | tail -50 | tac ..."
@@ -16,7 +17,7 @@ echo "::endgroup::"
 echo "::group::🪣 dpigs -S -n15 -H  ..."
 dpigs -S -n50 -H ||:
 echo "::endgroup::"
-echo "::group::🪣 dpkg-query -Wf '${Installed-size}\t${Package}\n' | column -t | sort -nr | head -50   ..."
+echo "::group::🪣 dpkg-query -Wf Installed-size Package | column -t | sort -nr | head -50   ..."
 dpkg-query -Wf '${Installed-size}\t${Package}\n' | column -t | sort -nr | head -50 | numfmt --to=iec  ||:
 echo "::endgroup::"
 
@@ -47,7 +48,9 @@ sudo rm -rf /usr/local/lib/android
 sudo rm -rf /opt/ghc	# haskell
 sudo rm -rf /opt/hostedtoolcache/CodeQL
 docker rmi "$(docker images -q)"
-sudo -E apt-get -q purge azure-cli zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql*
+#sudo -E apt-get -q purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
+sudo -E apt-get purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
+sudo -E apt-get clean 
 set +x
 
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
