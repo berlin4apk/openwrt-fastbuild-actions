@@ -24,7 +24,7 @@ _has_command() {
   }
 
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
-/bin/bash -x -c "export DEBIAN_FRONTEND=noninteractive ; sudo -E apt-get install --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies  || sudo -E apt-get  --yes update ; sudo -E apt-get install --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies"
+/bin/bash -x -c "export DEBIAN_FRONTEND=noninteractive ; sudo -E apt-get install --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies dctrl-tools || sudo -E apt-get  --yes update ; sudo -E apt-get install --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies dctrl-tools"
 
      _has_command eatmydata && {
     eatmydata echo 2>/dev/null && Eatmydata="eatmydata" || Eatmydata=""
@@ -32,11 +32,13 @@ _has_command() {
 
 
 _got_more_space() {
+set +vx
+export LANG=C
   # well, this is exactly `for cmd in "$@"; do`
 Vtotal=${Vtotal:-0}
 Vtotalold="$Vtotal"
-Vtotal=$(df --total / | awk 'END {print $4}')
-bc <<<"$Vtotalold-$Vtotal" | numfmt --to=iec
+Vtotal=$(df --total | awk 'END {print $4}')
+bc <<<"$Vtotal-$Vtotalold" | numfmt --to=iec
 #  for cmd do
 #    command -v "$cmd" >/dev/null 2>&1 || return 1
 #  done
