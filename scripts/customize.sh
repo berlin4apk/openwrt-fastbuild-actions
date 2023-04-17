@@ -96,13 +96,28 @@ if [ "x${OPENWRT_CUR_DIR}" != "x${OPENWRT_COMPILE_DIR}" ]; then
   echo "Syncing rebuilt source code to work directory..."
 echo "::group::🪣 rsync Syncing rebuilt source code to work directory..."
   # sync files by comparing checksum --delete
-  rsync -camv --no-t --delete "${sync_exclude_opts[@]}" \
+###  rsync -camv --no-t --delete "${sync_exclude_opts[@]}" \
+  rsync -cam --stats --no-t --delete "${sync_exclude_opts[@]}" \
     "${OPENWRT_CUR_DIR}/" "${OPENWRT_COMPILE_DIR}/"
 echo "::endgroup::"
-echo "::group::🪣 rm -rf --verbose ${OPENWRT_CUR_DIR} Syncing rebuilt source code to work directory..."
-#  rm -rf "${OPENWRT_CUR_DIR}"
-  rm -rf --verbose "${OPENWRT_CUR_DIR}"
-echo "::endgroup::"
+###echo "::group::🪣 rm -rf --verbose ${OPENWRT_CUR_DIR} Syncing rebuilt source code to work directory..."
+  rm -rf "${OPENWRT_CUR_DIR}"
+###  rm -rf --verbose "${OPENWRT_CUR_DIR}"
+###echo "::endgroup::"
   OPENWRT_CUR_DIR="${OPENWRT_COMPILE_DIR}"
   _set_env OPENWRT_CUR_DIR
 fi
+
+echo "FORCE mkdir -p ${OPENWRT_CUR_DIR}/dl"
+DEST="${OPENWRT_CUR_DIR}/dl"
+if [ ! -d "$DEST" ]; then 
+  if [ -L "$DEST" ]; then
+    # It is a symbolic links #
+    echo "Symbolic link found for ${OPENWRT_CUR_DIR}/dl ..."
+  else
+    # It is a directory #
+    echo "Directory ${OPENWRT_CUR_DIR}/dl not found do: mkdir -p ${OPENWRT_CUR_DIR}/dl ..."
+    mkdir -p ${OPENWRT_CUR_DIR}/dl
+  fi
+fi
+
