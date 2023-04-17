@@ -30,3 +30,20 @@ if [ -f "${BUILDER_PROFILE_DIR}/pre_custom.sh" ]; then
     /bin/bash "${BUILDER_PROFILE_DIR}/pre_custom.sh"
   )
 fi
+
+echo "Executing pre_custom_*.sh"
+set -vx
+for FILE in "${BUILDER_PROFILE_DIR}/pre_custom_*.sh"; do
+	set -vx
+	if [ -f "$FILE" ]; then
+	  (
+	    cd "${OPENWRT_CUR_DIR}"
+	    /bin/bash -x "$FILE"
+	    # To set final status of the subprocess to 0, because outside the parentheses the '-eo pipefail' is still on
+	    true
+	  )
+	fi
+	set +vx
+done
+unset FILE
+set +vx

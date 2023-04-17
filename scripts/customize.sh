@@ -73,6 +73,24 @@ if [ -f "${BUILDER_PROFILE_DIR}/custom.sh" ]; then
   )
 fi
 
+echo "Executing custom_*.sh"
+set -vx
+for FILE in "${BUILDER_PROFILE_DIR}/custom_*.sh"; do
+	set -vx
+	if [ -f "$FILE" ]; then
+	  (
+	    cd "${OPENWRT_CUR_DIR}"
+	    /bin/bash -x "$FILE"
+	    # To set final status of the subprocess to 0, because outside the parentheses the '-eo pipefail' is still on
+	    true
+	  )
+	fi
+	set +vx
+done
+unset FILE
+set +vx
+
+
 # Restore build cache and timestamps
 if [ "x${OPENWRT_CUR_DIR}" != "x${OPENWRT_COMPILE_DIR}" ]; then
   echo "Syncing rebuilt source code to work directory..."

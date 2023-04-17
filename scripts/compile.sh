@@ -41,14 +41,38 @@ if [ -f "${BUILDER_PROFILE_DIR}/pre_compile.sh" ]; then
   /bin/bash "${BUILDER_PROFILE_DIR}/pre_compile.sh"
 fi
 
+echo "Executing pre_compile_*.sh"
+set -vx
+for FILE in "${BUILDER_PROFILE_DIR}/pre_compile_*.sh"; do
+	set -vx
+	if [ -f "$FILE" ]; then
+	  (
+	    #cd "${OPENWRT_CUR_DIR}"
+	    /bin/bash -x "$FILE"
+	    # To set final status of the subprocess to 0, because outside the parentheses the '-eo pipefail' is still on
+	    true
+	  )
+	fi
+	set +vx
+done
+unset FILE
+set +vx
+
+
 echo "Compiling..."
 if [ "x${OPT_ALL_PACKAGES}" == "x1" ]; then
   export IGNORE_ERRORS=1
   export CONFIG_ALL=y
   compile -i
 elif [ "x${OPT_PACKAGE_ONLY}" != "x1" ]; then
+  if [ "x${OPT_IGNORE_ERRORS}" == "x1" ]; then
+    export IGNORE_ERRORS=1
+  fi
   compile
 else
+  if [ "x${OPT_IGNORE_ERRORS}" == "x1" ]; then
+    export IGNORE_ERRORS=1
+  fi
   compile "package/compile"
   compile "package/index"
 fi
