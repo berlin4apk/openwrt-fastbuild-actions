@@ -8,9 +8,9 @@ echo "= $0 ==== start ==========================================="
 # make defconfig
 
 set -x
-mkdir -p dl ## FIXME ##
-#mkdir -p /home/builder/dl
-#smkdir -p /home/builder/openwrt/dl
+#mkdir -p dl ## FIXME ##
+mkdir -p /home/builder/dl  ## FIXME ##
+#smkdir -p /home/builder/openwrt/dl  ## FIXME ##
 
 tree -a ./
 echo "= $0 ==== end ==========================================="
