@@ -62,17 +62,17 @@ printf "\t\t\t\t VtotalDiff=$VtotalDiff\n"
 
 
      _has_command sudo && {
-    _has_command_bin sudo -n echo 2>/dev/null && SudoVAR="-n $SudoVAR" ## || SudoVAR="$SudoVAR"
+    sudo -n echo 2>/dev/null && SudoVAR="-n $SudoVAR" ## || SudoVAR="$SudoVAR"
   }
      _has_command sudo && {
-    _has_command_bin sudo -E echo 2>/dev/null && SudoE="_has_command_bin sudo -E $SudoVAR" ## || SudoVAR="$SudoVAR"
+    sudo -E echo 2>/dev/null && SudoE="$(_has_command_bin sudo) -E $SudoVAR" ## || SudoVAR="$SudoVAR"
   }
      _has_command sudo && {
-    _has_command_bin sudo echo 2>/dev/null && Sudo="_has_command_bin sudo $SudoVAR" || Sudo=""
+    sudo echo 2>/dev/null && Sudo="$(_has_command_bin sudo) $SudoVAR" || Sudo=""
   }
 
      _has_command eatmydata && {
-    eatmydata echo 2>/dev/null && Eatmydata="command -v eatmydata" || Eatmydata=""
+    eatmydata echo 2>/dev/null && Eatmydata="$(_has_command_bin eatmydata)" || Eatmydata=""
   }
 
 
