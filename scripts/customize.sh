@@ -28,20 +28,22 @@ bash -xc "wc -l ${BUILDER_PROFILE_DIR}/config.diff" ||:
 bash -xc "wc -l ${BUILDER_PROFILE_DIR}/.config.diff" ||:
 bash -xc "wc -l ${BUILDER_PROFILE_DIR}/.config" ||:
 set -vx
-for FILE in "${BUILDER_PROFILE_DIR}/config_*.diff"; do
+for FILE in "${BUILDER_PROFILE_DIR}"/config_*.diff; do
 	set -vx
 	if [ -f "$FILE" ]; then
 	  (
 		#[ -e "$FILE" ] && . "$FILE"
 		#bash "$FILE"
-		ls -la *config* *.config* ||:
+		ls -la -- *config* *.config* ||:
 		#mv .config .config.diff
 		#cat .config.diff | tee -a .config
 		ls -la "$FILE" ||:
-		cat "$FILE" | tee -a .config.diff
+		#cat "$FILE" | tee -a .config.diff
+		tee -a .config.diff < "$FILE"
 	    # To set final status of the subprocess to 0, because outside the parentheses the '-eo pipefail' is still on
 	    true
 	  )
+	fi
 	set +vx
 done
 unset FILE
@@ -102,7 +104,7 @@ fi
 
 echo "Executing custom_*.sh"
 set -vx
-for FILE in "${BUILDER_PROFILE_DIR}/custom_*.sh"; do
+for FILE in "${BUILDER_PROFILE_DIR}"/custom_*.sh; do
 	set -vx
 	if [ -f "$FILE" ]; then
 	  (
@@ -144,7 +146,7 @@ if [ ! -d "$DEST" ]; then
   else
     # It is a directory #
     echo "Directory ${OPENWRT_CUR_DIR}/dl not found do: mkdir -p ${OPENWRT_CUR_DIR}/dl ..."
-    mkdir -p ${OPENWRT_CUR_DIR}/dl
+    mkdir -p "${OPENWRT_CUR_DIR}"/dl
   fi
 fi
 
