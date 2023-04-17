@@ -37,9 +37,9 @@ export LANG=C
 #local Vtotal2 Vtotalold2
   # well, this is exactly `for cmd in "$@"; do`
 Vtotal2=${Vtotal2:-0}
-Vtotalold2="$Vtotal"
-Vtotal2=$(df --total | awk 'END {print $4}')
-bc <<<"$Vtotal2-$Vtotalold2" | numfmt --to=iec
+Vtotalold2="$Vtotal2"
+Vtotal2=$(df --total --portability | awk 'END {print $4}')
+bc <<<"($Vtotal2-$Vtotalold2)*1024" | numfmt --to=iec
 #  for cmd do
 #    command -v "$cmd" >/dev/null 2>&1 || return 1
 #  done
@@ -55,12 +55,15 @@ PARA="$*"
 #Vtotal=${Vtotal:-0}
 #Vtotalold="$Vtotal"
 #Vtotal=$(df --total | awk 'END {print $4}')
-Vtotalold=$(df --total | awk 'END {print $4}')
+Vtotalold=$(df --total --portability | awk 'END {print $4}')
 echo "$SudoE $Eatmydata $PARA"
 /bin/bash -c "$SudoE $Eatmydata $PARA"
-Vtotal=$(df --total | awk 'END {print $4}')
-VtotalDiff=$(bc <<<"$Vtotal-$Vtotalold" | numfmt --to=iec)
+Vtotal=$(df --total --portability | awk 'END {print $4}')
+#VtotalDiff=$(bc <<<"$Vtotal-$Vtotalold" | numfmt --to=iec)
 #printf "\t\t\t\t VtotalDiff=$VtotalDiff\n"
+###VtotalCalc=$(bc <<<"($Vtotal-$Vtotalold)*1024")
+###VtotalDiff=$(printf "%sK\n" "$VtotalCalc" | numfmt --from=iec --to=iec )
+VtotalDiff=$(bc <<<"($Vtotal-$Vtotalold)*1024" | numfmt --to=iec)
 printf "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t VtotalDiff=%s\n" "$VtotalDiff"
 #printf "Hello, %s\n" "$NAME"
 }
@@ -70,11 +73,13 @@ set +vx
 export LANG=C
 local Vtotal Vtotalold PARA
 PARA="$*"
-Vtotalold=$(df --total | awk 'END {print $4}')
+Vtotalold=$(df --total--portability  | awk 'END {print $4}')
 echo "$Eatmydata $PARA"
 /bin/bash -c "$Eatmydata $PARA"
-Vtotal=$(df --total | awk 'END {print $4}')
-VtotalDiff=$(bc <<<"$Vtotal-$Vtotalold" | numfmt --to=iec)
+Vtotal=$(df --total --portability | awk 'END {print $4}')
+###VtotalCalc=$(bc <<<"($Vtotal-$Vtotalold)*1024")
+###VtotalDiff=$(printf "%sK\n" "$VtotalCalc" | numfmt --from=iec --to=iec )
+VtotalDiff=$(bc <<<"($Vtotal-$Vtotalold)*1024" | numfmt --to=iec)
 printf "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t VtotalDiff=%s\n" "$VtotalDiff"
 }
 
@@ -127,7 +132,7 @@ echo "Deleting files, please wait ..."
 set -x
 free -h
 $Sudo swapoff /swapfile
-$SudoE $Eatmydata rm -f /swapfile
+"$SudoE" "$Eatmydata" rm -f /swapfile
 free -h
 # _got_more_space
 _exec_with_df_sudo rm -rf /usr/share/dotnet
@@ -144,7 +149,7 @@ _exec_with_df_sudo rm -rf /opt/hostedtoolcache/CodeQL
 # _got_more_space
 #_exec_with_df docker rmi "$(docker images -q | tr "\n" " " )"
 # _exec_with_df $(docker images -q | xargs docker rmi ||: )
-_exec_with_df docker images -q | xargs --max-args=1 --no-run-if-empty docker rmi ||:
+_exec_with_df \$\( docker images -q | xargs --max-args=1 --no-run-if-empty docker rmi ||: \)
 # _got_more_space
 #sudo -E apt-get -q purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
 _exec_with_df_sudo apt-get purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
