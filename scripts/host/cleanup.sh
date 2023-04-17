@@ -30,6 +30,19 @@ _has_command() {
     eatmydata echo 2>/dev/null && Eatmydata="eatmydata" || Eatmydata=""
   }
 
+_exec_with_df() {
+set +vx
+export LANG=C
+  # well, this is exactly `for cmd in "$@"; do`
+#Vtotal=${Vtotal:-0}
+#Vtotalold="$Vtotal"
+#Vtotal=$(df --total | awk 'END {print $4}')
+Vtotalold=$(df --total | awk 'END {print $4}')
+echo "$@"
+/bin/bash -c "$@"
+Vtotal=$(df --total | awk 'END {print $4}')
+bc <<<"$Vtotal-$Vtotalold" | numfmt --to=iec
+}
 
 _got_more_space() {
 set +vx
@@ -79,26 +92,27 @@ free -h
 sudo swapoff /swapfile
 sudo $Eatmydata rm -f /swapfile
 free -h
-_got_more_space
-sudo $Eatmydata rm -rf /usr/share/dotnet
-_got_more_space
-sudo $Eatmydata rm -rf /usr/local/share/boost
-_got_more_space
-sudo $Eatmydata rm -rf /usr/local/go*
-_got_more_space
-sudo $Eatmydata rm -rf /usr/local/lib/android
-_got_more_space
-sudo $Eatmydata rm -rf /opt/ghc	# haskell
-_got_more_space
-sudo $Eatmydata rm -rf /opt/hostedtoolcache/CodeQL
-_got_more_space
-$Eatmydata docker rmi "$(docker images -q)"
-_got_more_space
+# _got_more_space
+exec_with_df=_exec_with_df
+$exec_with_df sudo $Eatmydata rm -rf /usr/share/dotnet
+# _got_more_space
+$exec_with_df sudo $Eatmydata rm -rf /usr/local/share/boost
+# _got_more_space
+$exec_with_df sudo $Eatmydata rm -rf /usr/local/go*
+# _got_more_space
+$exec_with_df sudo $Eatmydata rm -rf /usr/local/lib/android
+# _got_more_space
+$exec_with_df sudo $Eatmydata rm -rf /opt/ghc	# haskell
+# _got_more_space
+$exec_with_df sudo $Eatmydata rm -rf /opt/hostedtoolcache/CodeQL
+# _got_more_space
+$exec_with_df $Eatmydata docker rmi "$(docker images -q)"
+# _got_more_space
 #sudo -E apt-get -q purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
-sudo -E $Eatmydata apt-get purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
-_got_more_space
-sudo -E $Eatmydata apt-get clean 
-_got_more_space
+$exec_with_df sudo -E $Eatmydata apt-get purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
+# _got_more_space
+$exec_with_df sudo -E $Eatmydata apt-get clean 
+# _got_more_space
 set +x
 
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
