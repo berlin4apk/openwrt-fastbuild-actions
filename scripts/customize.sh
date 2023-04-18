@@ -10,6 +10,7 @@
 set -eo pipefail
 
 set -vx
+export -p
 
 # shellcheck disable=SC1090
 source "${BUILDER_WORK_DIR}/scripts/lib/gaction.sh"
