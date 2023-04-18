@@ -69,6 +69,12 @@ on:
       OPT_PACKAGE_ONLY:
         type: boolean
         default: true
+      OPT_CONTAINER_JOB:
+        type: boolean
+        default: false
+      OPT_CONTAINER_JOB2:
+        type: boolean
+        default: false
       OPT_PUSH_WHEN_FAIL:
         type: boolean
         default: false
@@ -99,6 +105,7 @@ on:
 jobs:
   # Label of the container job
   container-job:
+  if: ${{ github.event.inputs.OPT_CONTAINER_JOB && github.event.inputs.OPT_CONTAINER_JOB != 'false' }}
     # Containers must run in Linux based operating systems
     runs-on: ubuntu-latest
 #    needs: build
@@ -189,6 +196,7 @@ jobs:
   
   
     services:
+    if: ${{ github.event.inputs.OPT_CONTAINER_JOB2 && github.event.inputs.OPT_CONTAINER_JOB2 != 'false' }}
       # Label used to access the service container
       redis-y9g98g58d:
       #redis-2y9g98g58d:
