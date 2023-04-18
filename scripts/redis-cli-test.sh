@@ -48,7 +48,7 @@ EOF
 docker_build_alpine_image
 
 docker_redis_ip_test() {
-cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+cat <<EOF | docker run --rm -i  "$*"  --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
 set -vx
 apk add --no-cache redis >/dev/null
 echo docker_redis_ip_test
@@ -74,7 +74,7 @@ EOF
 }
 
 docker_redis_ip_test_port_26379() {
-cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+cat <<EOF | docker run --rm -i  "$*"   --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
 set -vx
 apk add --no-cache redis >/dev/null
 echo docker_redis_ip_test_port_26379
@@ -102,7 +102,7 @@ EOF
 
 # https://github.com/kraj/uclibc-ng/blob/master/extra/scripts/getent
 docker_redis_ip2_test() {
-cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+cat <<EOF | docker run --rm -i  "$*"   --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
 set -vx
 apk add --no-cache bind-tools >/dev/null
 echo docker_redis_ip2_test
@@ -128,7 +128,7 @@ EOF
 }
 
 docker_redis_ip3_test() {
-cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+cat <<EOF | docker run --rm -i  "$*"   --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
 set -vx
 apk add --no-cache musl-utils >/dev/null
 echo docker_redis_ip3_test
@@ -248,26 +248,26 @@ set -eo pipefail
 
 
 docker_alpine_ip() {
-cat <<EOF | docker run --rm -i alpine:latest sh
+cat <<EOF | docker run --rm -i  "$*"   alpine:latest sh
 apk add --no-cache iproute2 >/dev/null
 ip -4 route show default | cut -d' ' -f3
 EOF
 }
 
 docker_ip_fn2() {
-cat <<EOF | docker run --rm -i busybox:latest sh
+cat <<EOF | docker run --rm -i  "$*"   busybox:latest sh
 ip -4 route show default | cut -d' ' -f3
 EOF
 }
 
 docker_ip_fn3() {
-cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway busybox:latest sh
+cat <<EOF | docker run --rm -i  "$*"   --add-host=host.docker.internal:host-gateway busybox:latest sh
 hostname -i host.docker.internal
 EOF
 }
 
 docker_ip_fn4() {
-cat <<EOF | docker run --rm -i --add-host=host.docker.internal:host-gateway busybox:latest sh
+cat <<EOF | docker run --rm -i  "$*"   --add-host=host.docker.internal:host-gateway busybox:latest sh
 hostname -i host-gateway
 EOF
 }
@@ -422,10 +422,12 @@ max_size=1500M
 # reshare=true
 EOF
 
-docker_redis_ip_test_port_26379
-docker_redis_ip_test
-docker_redis_ip2_test
-docker_redis_ip3_test
+
+# docker run --network ${{ job.container.network }} --hostname redis-cli --name redis-cli -d redis:7.0.10-alpine3.17 
+docker_redis_ip_test_port_26379  "--network $ENV_JOB_CONTAINER_NETWORK"
+docker_redis_ip_test  "--network $ENV_JOB_CONTAINER_NETWORK"
+docker_redis_ip2_test  "--network $ENV_JOB_CONTAINER_NETWORK"
+docker_redis_ip3_test  "--network $ENV_JOB_CONTAINER_NETWORK"
 
 set +vx
 DOCKER_HOST_IP1=$(docker_ip_fn)
