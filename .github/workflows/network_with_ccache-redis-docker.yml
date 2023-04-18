@@ -374,7 +374,7 @@ jobs:
 #          HOST_SELF_redis_ip_test.out 
 #          docker_redis_ip_test.out
     - name: exit 0
-    - run: exit 0
+      run: exit 0
 
     #- run: docker network ls
     #- name: Run redis-cli-test 2
