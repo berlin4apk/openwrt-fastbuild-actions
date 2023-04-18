@@ -151,7 +151,7 @@ _exec_with_df_sudo rm -rf /opt/hostedtoolcache/CodeQL
 #_exec_with_df docker rmi "$(docker images -q | tr "\n" " " )"
 # _exec_with_df $(docker images -q | xargs docker rmi ||: )
 _got_more_space
-docker images -q | xargs --max-args=1 --no-run-if-empty docker rmi ||:
+### DISABEL for the moment ### docker images -q | xargs --max-args=1 --no-run-if-empty docker rmi ||:
 _got_more_space
 #sudo -E apt-get -q purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
 echo "azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*" | xargs --max-args=1 --no-run-if-empty $SudoE $Eatmydata apt-get purge --no-upgrade --no-install-recommends --no-install-suggests --ignore-hold --no-download  ;
