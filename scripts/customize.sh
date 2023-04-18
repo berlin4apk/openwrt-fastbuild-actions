@@ -41,8 +41,8 @@ for FILE in "${BUILDER_PROFILE_DIR}"/config_*.diff; do
 		#mv .config .config.diff
 		#cat .config.diff | tee -a .config
 		ls -la "$FILE" ||:
-		#cat "$FILE" | tee -a .config.diff
-		tee -a config.diff < "$FILE"
+		cat "$FILE" | tee -a ${BUILDER_PROFILE_DIR}/config.diff
+		#tee -a config.diff < "$FILE"
 	    # To set final status of the subprocess to 0, because outside the parentheses the '-eo pipefail' is still on
 	    true
 	  )
