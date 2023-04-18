@@ -175,6 +175,9 @@ jobs:
           # /usr/bin/docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
           command -v docker ||:
           command -v -p -V docker ||:
+          docker network ls
+          docker network ls --format='{{.ID }} {{.Name}}'
+          docker inspect ${{ job.services.redis.id }}
           docker exec ${{ job.services.redis.id }} /bin/sh -c 'echo "cat /etc/redis/redis.conf ||:" '
           docker exec ${{ job.services.redis.id }} /bin/sh -x -c 'mkdir -p /etc/redis ||: '
           docker exec ${{ job.services.redis.id }} /bin/sh -x -c 'echo "save 60 100" >> /etc/redis/redis.conf'
