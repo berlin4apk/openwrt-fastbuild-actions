@@ -1,0 +1,39 @@
+--- tools/ccache/Makefile
++++ tools/ccache/Makefile
+@@ -8,11 +8,11 @@ include $(TOPDIR)/rules.mk
+ include $(INCLUDE_DIR)/target.mk
+ 
+ PKG_NAME:=ccache
+-PKG_VERSION:=4.6
++PKG_VERSION:=4.8
+ 
+ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+ PKG_SOURCE_URL:=https://github.com/ccache/ccache/releases/download/v$(PKG_VERSION)
+-PKG_HASH:=3d2bb860f4359169e640f60cf7cc11da5fab5fb9aed55230d78141e49c3945e9
++PKG_HASH:=b963ee3bf88d7266b8a0565e4ba685d5666357f0a7e364ed98adb0dc1191fcbb
+ 
+ include $(INCLUDE_DIR)/host-build.mk
+ include $(INCLUDE_DIR)/cmake.mk
+diff --git a/tools/ccache/patches/100-honour-copts.patch b/tools/ccache/patches/100-honour-copts.patch
+index a7fe4e4ec6..da72af922d 100644
+--- tools/ccache/patches/100-honour-copts.patch
++++ tools/ccache/patches/100-honour-copts.patch
+@@ -1,10 +1,10 @@
+ --- a/src/ccache.cpp
+ +++ b/src/ccache.cpp
+-@@ -1738,6 +1738,7 @@ calculate_result_and_manifest_key(Contex
+-                              "CPLUS_INCLUDE_PATH",
+-                              "OBJC_INCLUDE_PATH",
+-                              "OBJCPLUS_INCLUDE_PATH", // clang
+-+                             "GCC_HONOUR_COPTS",
+-                              nullptr};
+-     for (const char** p = envvars; *p; ++p) {
+-       const char* v = getenv(*p);
++@@ -1813,6 +1813,7 @@ get_manifest_key(Context& ctx, Hash& has
++                            "CPLUS_INCLUDE_PATH",
++                            "OBJC_INCLUDE_PATH",
++                            "OBJCPLUS_INCLUDE_PATH", // clang
+++                           "GCC_HONOUR_COPTS",
++                            nullptr};
++   for (const char** p = envvars; *p; ++p) {
++     const char* v = getenv(*p);
