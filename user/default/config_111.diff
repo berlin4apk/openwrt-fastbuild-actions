@@ -1,7 +1,7 @@
 CONFIG_CCACHE=y
-CONFIG_CCACHE_DIR=/dev/shm/1001/ccache/
-CONFIG_DOWNLOAD_FOLDER=/dev/shm/1001/DLccache/
-DL_DIR=/dev/shm/1001/DLccache/
+CONFIG_CCACHE_DIR="/dev/shm/1001/ccache/"
+CONFIG_DOWNLOAD_FOLDER="/dev/shm/1001/DLccache/"
+# DL_DIR=/dev/shm/1001/DLccache/
 
 ##[debug]..=> 'HOST_CCACHE_DIR'
 ##[debug]=> '/home/runner/work/openwrt-fastbuild-actions/openwrt-fastbuild-actions/.ccache'
