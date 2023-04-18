@@ -445,7 +445,7 @@ jobs:
         #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
         #key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
         #key: DLccache-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}-${{ steps.date.outputs.time }}
-        key: HOSTccache-${{ github.sha }}-${{ steps.date.outputs.time }}
+        key: HOSTccache-${{ env.REPO_BRANCH }}-${{ github.sha }}-${{ steps.date.outputs.time }}
         restore-keys: |
           #HOSTccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
           HOSTccache-${{ env.REPO_BRANCH }}-${{ github.sha }}-
@@ -480,16 +480,16 @@ jobs:
 
 
 #    - name: link dl to /dev/shm/1001/DLccache/
-    - name: ls /dev/shm/1001/DLccache/
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      run: |
-       ls -latR ${{ env.HOST_WORK_DIR }} ||:
-       ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl DL_DIR $DL_DIR ||:
-       mkdir -p /home/builder/dl ||:
-       ln -s /home/builder/openwrt/dl /home/builder/dl ||:
-       export -p | grep DIR
-       #ln -s /dev/shm/1001/DLccache/ /home/builder/openwrt/dl ||:
-       #ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl ||:
+#    - name: ls /dev/shm/1001/DLccache/
+#      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      run: |
+#       ls -latR ${{ env.HOST_WORK_DIR }} ||:
+#       ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl DL_DIR $DL_DIR ||:
+#       mkdir -p /home/builder/dl ||:
+#       ln -s /home/builder/openwrt/dl /home/builder/dl ||:
+#       export -p | grep DIR
+#       #ln -s /dev/shm/1001/DLccache/ /home/builder/openwrt/dl ||:
+#       #ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl ||:
 
 
     - name: Clone/update OpenWrt
@@ -618,9 +618,10 @@ jobs:
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
        #cd /usr/local/bin && ln --verbose -s /usr/lib/ccache/* . ||:
-       ls -latr /usr/lib/ccache/bin/* /usr/local/bin/ ||:
+       ls -latr /usr/lib/ccache/bin/* /usr/local/lib/ccache/bin/* /usr/local/bin/ ||:
+       ln -vs /usr/local/lib/ccache/bin/* /usr/local/bin/ ||:
        ln -vs /usr/lib/ccache/bin/* /usr/local/bin/ ||:
-       ls -latr /usr/lib/ccache/bin/* /usr/local/bin/ ||:
+       ls -latr /usr/lib/ccache/bin/* /usr/local/lib/ccache/bin/* /usr/local/bin/ ||:
 
 
     - name: get ccache config
