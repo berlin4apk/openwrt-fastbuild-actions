@@ -129,6 +129,8 @@ jobs:
         #image: redis:7.0.10
         # Set health checks to wait until redis has started
         options: >-
+          --hostname redis2
+          --add-host=host.docker.internal:host-gateway
           --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
@@ -191,11 +193,11 @@ jobs:
 #jobs:
   build:
   
-    if: ${{ github.event.inputs.OPT_CONTAINER_JOB && github.event.inputs.OPT_CONTAINER_JOB != 'false' }}
     services:
       # Label used to access the service container
       redis-y9g98g58d:
       #redis-2y9g98g58d:
+        #if: ${{ github.event.inputs.OPT_CONTAINER_JOB && github.event.inputs.OPT_CONTAINER_JOB != 'false' }}
         # Docker Hub image
         #image: _/redis
         #image: redis:6.2.6-alpine3.14
@@ -205,6 +207,8 @@ jobs:
         #image: redis:7.0.10
         # Set health checks to wait until redis has started
         options: >-
+          --hostname redis
+          --add-host=host.docker.internal:host-gateway
           --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
