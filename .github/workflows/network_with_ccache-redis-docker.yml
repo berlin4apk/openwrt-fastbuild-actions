@@ -191,11 +191,14 @@ jobs:
     
       - name: Tailscale
         # if: env.SKIP_TARGET == '0' && env.TEST != '1'
-        uses: tailscale/github-action@v1
+        uses: tailscale/github-action@ce41a99162202a647a4b24c30c558a567b926709
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY_container_job }}
           hostname: redis-y9g98g58d
           #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+      - name: check for hello.ipn.dev in netmap
+        run:
+          tailscale status | grep -q hello
 
       - name: Wait for tests to succeed
         uses: lewagon/wait-on-check-action@v1.3.1
@@ -368,10 +371,13 @@ jobs:
 
     - name: Tailscale
       if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      uses: tailscale/github-action@v1
+      uses: tailscale/github-action@ce41a99162202a647a4b24c30c558a567b926709
       with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY_runner }}
           #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+    - name: check for hello.ipn.dev in netmap
+      run:
+         tailscale status | grep -q hello
 
 ##    - name: Create docker network 🖧
 ##      run: docker network create ${MODEL_EXTERNAL_DOCKER_NETWORK}
