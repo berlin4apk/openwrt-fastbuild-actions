@@ -356,17 +356,30 @@ jobs:
       run: docker run -p 36379:6379 -v ${{ github.workspace }}/docker_volume_mount:/data:rw --network "bridge" --hostname redis3 --name redis3 -d redis:7.0.10-alpine3.17 --unixsocket /tmp/docker/socket.sock --unixsocketperm 777 --loglevel verbose
     - run: docker network ls
     
-    - run: docker network ls
-    - name: Run redis-cli-test 1
+  
+    - name: Run redis-cli-test.sh install
+      run: scripts/redis-cli-test.sh install
+    
+    - name: Run redis-cli-test.sh 1
       run: scripts/redis-cli-test.sh ${{ job.container.network }}
       env: 
         ENV_JOB_CONTAINER_NETWORK: ${{ job.container.network }}
-      
+    - name: Upload redis-cli-test.sh output
+      uses: actions/upload-artifact@master
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' 
+      with:
+        name: docker_inspect_${{env.BUILD_TARGET}}
+        path: |
+          *_test.out 
+#          HOST_SELF_redis_ip_test.out 
+#          docker_redis_ip_test.out
+    - name: exit 0
+    - run: exit 0
 
-    - run: docker network ls
-    - name: Run redis-cli-test 2
-      run: docker run --network ${{ job.container.network }} --hostname redis4-cli --name redis4-cli -d redis:7.0.10-alpine3.17 
-    - run: docker network ls
+    #- run: docker network ls
+    #- name: Run redis-cli-test 2
+    #  run: docker run --network ${{ job.container.network }} --hostname redis4-cli --name redis4-cli -d redis:7.0.10-alpine3.17 
+    #- run: docker network ls
 
 
 
