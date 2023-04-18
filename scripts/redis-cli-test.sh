@@ -603,11 +603,14 @@ if [ "$CI" != "true" ]; then
 #[[ "$*" == "" ]] && echo "call docker without --network "
 #[[ "$*" == "" ]] && docker_redis_ip_test
 
+#working but not on github error with the /dev/tty loggign # [[ "$*" != "" ]] && echo "call docker with --network $*"
+#working but not on github error with the /dev/tty loggign # [[ "$*" != "" ]] && mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG ) ; echo "$mypong"
+#working but not on github error with the /dev/tty loggign # [[ "$*" == "" ]] && echo "call docker without --network "
+#working but not on github error with the /dev/tty loggign # [[ "$*" == "" ]] && mypong=$( docker_redis_ip_test | tee /dev/tty | grep PONG ) ; echo "$mypong"
 [[ "$*" != "" ]] && echo "call docker with --network $*"
-[[ "$*" != "" ]] && mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG ) ; echo "$mypong"
+[[ "$*" != "" ]] && docker_redis_ip_test  --network "$*" | tee docker_redis_ip_test.out && grep PONG docker_redis_ip_test.out && rm docker_redis_ip_test.out
 [[ "$*" == "" ]] && echo "call docker without --network "
-[[ "$*" == "" ]] && mypong=$( docker_redis_ip_test | tee /dev/tty | grep PONG ) ; echo "$mypong"
-
+[[ "$*" == "" ]] && docker_redis_ip_test | tee docker_redis_ip_test.out && grep PONG docker_redis_ip_test.out && rm docker_redis_ip_test.out
 
 
 #	docker_redis_ip_test_port_26379  --network "$*"
@@ -626,9 +629,11 @@ else
 #[[ "$*" == "" ]] && docker_redis_ip_test
 
 [[ "$*" != "" ]] && echo "call docker with --network $*"
-[[ "$*" != "" ]] && mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG ) ; echo "$mypong"
+#working but not on github error with the /dev/tty loggign # #[[ "$*" != "" ]] && mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG ) ; echo "$mypong"
+[[ "$*" != "" ]] && docker_redis_ip_test  --network "$*" | tee docker_redis_ip_test.out && grep PONG docker_redis_ip_test.out && rm docker_redis_ip_test.out
 [[ "$*" == "" ]] && echo "call docker without --network "
-[[ "$*" == "" ]] && mypong=$( docker_redis_ip_test | tee /dev/tty | grep PONG ) ; echo "$mypong"
+#working but not on github error with the /dev/tty loggign # #[[ "$*" == "" ]] && mypong=$( docker_redis_ip_test | tee /dev/tty | grep PONG ) ; echo "$mypong"
+[[ "$*" == "" ]] && docker_redis_ip_test | tee docker_redis_ip_test.out && grep PONG docker_redis_ip_test.out && rm docker_redis_ip_test.out
 
 #	docker_redis_ip_test_port_26379  --network "$*"
 #	docker_redis_ip2_test  --network "$*"
