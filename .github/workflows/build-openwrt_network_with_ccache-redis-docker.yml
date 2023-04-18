@@ -1,0 +1,1029 @@
+#=================================================
+# https://github.com/tete1030/openwrt-fastbuild-actions
+# Description: FAST building OpenWrt with Github Actions and Docker!
+# Lisence: MIT
+# Author: Texot
+#=================================================
+
+env:
+  # DO NOT CHANGE the following here, set them only in forked repo's Settings->Secrets page
+  # You don't need to set docker_registry if you are using the default Docker Hub Settings->Secrets
+  DK_REGISTRY: ${{vars.docker_registry}}
+  DK_USERNAME: ${{vars.docker_username}}
+  DK_PASSWORD: ${{secrets.docker_password}}
+  SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK_URL}}
+  TMATE_ENCRYPT_PASSWORD: ${{secrets.TMATE_ENCRYPT_PASSWORD}}
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+  OPT_UPDATE_FEEDS: "1"
+  # OPT_REBUILD: "1"
+#  OPT_PACKAGE_ONLY: "1"
+#  OPT_PUSH_WHEN_FAIL: "1"
+  REPOSITORY_GH_PAGES_RELEASES: ${{vars.VARG_REPOSITORY_GH_PAGES}} # eg berlin4apk/openwrt-releases or openlumi/releases 
+  EVENT_INPUTS_RD_TARGET: ${{ github.event.inputs.rd_target }}
+  EVENT_INPUTS_RD_TASK: ${{ github.event.inputs.rd_task }}
+  #RD_TARGET: ${{ github.event.inputs.rd_target }}
+  MODEL_EXTERNAL_DOCKER_NETWORK: data-y9g98g58d
+
+
+name: package_only redis Build OpenWrt
+
+on:
+  deployment:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      RD_TARGET:
+#      BUILD_TARGET:
+        description: 'target to use'
+        #required: true
+        default: 22.03.4-rsync
+        type: choice
+        options:
+        - all
+        - 21.02.5
+        - 22.03.3
+        - 22.03.3-rsync-test
+        - 22.03.3-rsync-test2
+        - 22.03.3-rsync-mini
+        - 22.03.4-rsync
+        - snapshot
+      RD_TASK:
+#      BUILD_TARGET:
+        description: 'Task to run'
+        #required: true
+        default: build
+        type: choice
+        options:
+        - build
+        - squash
+        - test
+      OPT_UPDATE_FEEDS:
+        #description: 'target to use'
+        #required: true
+        #default: 22.03.3-rsync-mini
+        type: boolean
+        #default: true
+        default: false
+      OPT_REBUILD:
+        type: boolean
+        default: false
+      OPT_PACKAGE_ONLY:
+        type: boolean
+        default: true
+      OPT_CONTAINER_JOB:
+        type: boolean
+        default: false
+      OPT_PUSH_WHEN_FAIL:
+        type: boolean
+        default: false
+      OPT_INSPECT:
+        type: boolean
+        default: false
+      OPT_IGNORE_ERRORS:
+        type: boolean
+        default: false
+      OPT_DEBUG:
+        type: boolean
+        default: false
+##      continue-on-error:
+##        type: boolean
+#    env:
+#        OPT_DEBUG: 1
+  pull_request:
+  push:
+    paths:
+      - 'user/**'
+  # # For 'schedule', see examples in: https://crontab.guru/examples.html
+  # #     e.g. every sunday midnight: '0 0 * * 0' every midnight: '0 0 * * *'
+  # schedule:
+  #   - cron: '0 0 * * 0'
+  # watch:
+  #   types: [started]
+
+jobs:
+  # Label of the container job
+  container-job:
+    # Containers must run in Linux based operating systems
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.OPT_CONTAINER_JOB && github.event.inputs.OPT_CONTAINER_JOB != 'false' }}
+#    needs: build
+#    if: ${{ !cancelled() && (success() || failure() || needs.previous-job.result == 'skipped') }}
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+    # Docker Hub image that `container-job` executes in
+    #container: node:10.18-jessie
+    #container: _/redis
+    #container: redis:6.2.4-alpine3.13
+    #container: redis:6.2.4
+####    container: ubuntu:latest
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      redis-y9g98g58d:
+        # Docker Hub image
+        #image: _/redis
+        #image: redis:6.2.6-alpine3.14
+        #image: redis:6.2.6
+        image: redis:6.2.11-alpine3.17
+        #image: redis:7.0.10-alpine3.17
+        #image: redis:7.0.10
+        # Set health checks to wait until redis has started
+        options: >-
+          --hostname redis2
+          --add-host=host.docker.internal:host-gateway
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        # https://hub.docker.com/_/redis
+#        args: --save 60 1 --loglevel verbose
+#        with:
+#          args: --save 60 1 --loglevel verbose
+          # --loglevel # argument must be one of the following: debug, verbose, notice, warning
+#          args: --save 60 1 --loglevel warning
+#          https://redis.io/topics/persistence
+        # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
+        # https://cdmana.com/2021/01/20210119024925732p.html
+        # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
+        # https://docs.github.com/en/actions/using-containerized-services/creating-postgresql-service-containers
+        # https://docs.github.com/en/actions/using-containerized-services/creating-redis-service-containers
+        volumes:
+          - /tmp/docker_volume_mount:/data:rw
+#          - /tmp/docker_volume_mount_my_data:/data/my_data
+#          - my_docker_volume:/volume_mount
+#          - /source/directory:/destination/directory
+        ports:
+          # Maps port 6379 on service container to the host
+          - 6379:6379
+
+    steps:
+#      - uses: docker-practice/actions-setup-docker@1.0.8
+      - name: "Set some redis settings"
+        run: |
+          export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
+          uname -a
+          cat /etc/*-release
+          /usr/bin/lsb_release -a ||:
+          /usr/bin/docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
+          command -v docker ||:
+          command -v -p -V docker ||:
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -c 'echo "cat /etc/redis/redis.conf ||:" '
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'mkdir -p /etc/redis ||: '
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "save 60 100" >> /etc/redis/redis.conf'
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "loglevel verbose" >> /etc/redis/redis.conf'
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "# see https://github.community/t/how-do-i-properly-override-a-service-entrypoint/17435/8" >> /etc/redis/redis.conf'
+          docker exec ${{ job.services.redis-y9g98g58d.id }} /bin/sh -x -c 'echo "# https://hub.docker.com/_/redis" >> /etc/redis/redis.conf'
+          docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
+    #  - name: Sleep for 30 seconds
+    #    run: sleep 300s
+    #    shell: bash
+      - name: Wait for tests to succeed
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.ref }}
+          #check-name: 'Run tests'
+          #running-workflow-name: 'Publish the package'
+          #running-workflow-name: 'build'
+          running-workflow-name: 'container-job'
+          check-regexp: 'Build.*'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+          allowed-conclusions: success,skipped,cancelled,failure
+
+#jobs:
+  build:
+  
+    services:
+      # Label used to access the service container
+      redis-y9g98g58d:
+      #redis-2y9g98g58d:
+        #if: ${{ github.event.inputs.OPT_CONTAINER_JOB && github.event.inputs.OPT_CONTAINER_JOB != 'false' }}
+        # Docker Hub image
+        #image: _/redis
+        #image: redis:6.2.6-alpine3.14
+        #image: redis:6.2.6
+        #image: redis:6.2.11-alpine3.17
+        image: redis:7.0.10-alpine3.17
+        #image: redis:7.0.10
+        # Set health checks to wait until redis has started
+        options: >-
+          --hostname redis
+          --add-host=host.docker.internal:host-gateway
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        # https://hub.docker.com/_/redis
+#        args: --save 60 1 --loglevel verbose
+#        with:
+#          args: --save 60 1 --loglevel verbose
+          # --loglevel # argument must be one of the following: debug, verbose, notice, warning
+#          args: --save 60 1 --loglevel warning
+#          https://redis.io/topics/persistence
+        # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
+        # https://cdmana.com/2021/01/20210119024925732p.html
+        # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
+        # https://docs.github.com/en/actions/using-containerized-services/creating-postgresql-service-containers
+        # https://docs.github.com/en/actions/using-containerized-services/creating-redis-service-containers
+        volumes:
+          - /tmp/docker_volume_mount:/data:rw
+        ports:
+          # Maps port 6379 on service container to the host
+          - 26379:6379
+
+###    needs: container-job
+  
+    runs-on: ubuntu-22.04
+#    if: ${{ github.event.inputs.continue-on-error }}
+#    continue-on-error: true
+    # For `github.event`'s structure, see: https://developer.github.com/v3/activity/events/types/
+    # Do not modify the trigger methods here, customize them in the `on` section     
+    if: |
+      github.event_name == 'push'
+      || github.event_name == 'pull_request'
+      || github.event_name == 'repository_dispatch'
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'deployment'
+      || (github.event_name == 'watch' && github.event.action == 'started' && github.event.repository.owner.id == github.event.sender.id)
+      || github.event_name == 'schedule'
+    name: ${{matrix.title}} ${{matrix.target}}
+    strategy:
+      fail-fast: false
+      matrix:
+        mode:
+          - normal
+          - test
+        # ########### Add your target name below ###########
+        # E.g. target: [x86_64, wdr4310v1]
+        target:
+          # - 19.07.7
+          # - 19.07.8
+          # - 19.07.10
+          # - 21.02.0
+          # - 21.02.1
+          # - 21.02.2
+          # - 21.02.3
+           - 21.02.5
+          # - 21.02.1-ha
+          # - 22.03.0
+          # - 22.03.2
+#           - 22.03.3
+#           - 22.03.3-rsync-test
+#           - 22.03.3-rsync-test2
+           - 22.03.3-rsync-mini
+           - 22.03.4-rsync
+          # - snapshot
+        include:
+        - mode: normal
+          title: Build
+        - mode: test
+          title: Fast check
+    env:
+      # OPT_DEBUG: 1
+      HOST_WORK_DIR: ${{github.workspace}}
+      BUILD_MODE: ${{matrix.mode}}
+      BUILD_TARGET: ${{matrix.target}}
+# FIXME BUG see https://github.com/actions/runner/issues/1483      
+      CONTINUE_ON_ERROR: ${{inputs.continue-on-error}}
+# FIXME #    # fixme # if: ${{ github.event.inputs.continue-on-error }}
+# FIXME #    continue-on-error: true
+    steps:
+# FIXME BUG see https://github.com/actions/runner/issues/1483
+    - if: ${{ github.event.inputs.OPT_UPDATE_FEEDS && github.event.inputs.OPT_UPDATE_FEEDS != 'false' }}
+      run: echo "OPT_UPDATE_FEEDS=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_REBUILD && github.event.inputs.OPT_REBUILD != 'false' }}
+      run: echo "OPT_REBUILD=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_PACKAGE_ONLY && github.event.inputs.OPT_PACKAGE_ONLY != 'false' }}
+      run: echo "OPT_PACKAGE_ONLY=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_PUSH_WHEN_FAIL && github.event.inputs.OPT_PUSH_WHEN_FAIL != 'false' }}
+      run: echo "OPT_PUSH_WHEN_FAIL=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_INSPECT && github.event.inputs.OPT_INSPECT != 'false' }}
+      run: echo "OPT_INSPECT=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_IGNORE_ERRORS && github.event.inputs.OPT_IGNORE_ERRORS != 'false' }}
+      run: echo "OPT_IGNORE_ERRORS=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_DEBUG && github.event.inputs.OPT_DEBUG != 'false' }}
+      run: echo "OPT_DEBUG=1" >> $GITHUB_OUTPUT
+#    - if: ${{ github.event.inputs.continue-on-error }}
+#      continue-on-error: ${{ github.event.inputs.continue-on-error }}
+# FIXME BUG see https://github.com/actions/runner/issues/1483
+      continue-on-error: ${{ fromJSON(env.CONTINUE_ON_ERROR) }}
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Create docker network 🖧
+      run: docker network create ${MODEL_EXTERNAL_DOCKER_NETWORK}
+
+    - run: docker network ls
+    - name: Run redis
+      #run: docker run -p 3030:3030 -v ${{ github.workspace }}/aksw-model:/staging --network "bridge" --hostname fuseki --name fuseki -d stain/jena-fuseki /jena-fuseki/fuseki-server --file=/staging/aksw.org.nt /aksw
+      run: docker run -p 6379:6379 -v ${{ github.workspace }}/docker_volume_mount:/data:rw --network "bridge" --hostname redis --name redis -d redis:7.0.10-alpine3.17 --unixsocket /tmp/docker/socket.sock --unixsocketperm 777 --loglevel verbose
+    - run: docker network ls
+    
+    - run: docker network ls
+    - name: Run redis-cli-test 1
+      run: scripts/redis-cli-test.sh ${{ job.container.network }}
+      env: 
+        ENV_JOB_CONTAINER_NETWORK: ${{ job.container.network }}
+      
+
+    - run: docker network ls
+    - name: Run redis-cli-test 2
+      run: docker run --network ${{ job.container.network }} --hostname redis-cli --name redis-cli -d redis:7.0.10-alpine3.17 
+
+
+    - name: Get current time
+      uses: josStorer/get-current-time@v2.1.1
+      id: date
+      with:
+        format: x # Unix Millisecond Timestamp  # https://momentjs.com/docs/#/displaying/format/
+        #format: YYYYMMDD-HH
+        #utcOffset: "+08:00"
+    - name: Use current time
+      env:
+        TIME: "${{ steps.date.outputs.time }}"
+        R_TIME: "${{ steps.date.outputs.readableTime }}"
+        F_TIME: "${{ steps.date.outputs.formattedTime }}"
+        YEAR: "${{ steps.date.outputs.year }}"
+        DAY: "${{ steps.date.outputs.day }}"
+      run: echo $TIME $R_TIME $F_TIME $YEAR $DAY
+
+    - name: Set lower case owner name
+      id: lower_owner
+      run: |
+        OWNER_LC=$(echo "${{ github.repository_owner }}" \
+          | tr '[:upper:]' '[:lower:]')
+        echo "owner_lc=$OWNER_LC"
+        echo "owner_lc=$OWNER_LC" >> $GITHUB_OUTPUT
+#        if [ ${{ inputs.use_openwrt_container }} == "true" ]; then
+#          OWNER_LC=openwrt
+#        fi
+
+    - name: Init build env
+      run: scripts/cisteps/build-openwrt/01-init_env.sh
+
+    - name: Check if skip this job
+      run: scripts/cisteps/build-openwrt/02-check_target.sh
+
+    - name: Clean up for extra space
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: scripts/cisteps/build-openwrt/03-clean_up.sh
+
+      # https://github.com/docker/setup-qemu-action
+    - name: Set up QEMU
+      id: buildx-qemy
+      if: env.SKIP_TARGET == '0'
+      uses: docker/setup-qemu-action@v2
+      # https://github.com/docker/setup-buildx-action
+    - name: Set up Docker Buildx
+      id: buildx
+      if: env.SKIP_TARGET == '0'
+      uses: docker/setup-buildx-action@v2
+
+#    - name: docker ps
+#      if: env.SKIP_TARGET == '0'
+#      run: |
+#        docker ps
+#        docker ps -a
+
+    - name: Configure DL_DIR var and export it
+      #if: env.SKIP_TARGET == '0'
+      run: |
+        echo "DL_DIR=${{ env.HOST_DLCCACHE_DIR }}/" >> $GITHUB_ENV
+        #echo "DL_DIR=/dev/shm/1001/DLccache/" >> $GITHUB_ENV
+        #echo "DL_DIR-testing=${{ env.HOST_DLCCACHE_DIR }}" >> $GITHUB_ENV
+
+    - name: Configure docker
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/04-configure_docker.sh
+
+    - name: Configure host modification (04-mod-host.sh)
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/04-mod-host.sh
+
+    - name: Check status of builders
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/05-check_builders.sh
+
+    - name: '[Debug] Wait for SSH connection (timeout 5min)'
+      if: env.SKIP_TARGET == '0' && env.OPT_DEBUG == '1' && env.TEST != '1'
+      env:
+        TIMEOUT_MIN: 5
+      #uses: openlumi/safe-debugger-action@e0141e5738ac68421298d9eb4217e037e6cb1a0b # openlumi/safe-debugger-action@dev
+      uses: berlin4apk/safe-debugger-action@dev
+
+    - name: 'Get key-build'
+      run: 'echo "$OPENWRT_BUILD_KEY" > $HOST_WORK_DIR/key-build;echo "$OPENWRT_BUILD_KEY_PUB" > $HOST_WORK_DIR/key-build.pub'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      shell: bash
+      env:
+        HOST_WORK_DIR: ${{github.workspace}}
+        OPENWRT_BUILD_KEY: ${{secrets.OPENWRT_BUILD_KEY}}
+        OPENWRT_BUILD_KEY_PUB: ${{secrets.OPENWRT_BUILD_KEY_PUB}}
+
+#    - name: docker ps
+#      if: env.SKIP_TARGET == '0'
+#      run: |
+#        docker ps
+#        docker ps -a
+
+#    - name: 'exit 1'
+#      run: 'exit 1'
+#      shell: bash
+
+    - name: 🧰 Get builder
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/06-get_builder.sh
+
+    - name: docker ps
+      if: env.SKIP_TARGET == '0'
+      run: |
+        docker ps
+        docker ps -a
+
+#    - name: 'exit 1'
+#      run: 'exit 1'
+#      shell: bash
+
+    - name: 😀 Cache DLccache
+      uses: actions/cache@v3
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+      with:
+        path: |
+          ${{ env.HOST_DLCCACHE_DIR }}
+# /dev/shm/1001/DLccache/
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}-${{ steps.date.outputs.time }}
+        key: DLccache-${{ github.sha }}-${{ steps.date.outputs.time }}
+        restore-keys: |
+          #DLccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+          DLccache-${{ env.REPO_BRANCH }}-${{ github.sha }}-
+          DLccache-${{ env.REPO_BRANCH }}-
+          DLccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-
+          DLccache-${{ github.sha }}-
+          DLccache-${{ env.BUILD_TARGET }}-
+          DLccache-
+ 
+ 
+    - name: 🪣🪣 Cache HOST_CCACHE_DIR
+      uses: actions/cache@v3
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+      with:
+        path: |
+          ${{ env.HOST_CCACHE_DIR }}
+# /dev/shm/1001/DLccache/
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}-${{ steps.date.outputs.time }}
+        key: HOSTccache-${{ env.REPO_BRANCH }}-${{ github.sha }}-${{ steps.date.outputs.time }}
+        restore-keys: |
+          #HOSTccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+          HOSTccache-${{ env.REPO_BRANCH }}-${{ github.sha }}-
+          HOSTccache-${{ env.REPO_BRANCH }}-
+          HOSTccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-
+          HOSTccache-${{ github.sha }}-
+          HOSTccache-${{ env.BUILD_TARGET }}-
+          HOSTccache-
+ 
+ 
+    - name: 🗜 Cache /tmp/builder/dl
+      uses: actions/cache@v3
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+      with:
+        path: |
+          /tmp/builder/dl
+          ${{ env.HOST_WORK_DIR }}/openwrt/dl
+          /home/builder/dl
+          ###${{ env.HOST_DLCCACHE_DIR }}
+        #key: builderDL-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+        #key: builderDL-${{ env.BUILD_TARGET }}-${{ hashFiles('/home/builder/dl/**') }}
+        #key: builderDL-${{ env.BUILD_TARGET }}-${{ steps.date.outputs.time }}
+        key: builderDL-${{ github.sha }}-${{ steps.date.outputs.time }}
+        restore-keys: |
+          builderDL-${{ env.BUILD_TARGET }}-${{ github.sha }}-
+          builderDL-${{ env.REPO_BRANCH }}-${{ github.sha }}-
+          builderDL-${{ env.REPO_BRANCH }}-
+          builderDL-${{ github.sha }}-
+          builderDL-${{ env.BUILD_TARGET }}-
+          builderDL-
+
+
+#    - name: link dl to /dev/shm/1001/DLccache/
+#    - name: ls /dev/shm/1001/DLccache/
+#      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      run: |
+#       ls -latR ${{ env.HOST_WORK_DIR }} ||:
+#       ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl DL_DIR $DL_DIR ||:
+#       mkdir -p /home/builder/dl ||:
+#       ln -s /home/builder/openwrt/dl /home/builder/dl ||:
+#       export -p | grep DIR
+#       #ln -s /dev/shm/1001/DLccache/ /home/builder/openwrt/dl ||:
+#       #ls -la /dev/shm/1001/DLccache /home/builder/openwrt/dl ||:
+
+
+    - name: Clone/update OpenWrt
+      #if: env.SKIP_TARGET == '0'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: scripts/cisteps/build-openwrt/07-download_openwrt.sh
+
+    - name: Generate ccache hash
+      id: ccache_hash
+      run: |
+        CCACHE_HASH=$(md5sum include/kernel-* 2>/dev/null | awk '{ print $1 }' \
+         | md5sum | awk '{ print $1 }')
+        echo "CCACHE_HASH=$CCACHE_HASH"
+        echo "CCACHE_HASH=$CCACHE_HASH" >> $GITHUB_OUTPUT
+
+#      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+#    - name: Fix ./.ccache/ directory permissions
+#      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      if: env.SKIP_TARGET == '0'
+#      run: |
+#        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+
+    - name: get ccache config, bevor ccache-action
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+        # https://github.com/ccache/ccache/blob/master/test/suites/remote_file.bash
+        touch test.h
+        echo '#include "test.h"' >test.c
+        # backdate test.h ||:
+        #$CCACHE_COMPILE -c test.c
+        echo "#################"
+        ccache --version | awk -v RS= 'NR==1' # awk print 1st paragraph / until the blank line
+        echo "#################"
+        ccache -p
+        echo "#################"
+        ccache -svv
+        echo "#################"
+        PATH="/usr/lib/ccache:$PATH" gcc -c test.c   ||: # FIXME
+        echo "#################"
+        ccache -svv
+        echo "#################"
+      shell: bash -l {0}
+      # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell
+      # shell: bash -e {0} # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell
+
+    - name: 🪣 ccache-action
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      #if: env.SKIP_TARGET == '0' 
+      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+###uses: hendrikmuhs/ccache-action@v1.2.8
+      uses: berlin4apk/ccache-action@v1.2.102
+      with:
+        #key: ccache-${{ matrix.os }}-${{ matrix.type }}
+        #key: ccache-${{ env.BUILD_TARGET }}-${{ matrix.type }}
+        key: ccache-${{ env.REPO_BRANCH }}-${{ matrix.type }}
+        max-size: 2G
+        #verbose: 2
+        verbose: 1
+        install-from-github: true
+        dont-do-config: false
+        #dont-do-config: true
+
+    - name: set cache_dir 
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+       ccache -V
+        echo "#################"
+       ccache -p
+        echo "#################"
+       ccache --set-config=cache_dir=${{ env.HOST_CCACHE_DIR }} ||:
+        echo "#################"
+       ccache --set-config=max_size=1500M
+        echo "#################"
+       ccache --set-config=compression=true
+        echo "#################"
+       ccache -p
+
+
+#      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+#    - name: Fix 2 ./.ccache/ directory permissions
+#      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      if: env.SKIP_TARGET == '0'
+#      run: |
+#        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+
+#    - name: Cache ccache
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      uses: actions/cache@v3
+#      with:
+#        path: |
+#          '${{github.workspace}}/.ccache'
+#          'openwrt/.ccache'
+#          ${{github.workspace}}/openwrt/.ccache
+#          '**/.ccache'
+#          '/tmp/**/.ccache'
+#          #'$HOME/**/.ccache'
+#          #'$HOME/.ccache'
+#          #'/.ccache'
+#          ${{ env.HOST_CCACHE_DIR }}
+#        #key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+#        key: ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}
+#        restore-keys: |
+#          #ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+#          ccache-kernel-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}
+#          ccache-kernel-${{ env.BUILD_TARGET }}-
+#          ccache-kernel-
+
+#      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+#    - name: Fix 3 ./.ccache/ directory permissions
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      #if: env.SKIP_TARGET == '0'
+#      run: |
+#        sudo chown --verbose -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        sudo chmod --verbose -R 777 ./.ccache/ ${{ env.HOST_CCACHE_DIR }} $HOME/.ccache/ .ccache/ /tmp/.ccache/ ||:
+#        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
+
+ #     # https://github.com/actions/cache/issues/133#issuecomment-599102035
+ #   - name: Fix HOST_DLCCACHE_DIR directory permissions
+ #     if: env.SKIP_TARGET == '0' && env.TEST != '1'
+ #     run: |
+ #       sudo chown --verbose -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }} ||:
+ #       sudo chmod --verbose -R 777 ${{ env.HOST_DLCCACHE_DIR }} ||:
+
+     
+
+    - name: Link ccache   ln -vs /usr/local/lib/ccache/bin/* /usr/local/bin/
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+       #cd /usr/local/bin && ln --verbose -s /usr/lib/ccache/* . ||:
+       ls -latr /usr/lib/ccache/bin/* /usr/local/lib/ccache/bin/* /usr/local/bin/ ||:
+       ln -vs /usr/local/lib/ccache/bin/* /usr/local/bin/ ||:
+       ln -vs /usr/lib/ccache/bin/* /usr/local/bin/ ||:
+       ls -latr /usr/lib/ccache/bin/* /usr/local/lib/ccache/bin/* /usr/local/bin/ ||:
+
+
+#    - name: get ccache config
+#      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      run: |
+#       cat /usr/local/etc/ccache.conf ||:
+#       ccache -sv ||:
+#       ccache -p ||:
+
+    - name: get ccache config
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+        # https://github.com/ccache/ccache/blob/master/test/suites/remote_file.bash
+        touch test.h
+        echo '#include "test.h"' >test.c
+        # backdate test.h ||:
+        #$CCACHE_COMPILE -c test.c
+        echo "#################"
+        ccache --version | awk -v RS= 'NR==1' # awk print 1st paragraph / until the blank line
+        echo "#################"
+        ccache -p
+        echo "#################"
+        ccache -svv
+        echo "#################"
+        PATH="/usr/lib/ccache:$PATH" gcc -c test.c   ||: # FIXME
+        echo "#################"
+        ccache -svv
+        echo "#################"
+
+
+    - name: get ccache config2
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: |
+        # https://github.com/ccache/ccache/blob/master/test/suites/remote_file.bash
+        touch test.h
+        echo '#include "test.h"' >test.c
+        # backdate test.h ||:
+        #$CCACHE_COMPILE -c test.c
+        echo "#################"
+        ccache -p
+        echo "#################"
+        ccache -svv
+        echo "#################"
+        #PATH="/usr/lib/ccache:$PATH" gcc -c test.c   ||: # FIXME
+        gcc -c test.c   ||: # FIXME
+        echo "#################"
+        ccache -svv
+        echo "#################"
+
+
+
+#        path: |
+#          '${{github.workspace}}/DLccache'
+#          ${{ env.HOST_DLCCACHE_DIR }}
+#        #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+#        key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('${{github.workspace}}/DLccache/*') }}
+#        restore-keys: |
+#          DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('${{github.workspace}}/DLccache/*') }}
+#          DLccache-${{ env.BUILD_TARGET }}-
+#          DLccache-
+
+
+#      # https://github.com/actions/cache/issues/133#issuecomment-599102035
+#    - name: Fix 2 HOST_DLCCACHE_DIR directory permissions
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      run: |
+#        sudo chown --verbose -R $(whoami):$(id -ng) ${{ env.HOST_DLCCACHE_DIR }} ||:
+#        sudo chmod --verbose -R 777 ${{ env.HOST_DLCCACHE_DIR }} ||:
+
+    - name: Apply customizations
+      #if: env.SKIP_TARGET == '0'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: scripts/cisteps/build-openwrt/08-customize.sh
+      env:
+        ENV-DUMMY: ENV-DUMMY
+####        HOST_CCACHE_DIR: ${{ env.HOST_CCACHE_DIR }}
+####        BUILDER_CCACHE_DIR: ${{ env.BUILDER_CCACHE_DIR }}
+####        HOST_DLCCACHE_DIR: ${{ env.HOST_DLCCACHE_DIR }}
+####        BUILDER_DLCCACHE_DIR: ${{ env.BUILDER_DLCCACHE_DIR }}
+#        HOST_WORK_DIR: ${{github.workspace}}
+
+    # Allow intermediate customization
+    - name: '[Debug/Menuconfig] Wait for SSH connection (timeout 5, old 30min)'
+      if: env.SKIP_TARGET == '0' && env.OPT_DEBUG == '1' && env.TEST != '1'
+      env:
+        TIMEOUT_MIN: 5
+        TMATE_DOCKER_CONTAINER: ${{env.BUILDER_CONTAINER_ID}}
+      #uses: openlumi/safe-debugger-action@e0141e5738ac68421298d9eb4217e037e6cb1a0b # openlumi/safe-debugger-action@dev
+      uses: berlin4apk/safe-debugger-action@dev
+
+    - name: Prepare config file
+      #if: env.SKIP_TARGET == '0'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      run: scripts/cisteps/build-openwrt/09-prepare_config.sh
+
+    - name: Download packages
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/10-download_packages.sh
+
+    - name: Print disk space
+      if: env.SKIP_TARGET == '0'
+      run: df -h
+
+    - name: Compile firmware and packages with multiple threads
+      id: mtcompile
+      if: env.SKIP_TARGET == '0'
+      continue-on-error: true
+      run: scripts/cisteps/build-openwrt/11-compile_multi.sh
+
+#    - name: test ccache dir 
+#      if: env.SKIP_TARGET == '0' && env.DISABELD = '1' ## DISABELD ##
+#      run: |
+#        realfs=$(df -x devtmpfs | tail -n +2 | awk '{print $6;}' | xargs)
+#        find ${realfs} -iname "*ccache" -ls 2>&1 | grep -v "Permission denied"
+#
+#    - name: 99-test-ccache-dir.sh
+#      if: env.SKIP_TARGET == '0' && env.DISABELD = '1' ## DISABELD ##
+#      run: scripts/cisteps/build-openwrt/99-test-ccache-dir.sh
+
+    - name: Compile firmware and packages with single threads when failed
+      id: stcompile
+      if: env.SKIP_TARGET == '0' && steps.mtcompile.outputs.started == '1' && steps.mtcompile.outputs.status != 'success'
+      run: scripts/cisteps/build-openwrt/12-compile_single.sh
+
+
+#    - name: Glob match
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      uses: tj-actions/glob@v16
+#      id: glob
+#      with:
+#        files: |
+#          openwrt/.ccache
+#          ${{github.workspace}}/openwrt/.ccache
+#          ${{github.workspace}}/.ccache
+#          '**/.ccache'
+#          '/tmp/**/.ccache'
+#          '$HOME/**/.ccache'
+#          '$HOME/.ccache'
+#          '/.ccache'
+#          **/*.yaml
+#          !action.yml
+#          **/rebase.yml
+#    - name: Show all matching files
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      run: |
+#        echo "${{ steps.glob.outputs.paths }}"
+#      # Outputs: .github/workflows/rebase.yml .github/workflows/sync-release-version.yml .github/workflows/test.yml...
+
+
+    - name: Print disk space
+      if: env.SKIP_TARGET == '0'
+      run: df -h
+
+    # failure checking
+    - name: '[Failure/Debug] Wait for SSH connection (timeout 5min, old 30min)'
+      if: |
+        env.SKIP_TARGET == '0' && !cancelled()
+        && (job.status == 'failure' || (env.OPT_DEBUG == '1' && env.TEST != '1'))
+      env:
+        TIMEOUT_MIN: 5
+        TMATE_DOCKER_CONTAINER: ${{env.BUILDER_CONTAINER_ID}}
+      #uses: openlumi/safe-debugger-action@e0141e5738ac68421298d9eb4217e037e6cb1a0b # openlumi/safe-debugger-action@dev
+      uses: berlin4apk/safe-debugger-action@dev
+
+    # - name: Upload bin directory
+    #   uses: actions/upload-artifact@master
+    #   if: env.SKIP_TARGET == '0' && !cancelled()
+    #   with:
+    #     name: OpenWrt_bin_${{env.BUILD_TARGET}}
+    #     path: ${{env.HOST_BIN_DIR}}
+
+    - name: Organize files
+      id: organize
+      if: env.SKIP_TARGET == '0' && !cancelled() && ( steps.mtcompile.outputs.status == 'success' || steps.stcompile.outputs.status == 'success' )
+      run: scripts/cisteps/build-openwrt/14-organize_files.sh
+
+
+    - name: host tree1
+      id: hosttree1
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' && !cancelled()
+      run: |
+        set -vx
+        #mkdir -p docker_inspect
+        df -aPTh | zstdmt -vvv --adapt -f -o builder_host_df.txt.zstd
+        tree -axdf /  | zstdmt -vvv --adapt -f -o builder_host_tree.txt.zstd
+        echo "::group::builder_host_df.txt.zstd"
+        zstdcat builder_host_df.txt.zstd
+        echo "::endgroup::"
+        echo "::group::builder_host_tree.txt.zstd"
+        zstdcat builder_host_tree.txt.zstd
+        echo "::endgroup::"
+
+    - name: docker tree1
+      id: tree1
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' && !cancelled()
+      run: |
+        set -vx
+        #mkdir -p docker_inspect
+        # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
+        docker ps
+        docker ps -a
+        docker exec builder df -aPTh | zstdmt -vvv --adapt -f -o builder0_base_docker_exec_df.txt.zstd
+        docker exec builder tree -axdf /  | zstdmt -vvv --adapt -f -o builder0_base_docker_exec_tree.txt.zstd
+        docker exec "${BUILDER_CONTAINER_ID}" df -aPTh | zstdmt -vvv --adapt -f -o builder_base_docker_exec_df.txt.zstd
+        docker exec "${BUILDER_CONTAINER_ID}" tree -axdf /  | zstdmt -vvv --adapt -f -o builder_base_docker_exec_tree.txt.zstd
+        # docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
+        ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
+        # docker container rm --force image0
+        echo "::group::builder0_base_docker_exec_df.txt.zstd"
+        zstdcat builder0_base_docker_exec_df.txt.zstd
+        echo "::endgroup::"
+        echo "::group::builder0_base_docker_exec_tree.txt.zstd"
+        zstdcat builder0_base_docker_exec_tree.txt.zstd
+        echo "::endgroup::"
+
+    - name: docker tree2
+      id: tree2
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' && !cancelled()
+      run: |
+        set -vx
+        #mkdir -p docker_inspect
+        # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
+        docker exec "${BUILDER_IMAGE_ID_INC}" df -aPTh | zstdmt -vvv --adapt -f -o builder_base_docker_exec_df.txt.zstd
+        docker exec "${BUILDER_IMAGE_ID_INC}" tree -axdf /  | zstdmt -vvv --adapt -f -o builder_base_docker_exec_tree.txt.zstd
+        # docker export image0 | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
+        ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
+        # docker container rm --force image0
+
+    - name: docker inspect1
+      id: inspect1
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' && env.TEST != '1' && !cancelled()
+      run: |
+        set -vx
+        #mkdir -p docker_inspect
+        # docker create --name image0 "$BUILDER_IMAGE_ID_BASE"
+        # docker stop "${BUILDER_IMAGE_ID_BASE}"
+        docker export "${BUILDER_IMAGE_ID_BASE}" | tar t | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_t.txt.zstd
+        docker export "${BUILDER_IMAGE_ID_BASE}" | tar tv | zstdmt -vvv --adapt -f -o builder_base_docker_export_image_tar_tv.txt.zstd
+        ## docker image history image0 | zstdmt -vvv --adapt -f -o builder_base_docker_image_history.txt.zstd
+        # docker start "${BUILDER_IMAGE_ID_BASE}"
+        # docker container rm --force image0
+
+    - name: docker inspect2 BUILDER_CONTAINER_ID
+      id: inspect2
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' && env.TEST != '1' && !cancelled()
+      run: |
+        set -vx
+        #mkdir -p docker_inspect
+        # docker create --name image1 "$BUILDER_IMAGE_ID_INC"
+        # docker stop "${BUILDER_IMAGE_ID_INC}"
+        docker export "${BUILDER_CONTAINER_ID}" | tar t | zstdmt -vvv --adapt -f -o BUILDER_CONTAINER_ID_docker_export_image_tar_t.txt.zstd
+        docker export "${BUILDER_CONTAINER_ID}" | tar tv | zstdmt -vvv --adapt -f -o BUILDER_CONTAINER_ID_docker_export_image_tar_tv.txt.zstd
+        ## docker image history "${BUILDER_IMAGE_ID_INC}" | zstdmt -vvv --adapt -f -o builder_inc_docker_image_history.txt.zstd
+        # docker start "${BUILDER_IMAGE_ID_INC}"
+        ## docker container rm --force image1
+
+    - name: Upload inspect output
+      uses: actions/upload-artifact@master
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' 
+      with:
+        name: docker_inspect_${{env.BUILD_TARGET}}
+        path: |
+          builder0_base_docker_* 
+          builder0_inc_docker_*
+          builder0_host_*
+          BUILDER_CONTAINER_ID_*
+          builder_base_docker_* 
+          builder_inc_docker_*
+          builder_host_*
+
+
+    - name: Upload firmware
+      uses: actions/upload-artifact@master
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && env.OPT_PACKAGE_ONLY != '1' && steps.organize.outputs.status == 'success' && !cancelled()
+      with:
+        name: OpenWrt_firmware_${{env.BUILD_TARGET}}
+        path: openwrt_firmware
+
+    - name: Upload packages
+      uses: actions/upload-artifact@master
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled()
+      with:
+        name: OpenWrt_packages_${{env.BUILD_TARGET}}
+        path: ${{env.HOST_BIN_DIR}}
+
+    - uses: webfactory/ssh-agent@v0.7.0
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled()
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Checkout tools repo
+      uses: actions/checkout@v3
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
+      with:
+        repository: ${{env.REPOSITORY_GH_PAGES_RELEASES}}
+        path: ${{ env.HOST_WORK_DIR }}/releases
+        ref: gh-pages
+        token: ${{ secrets.GITHUB_TOKEN }}
+        #token: ${{ secrets.GH_TOKEN_REPOSITORY_GH_PAGES_RELEASES }}
+#    - name: Remove ssh key form SSH_AGENT
+#      # $SSH_AGENT_PID
+#      run: |
+#        ssh-add -l
+#        ssh-add -D
+#        ssh-add -l ||:
+#        kill $SSH_AGENT_PID
+
+    - name: Copy files into Git branch
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
+      run: |
+        mkdir -p ${{env.HOST_WORK_DIR}}/releases/${{env.BUILD_TARGET}}
+        cp -r ${{env.HOST_BIN_DIR}}/* ${{env.HOST_WORK_DIR}}/releases/${{env.BUILD_TARGET}}
+        scripts/make-index-html.sh ${{env.HOST_WORK_DIR}}/releases || true
+
+#    - uses: webfactory/ssh-agent@v0.7.0
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled()
+#      with:
+#        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Commit files
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled() && github.ref == 'refs/heads/master'
+      run: |
+        cd ${{ env.HOST_WORK_DIR }}/releases
+        git status
+        git add -A
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -m "Updates files from build ${{env.BUILD_TARGET}}" -m "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" -a
+        git push
+    - name: Remove ssh key form SSH_AGENT
+      # $SSH_AGENT_PID
+      run: |
+        ssh-add -l ||:
+        ssh-add -D ||:
+        ssh-add -l ||:
+##        kill $SSH_AGENT_PID
+
+#    - name: Create Pull Request
+#      if: env.SKIP_TARGET == '0' && env.TEST != '1' && steps.organize.outputs.status == 'success' && !cancelled()
+#      uses: peter-evans/create-pull-request@v3
+#      with:
+#        token: ${{ secrets.GH_TOKEN }}
+#        path: ${{ env.HOST_WORK_DIR }}/releases
+#        branch: pr-pages
+#        base: gh-pages
+#        title: 'Updates files from latest Actions build'
+
+
+    - name: Upload builder
+      if: |
+        env.SKIP_TARGET == '0' && !cancelled() && (
+          job.status == 'success'
+          || env.OPT_PUSH_WHEN_FAIL == '1'
+        ) && github.ref == 'refs/heads/master'
+      run: scripts/cisteps/build-openwrt/13-upload_builder.sh
+
+    # failure checking
+    - name: '[Failure/Debug] wait for SSH connection (timeout 5min, old 30min. You are safe to cancel the job now.)'
+      if: |
+        env.SKIP_TARGET == '0' && !cancelled()
+        && (job.status == 'failure' || (env.OPT_DEBUG == '1' && env.TEST != '1'))
+      env:
+        TIMEOUT_MIN: 5
+      #uses: openlumi/safe-debugger-action@e0141e5738ac68421298d9eb4217e037e6cb1a0b # openlumi/safe-debugger-action@dev
+      uses: berlin4apk/safe-debugger-action@dev
+    
+
