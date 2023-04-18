@@ -14,7 +14,7 @@ echo "CONFIG_CCACHE=y" | tee -a config_000.diff
 # CONFIG_CCACHE_DIR="/dev/shm/1001/ccache/"
 
 echo "BUILDER_CCACHE_DIR ${BUILDER_CCACHE_DIR}"
-echo "CONFIG_CCACHE_DIR=${BUILDER_CCACHE_DIR}/" | tee -a config_001.diff
+echo "CONFIG_CCACHE_DIR=\"${BUILDER_CCACHE_DIR}/\"" | tee -a config_001.diff
 
 # CONFIG_DOWNLOAD_FOLDER="/tmp/DLccache"
 #CONFIG_DOWNLOAD_FOLDER="/dev/shm/$(id -u)/DLccache"
@@ -23,9 +23,9 @@ echo "CONFIG_CCACHE_DIR=${BUILDER_CCACHE_DIR}/" | tee -a config_001.diff
 
 echo "BUILDER_DLCCACHE_DIR ${BUILDER_DLCCACHE_DIR}"
 
-echo "CONFIG_DOWNLOAD_FOLDER=${BUILDER_DLCCACHE_DIR}/" | tee -a config_002.diff
+echo "CONFIG_DOWNLOAD_FOLDER=\"${BUILDER_DLCCACHE_DIR}/\"" | tee -a config_002.diff
 
-echo "# DL_DIR=${BUILDER_DLCCACHE_DIR}/" | tee -a config_003.diff
+echo "# DL_DIR=\"${BUILDER_DLCCACHE_DIR}/\"" | tee -a config_003.diff
 
 
 
