@@ -180,7 +180,7 @@ printf "%s" "\$t"
 #	redis-cli -u \$t   ping  ||: ; | tr "\n" " "
 #	printf "%5s", "abc"
 #	#redis-cli -u \$t   ping  | tr "\n" " "
-timeout -s HUP 3 redis-cli -u \$t   ping  | tr "\n" " "
+timeout 3 redis-cli -u \$t   ping  | tr "\n" " "
 #outVAR=$(redis-cli -u "\$t"   ping 2>&1 ) 
 #printf "\033[0C bbbb"
 printf "\033[0L" 
