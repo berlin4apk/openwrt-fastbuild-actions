@@ -694,6 +694,12 @@ jobs:
       #if: env.SKIP_TARGET == '0'
       if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: scripts/cisteps/build-openwrt/08-customize.sh
+      env:
+        HOST_CCACHE_DIR: ${{ env.HOST_CCACHE_DIR }}
+        BUILDER_CCACHE_DIR: ${{ env.BUILDER_CCACHE_DIR }}
+        HOST_DLCCACHE_DIR: ${{ env.HOST_DLCCACHE_DIR }}
+        BUILDER_DLCCACHE_DIR: ${{ env.BUILDER_DLCCACHE_DIR }}
+#        HOST_WORK_DIR: ${{github.workspace}}
 
     # Allow intermediate customization
     - name: '[Debug/Menuconfig] Wait for SSH connection (timeout 5, old 30min)'
