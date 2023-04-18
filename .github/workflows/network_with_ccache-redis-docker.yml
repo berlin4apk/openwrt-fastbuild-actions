@@ -408,7 +408,7 @@ jobs:
 #        docker ps -a
 
     - name: Configure DL_DIR var and export it
-      #if: env.SKIP_TARGET == '0'
+      if: env.SKIP_TARGET == '0'
       run: |
         echo "DL_DIR=${{ env.HOST_DLCCACHE_DIR }}/" >> $GITHUB_ENV
         #echo "DL_DIR=/dev/shm/1001/DLccache/" >> $GITHUB_ENV
@@ -468,8 +468,8 @@ jobs:
 
     - name: 😀 Cache DLccache
       uses: actions/cache@v3
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      #if: env.NULL_DISABLE_SKIP_TARGET == '0' 
       with:
         path: |
           ${{ env.HOST_DLCCACHE_DIR }}
@@ -490,8 +490,8 @@ jobs:
  
     - name: 🪣🪣 Cache HOST_CCACHE_DIR
       uses: actions/cache@v3
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      #if: env.NULL_DISABLE_SKIP_TARGET == '0' 
       with:
         path: |
           ${{ env.HOST_CCACHE_DIR }}
@@ -512,8 +512,8 @@ jobs:
  
     - name: 🗜 Cache /tmp/builder/dl
       uses: actions/cache@v3
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      #if: env.NULL_DISABLE_SKIP_TARGET == '0' 
       with:
         path: |
           /tmp/builder/dl
@@ -552,6 +552,7 @@ jobs:
       run: scripts/cisteps/build-openwrt/07-download_openwrt.sh
 
     - name: Generate ccache hash
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       id: ccache_hash
       run: |
         CCACHE_HASH=$(md5sum include/kernel-* 2>/dev/null | awk '{ print $1 }' \
@@ -569,7 +570,7 @@ jobs:
 #        # sudo chown -R $(whoami):$(id -ng) ./.ccache/ ${{ env.HOST_CCACHE_DIR }} 
 
     - name: get ccache config, bevor ccache-action
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
         # https://github.com/ccache/ccache/blob/master/test/suites/remote_file.bash
         touch test.h
@@ -593,8 +594,8 @@ jobs:
 
     - name: 🪣 ccache-action
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      #if: env.SKIP_TARGET == '0' 
-      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+      if: env.SKIP_TARGET == '0' 
+      #if: env.NULL_DISABLE_SKIP_TARGET == '0' 
 ###uses: hendrikmuhs/ccache-action@v1.2.8
       uses: berlin4apk/ccache-action@v1.2.102
       with:
@@ -609,7 +610,7 @@ jobs:
         #dont-do-config: true
 
     - name: set cache_dir 
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
        ccache -V
         echo "#################"
@@ -674,7 +675,7 @@ jobs:
      
 
     - name: Link ccache   ln -vs /usr/local/lib/ccache/bin/* /usr/local/bin/
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
        #cd /usr/local/bin && ln --verbose -s /usr/lib/ccache/* . ||:
        ls -latr /usr/lib/ccache/bin/* /usr/local/lib/ccache/bin/* /usr/local/bin/ ||:
@@ -691,7 +692,7 @@ jobs:
 #       ccache -p ||:
 
     - name: get ccache config
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
         # https://github.com/ccache/ccache/blob/master/test/suites/remote_file.bash
         touch test.h
@@ -712,7 +713,7 @@ jobs:
 
 
     - name: get ccache config2
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
         # https://github.com/ccache/ccache/blob/master/test/suites/remote_file.bash
         touch test.h
@@ -1009,6 +1010,7 @@ jobs:
         git commit -m "Updates files from build ${{env.BUILD_TARGET}}" -m "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" -a
         git push
     - name: Remove ssh key form SSH_AGENT
+      if: env.SKIP_TARGET == '0' && env.TEST != '1' 
       # $SSH_AGENT_PID
       run: |
         ssh-add -l ||:
