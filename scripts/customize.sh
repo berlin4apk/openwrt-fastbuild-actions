@@ -94,6 +94,13 @@ if [ -n "$(ls -A "${BUILDER_PROFILE_DIR}/files" 2>/dev/null)" ]; then
     "${BUILDER_PROFILE_DIR}/files/" "${OPENWRT_CUR_DIR}/"
 fi
 
+echo "export HOST_CCACHE_DIR	BUILDER_CCACHE_DIR	HOST_DLCCACHE_DIR	BUILDER_DLCCACHE_DIR"
+export HOST_CCACHE_DIR
+export BUILDER_CCACHE_DIR
+export HOST_DLCCACHE_DIR
+export BUILDER_DLCCACHE_DIR
+export -p | grep -E "HOST_CCACHE_DIR|BUILDER_CCACHE_DIR|HOST_DLCCACHE_DIR|BUILDER_DLCCACHE_DIR"
+
 echo "Executing custom.sh"
 if [ -f "${BUILDER_PROFILE_DIR}/custom.sh" ]; then
   (
