@@ -41,19 +41,19 @@ fi
   
 docker_build_alpine_image() {
 #cat <<EOF | docker build --tag alpine -
-cat <<EOF | docker buildx build --tag alpine -
+cat <<EOF | docker buildx build --tag alpine-network-tools -
 FROM alpine:latest
 RUN set -vx && apk add --no-cache redis bind-tools musl-utils iproute2
 EOF
 }
-docker image inspect alpine || docker_build_alpine_image;
+docker image inspect alpine-network-tools || docker_build_alpine_image;
 
 
 #_has_command() {   for cmd do     command -v "$cmd" >/dev/null 2>&1 || return 1   done  }
 #_has_command2() {    command -v -- "$1" 2>/dev/null || hash -- "$1" 2>/dev/null   }
 #_has_command2 redis-cli || apk add --no-cache redis
 docker_redis_ip_test() {
-cat <<EOF | docker run --rm -i  $*  --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+cat <<EOF | docker run --rm -i  $*  --add-host=host.docker.internal:host-gateway --name redis_alpine alpine-network-tools sh
 set -vx
 command -v -- redis-cli 2>/dev/null || apk add --no-cache redis
 echo docker_redis_ip_test
@@ -214,7 +214,7 @@ EOF
 
 
 docker_redis_ip_test_port_26379() {
-cat <<EOF | docker run --rm -i  $*   --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+cat <<EOF | docker run --rm -i  $*   --add-host=host.docker.internal:host-gateway --name redis_alpine alpine-network-tools sh
 set -vx
 apk add --no-cache redis >/dev/null
 echo docker_redis_ip_test_port_26379
@@ -242,7 +242,7 @@ EOF
 
 # https://github.com/kraj/uclibc-ng/blob/master/extra/scripts/getent
 docker_redis_ip2_test() {
-cat <<EOF | docker run --rm -i  $*   --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+cat <<EOF | docker run --rm -i  $*   --add-host=host.docker.internal:host-gateway --name redis_alpine alpine-network-tools sh
 set -vx
 apk add --no-cache bind-tools >/dev/null
 echo docker_redis_ip2_test
@@ -268,7 +268,7 @@ EOF
 }
 
 docker_redis_ip3_test() {
-cat <<EOF | docker run --rm -i  $*   --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
+cat <<EOF | docker run --rm -i  $*   --add-host=host.docker.internal:host-gateway --name redis_alpine alpine-network-tools sh
 set -vx
 apk add --no-cache musl-utils >/dev/null
 echo docker_redis_ip3_test
@@ -388,7 +388,8 @@ set -eo pipefail
 
 
 docker_alpine_ip() {
-cat <<EOF | docker run --rm -i  $*   alpine:latest sh
+#cat <<EOF | docker run --rm -i  $*   alpine:latest sh
+cat <<EOF | docker run --rm -i  $*   alpine-network-tools sh
 apk add --no-cache iproute2 >/dev/null
 ip -4 route show default | cut -d' ' -f3
 EOF
