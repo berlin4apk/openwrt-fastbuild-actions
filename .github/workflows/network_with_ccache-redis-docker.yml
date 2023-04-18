@@ -157,12 +157,12 @@ jobs:
 #          - my_docker_volume:/volume_mount
 #          - /source/directory:/destination/directory
         ports:
-          - 6379/tcp
+          #- 6379/tcp
           # get the rendom port via ${{ job.services.redis.ports['6379'] }}
 # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idservices
 # https://docs.github.com/en/actions/learn-github-actions/contexts#job-context
           # Maps port 6379 on service container to the host
-          #- 6379:6379
+          - 6379:6379
 
     steps:
 #      - uses: docker-practice/actions-setup-docker@1.0.8
@@ -184,7 +184,7 @@ jobs:
           docker exec ${{ job.services.redis.id }} /bin/sh -x -c 'echo "loglevel verbose" >> /etc/redis/redis.conf'
           docker exec ${{ job.services.redis.id }} /bin/sh -x -c 'echo "# see https://github.community/t/how-do-i-properly-override-a-service-entrypoint/17435/8" >> /etc/redis/redis.conf'
           docker exec ${{ job.services.redis.id }} /bin/sh -x -c 'echo "# https://hub.docker.com/_/redis" >> /etc/redis/redis.conf'
-#          docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
+          docker kill --signal=SIGHUP ${{ job.services.redis-y9g98g58d.id }} ||:
     #  - name: Sleep for 30 seconds
     #    run: sleep 300s
     #    shell: bash
@@ -194,6 +194,7 @@ jobs:
         uses: tailscale/github-action@v1
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY_container_job }}
+          hostname: redis-y9g98g58d
           #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
       - name: Wait for tests to succeed
