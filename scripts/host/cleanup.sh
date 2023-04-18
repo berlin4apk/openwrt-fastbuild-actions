@@ -147,6 +147,8 @@ _exec_with_df_sudo rm -rf /usr/local/lib/android
 _exec_with_df_sudo rm -rf /opt/ghc	# haskell
 # _got_more_space
 _exec_with_df_sudo rm -rf /opt/hostedtoolcache/CodeQL
+_exec_with_df_sudo rm -rf /opt/az	# azure-cli
+_exec_with_df_sudo apt-get clean 
 # _got_more_space
 #_exec_with_df docker rmi "$(docker images -q | tr "\n" " " )"
 # _exec_with_df $(docker images -q | xargs docker rmi ||: )
