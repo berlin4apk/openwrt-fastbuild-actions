@@ -706,6 +706,7 @@ jobs:
       if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: scripts/cisteps/build-openwrt/08-customize.sh
       env:
+        ENV-DUMMY: ENV-DUMMY
 ####        HOST_CCACHE_DIR: ${{ env.HOST_CCACHE_DIR }}
 ####        BUILDER_CCACHE_DIR: ${{ env.BUILDER_CCACHE_DIR }}
 ####        HOST_DLCCACHE_DIR: ${{ env.HOST_DLCCACHE_DIR }}
