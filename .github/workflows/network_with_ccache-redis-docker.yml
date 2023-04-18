@@ -313,26 +313,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Create docker network 🖧
-      run: docker network create ${MODEL_EXTERNAL_DOCKER_NETWORK}
-
-    - run: docker network ls
-    - name: Run redis
-      #run: docker run -p 3030:3030 -v ${{ github.workspace }}/aksw-model:/staging --network "bridge" --hostname fuseki --name fuseki -d stain/jena-fuseki /jena-fuseki/fuseki-server --file=/staging/aksw.org.nt /aksw
-      run: docker run -p 6379:6379 -v ${{ github.workspace }}/docker_volume_mount:/data:rw --network "bridge" --hostname redis --name redis -d redis:7.0.10-alpine3.17 --unixsocket /tmp/docker/socket.sock --unixsocketperm 777 --loglevel verbose
-    - run: docker network ls
-    
-    - run: docker network ls
-    - name: Run redis-cli-test 1
-      run: scripts/redis-cli-test.sh ${{ job.container.network }}
-      env: 
-        ENV_JOB_CONTAINER_NETWORK: ${{ job.container.network }}
-      
-
-    - run: docker network ls
-    - name: Run redis-cli-test 2
-      run: docker run --network ${{ job.container.network }} --hostname redis-cli --name redis-cli -d redis:7.0.10-alpine3.17 
-
 
     - name: Get current time
       uses: josStorer/get-current-time@v2.1.1
@@ -366,6 +346,30 @@ jobs:
 
     - name: Check if skip this job
       run: scripts/cisteps/build-openwrt/02-check_target.sh
+
+    - name: Create docker network 🖧
+      run: docker network create ${MODEL_EXTERNAL_DOCKER_NETWORK}
+
+    - run: docker network ls
+    - name: Run redis
+      #run: docker run -p 3030:3030 -v ${{ github.workspace }}/aksw-model:/staging --network "bridge" --hostname fuseki --name fuseki -d stain/jena-fuseki /jena-fuseki/fuseki-server --file=/staging/aksw.org.nt /aksw
+      run: docker run -p 6379:6379 -v ${{ github.workspace }}/docker_volume_mount:/data:rw --network "bridge" --hostname redis --name redis -d redis:7.0.10-alpine3.17 --unixsocket /tmp/docker/socket.sock --unixsocketperm 777 --loglevel verbose
+    - run: docker network ls
+    
+    - run: docker network ls
+    - name: Run redis-cli-test 1
+      run: scripts/redis-cli-test.sh ${{ job.container.network }}
+      env: 
+        ENV_JOB_CONTAINER_NETWORK: ${{ job.container.network }}
+      
+
+    - run: docker network ls
+    - name: Run redis-cli-test 2
+      run: docker run --network ${{ job.container.network }} --hostname redis-cli --name redis-cli -d redis:7.0.10-alpine3.17 
+
+
+
+
 
     - name: Clean up for extra space
       if: env.SKIP_TARGET == '0' && env.TEST != '1'
