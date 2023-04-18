@@ -197,6 +197,7 @@ jobs:
           hostname: redis-y9g98g58d
           #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
       - name: check for hello.ipn.dev in netmap
+        if: env.SKIP_TARGET == '0' && env.TEST != '1'
         run: |
           tailscale status | grep -q hello ||:
 
@@ -376,6 +377,7 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY_runner }}
           #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
     - name: check for hello.ipn.dev in netmap
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
         tailscale status | grep -q hello ||:
 
