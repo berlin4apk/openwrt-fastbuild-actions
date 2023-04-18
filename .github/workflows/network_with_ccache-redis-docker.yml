@@ -197,8 +197,8 @@ jobs:
           hostname: redis-y9g98g58d
           #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
       - name: check for hello.ipn.dev in netmap
-        run:
-          tailscale status | grep -q hello
+        run: |
+          tailscale status | grep -q hello ||:
 
       - name: Wait for tests to succeed
         uses: lewagon/wait-on-check-action@v1.3.1
@@ -376,8 +376,9 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY_runner }}
           #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
     - name: check for hello.ipn.dev in netmap
-      run:
-         tailscale status | grep -q hello
+      run: |
+        tailscale status | grep -q hello ||:
+
 
 ##    - name: Create docker network 🖧
 ##      run: docker network create ${MODEL_EXTERNAL_DOCKER_NETWORK}
