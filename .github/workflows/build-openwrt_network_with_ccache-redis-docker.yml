@@ -25,7 +25,7 @@ env:
   MODEL_EXTERNAL_DOCKER_NETWORK: data-y9g98g58d
 
 
-name: package_only redis Build OpenWrt
+name: network redis Build OpenWrt
 
 on:
   deployment:
