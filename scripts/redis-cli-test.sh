@@ -12,7 +12,7 @@ echo "= redis-cli-test.sh ==== $0 ==== start ===================================
 echo "\$1: $1"
 echo "\$ENV_JOB_CONTAINER_NETWORK: $ENV_JOB_CONTAINER_NETWORK"
 
-set -vx 
+#set -vx 
 _has_command2() {
     command -v -- "$1" 2>/dev/null || hash -- "$1" 2>/dev/null
     #hash -- "$1" 2>/dev/null
@@ -43,7 +43,7 @@ docker_build_alpine_image() {
 #cat <<EOF | docker build --tag alpine -
 cat <<EOF | docker buildx build --tag alpine-network-tools -
 FROM alpine:latest
-RUN set -vx && apk add --no-cache redis bind-tools musl-utils iproute2
+RUN set -vx && apk add --no-cache redis bind-tools musl-utils iproute2 coreutils
 EOF
 }
 docker image inspect alpine-network-tools || docker_build_alpine_image;
@@ -162,7 +162,7 @@ redis://docker.for.win.host.internal:56379
 redis://docker.for.win.localhost:56379
 "
 for t in \$serverlist; do 
-#set +vx
+set +vx
 	#echo "###########################"
 	#echo "########"
 	#echo \$t
@@ -170,6 +170,7 @@ for t in \$serverlist; do
 #	printf "\t\t\t %s\n" "\$t"
 #printf "%s\t" "\$t"
 printf "%s" "\$t"
+#printf "%s\t" "\$t"
 #printf '\033[%d' 10
 #	printf "%s" "\$t"
 #	printf "\33[%d;%d" "30" "10"
@@ -180,13 +181,14 @@ printf "%s" "\$t"
 #	redis-cli -u \$t   ping  ||: ; | tr "\n" " "
 #	printf "%5s", "abc"
 #	#redis-cli -u \$t   ping  | tr "\n" " "
-timeout -s SIGKILL 3 redis-cli -u \$t   ping  | tr "\n" " "
+#busybox timeout # timeout -s SIGKILL 1 redis-cli -u \$t   ping  | tr "\n" " "
+#timeout --foreground -k1 2 redis-cli -u \$t   ping  | tr "\n" "    "
 #outVAR=$(redis-cli -u "\$t"   ping 2>&1 ) 
 #printf "\033[0C bbbb"
 printf "\033[0L" 
 printf "\033[45C "
 #printf "\033[40C foooooo"
-redis-cli --verbose -u "\$t"   ping 2>&1
+timeout --foreground -k1 2 redis-cli --verbose -u "\$t"   ping 2>&1
 #printf "%s" "\$outVAR"
 	#echo "###########################"
 #	echo "__________________________________________________________________________________________________"
