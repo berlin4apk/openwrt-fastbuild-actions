@@ -162,7 +162,7 @@ redis://docker.for.win.host.internal:56379
 redis://docker.for.win.localhost:56379
 "
 for t in \$serverlist; do 
-set +vx
+#set +vx
 	#echo "###########################"
 	#echo "########"
 	#echo \$t
