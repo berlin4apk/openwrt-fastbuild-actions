@@ -46,7 +46,7 @@ FROM alpine:latest
 RUN set -vx && apk add --no-cache redis bind-tools musl-utils iproute2 coreutils
 EOF
 }
-docker image inspect alpine-network-tools || docker_build_alpine_image;
+docker image inspect alpine-network-tools 2>&1 >/dev/null || docker_build_alpine_image;
 
 
 #_has_command() {   for cmd do     command -v "$cmd" >/dev/null 2>&1 || return 1   done  }
@@ -54,7 +54,7 @@ docker image inspect alpine-network-tools || docker_build_alpine_image;
 #_has_command2 redis-cli || apk add --no-cache redis
 docker_redis_ip_test() {
 cat <<EOF | docker run --rm -i  $*  --add-host=host.docker.internal:host-gateway --name redis_alpine alpine-network-tools sh
-set -vx
+#set -vx
 command -v -- redis-cli 2>/dev/null || apk add --no-cache redis
 echo docker_redis_ip_test
 
@@ -299,7 +299,7 @@ EOF
 
 HOST_SELF_redis_ip_test() {
 cat <<EOF | bash
-set -vx
+#set -vx
 echo HOST_SELF_redis_ip_test
 serverlist="
 redis://172.17.0.1
@@ -322,13 +322,24 @@ redis://docker.for.mac.localhost
 redis://docker.for.win.host.internal
 redis://docker.for.win.localhost
 "
-for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
+#for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
+for t in \$serverlist; do 
+set +vx
+printf "%s" "\$t"
+#busybox timeout # timeout -s SIGKILL 1 redis-cli -u \$t   ping  | tr "\n" " "
+#timeout --foreground -k1 2 redis-cli -u \$t   ping  | tr "\n" "    "
+printf "\033[0L" 
+printf "\033[45C "
+timeout --foreground -k1 2 redis-cli --verbose -u "\$t"   ping 2>&1
+#printf "_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_\n"
+printf "\------------------------------------------------------------------------------------------------------------------------\n"
+done
 EOF
 }
 
 HOST_SELF_redis_ip_test_port_6379() {
 cat <<EOF | bash
-set -vx
+#set -vx
 echo HOST_SELF_redis_ip_test_port_6379
 PORT=:6379
 serverlist="
@@ -352,7 +363,18 @@ redis://docker.for.mac.localhost\$PORT
 redis://docker.for.win.host.internal\$PORT
 redis://docker.for.win.localhost\$PORT
 "
-for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
+#for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
+for t in \$serverlist; do 
+set +vx
+printf "%s" "\$t"
+#busybox timeout # timeout -s SIGKILL 1 redis-cli -u \$t   ping  | tr "\n" " "
+#timeout --foreground -k1 2 redis-cli -u \$t   ping  | tr "\n" "    "
+printf "\033[0L" 
+printf "\033[45C "
+timeout --foreground -k1 2 redis-cli --verbose -u "\$t"   ping 2>&1
+#printf "_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_\n"
+printf "\------------------------------------------------------------------------------------------------------------------------\n"
+done
 EOF
 }
 
@@ -382,7 +404,18 @@ redis://docker.for.mac.localhost\$PORT
 redis://docker.for.win.host.internal\$PORT
 redis://docker.for.win.localhost\$PORT
 "
-for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
+#for t in \$serverlist; do redis-cli -u \$t   ping ||: ; done
+for t in \$serverlist; do 
+set +vx
+printf "%s" "\$t"
+#busybox timeout # timeout -s SIGKILL 1 redis-cli -u \$t   ping  | tr "\n" " "
+#timeout --foreground -k1 2 redis-cli -u \$t   ping  | tr "\n" "    "
+printf "\033[0L" 
+printf "\033[45C "
+timeout --foreground -k1 2 redis-cli --verbose -u "\$t"   ping 2>&1
+#printf "_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_\n"
+printf "\------------------------------------------------------------------------------------------------------------------------\n"
+done
 EOF
 }
 
@@ -479,8 +512,11 @@ export DEBIAN_FRONTEND=noninteractive
 fi
 }
 
+
+
+
 ### _install_if_not_has_command genisoimage
-_install_if_not_has_command tree
+[[ "$1" == "install" ]] && _install_if_not_has_command tree
 #_install_if_not_has_command foofeeoo
 #
 
@@ -490,48 +526,49 @@ _install_if_not_has_command tree
 #_install_apt_deb python3-progressbar 
 #_install_apt_deb python3-humanize
 #
-_install_apt_deb redis-tools python3-redis python3-progress python3-progressbar python3-humanize
+[[ "$1" == "install" ]] && _install_apt_deb redis-tools python3-redis python3-progress python3-progressbar python3-humanize
 
 
 _install_ccache_download_redis() {
-wget -O ccache-download-redis https://github.com/ccache/ccache/raw/v4.8/misc/download-redis
-wget -O ccache-upload-redis https://github.com/ccache/ccache/raw/v4.8/misc/upload-redis
+	wget -O ccache-download-redis https://github.com/ccache/ccache/raw/v4.8/misc/download-redis
+	wget -O ccache-upload-redis https://github.com/ccache/ccache/raw/v4.8/misc/upload-redis
 
-echo "eda111306e3d65ac61a86811596d18c283711f00bb5cd76d23df1f4b885d812a *ccache-download-redis" | sha256sum -c -
-echo "5305b25e1534601fd102f295a40f5b670dfd63b5f525cd6079d0c5ac86a46c3c *ccache-upload-redis" | sha256sum -c -
+	echo "eda111306e3d65ac61a86811596d18c283711f00bb5cd76d23df1f4b885d812a *ccache-download-redis" | sha256sum -c -
+	echo "5305b25e1534601fd102f295a40f5b670dfd63b5f525cd6079d0c5ac86a46c3c *ccache-upload-redis" | sha256sum -c -
 
-if [ "$CI" != "true" ]; then
-	echo runing not in CI, no cp -p ccache-upload-redis ccache-download-redis /usr/local/bin/
-else
-$Sudo chmod 755 ccache-upload-redis ccache-download-redis
-$Sudo cp -p ccache-upload-redis ccache-download-redis /usr/local/bin/
-fi
+	if [ "$CI" != "true" ]; then
+		echo runing not in CI, no cp -p ccache-upload-redis ccache-download-redis /usr/local/bin/
+	else
+		$Sudo chmod 755 ccache-upload-redis ccache-download-redis
+		$Sudo cp -p ccache-upload-redis ccache-download-redis /usr/local/bin/
+	fi
 
-###curl -L https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz | $Sudo tar -xJvf- --strip-components=1 -C /usr/local/bin/
-[[ -e ccache-4.8-linux-x86_64.tar.xz ]] || curl -LORJ https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
-echo "3b35ec9e8af0f849e66e7b5392e2d436d393adbb0574b7147b203943258c6205 *ccache-4.8-linux-x86_64.tar.xz" | sha256sum -c -
-$Sudo tar -xJvf ccache-4.8-linux-x86_64.tar.xz --strip-components=1 -C /usr/local/bin/
+	###curl -L https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz | $Sudo tar -xJvf- --strip-components=1 -C /usr/local/bin/
+	[[ -e ccache-4.8-linux-x86_64.tar.xz ]] || curl -LORJ https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
+	echo "3b35ec9e8af0f849e66e7b5392e2d436d393adbb0574b7147b203943258c6205 *ccache-4.8-linux-x86_64.tar.xz" | sha256sum -c -
+	$Sudo tar -xJvf ccache-4.8-linux-x86_64.tar.xz --strip-components=1 -C /usr/local/bin/
 
-[[ -e update-ccache-symlinks.sh ]] || curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/src/update-ccache-symlinks.sh
-[[ -e update-ccache-symlinks.in ]] || curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/third-party/debian-ccache/debian/update-ccache-symlinks.in
-echo "98a3cb350fa4918c8f72ea3167705ef57e7fafa8c64fc0f286029e25e1867874 *update-ccache-symlinks.in" | sha256sum -c -
-echo "9ba51f7f4983817980c4173282dd09cdba6b5d81d087852831d9ecb69a6cf7ad *update-ccache-symlinks.sh" | sha256sum -c -
-if [ "$CI" != "true" ]; then
-	echo runing not in CI, no apt install
-else
-	$Sudo chmod 755 update-ccache-symlinks.in update-ccache-symlinks.sh
-	$Sudo cp -p update-ccache-symlinks.in update-ccache-symlinks.sh /usr/local/bin/
-fi
+	[[ -e update-ccache-symlinks.sh ]] || curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/src/update-ccache-symlinks.sh
+	[[ -e update-ccache-symlinks.in ]] || curl -LORJ https://github.com/berlin4apk/ccache-action/raw/v1.2.105/third-party/debian-ccache/debian/update-ccache-symlinks.in
+	echo "98a3cb350fa4918c8f72ea3167705ef57e7fafa8c64fc0f286029e25e1867874 *update-ccache-symlinks.in" | sha256sum -c -
+	echo "9ba51f7f4983817980c4173282dd09cdba6b5d81d087852831d9ecb69a6cf7ad *update-ccache-symlinks.sh" | sha256sum -c -
+	if [ "$CI" != "true" ]; then
+		echo runing not in CI, no apt install
+	else
+		$Sudo chmod 755 update-ccache-symlinks.in update-ccache-symlinks.sh
+		$Sudo cp -p update-ccache-symlinks.in update-ccache-symlinks.sh /usr/local/bin/
+	fi
 
-$Sudo -l ||:
+	$Sudo -l ||:
 
-/usr/local/bin/update-ccache-symlinks.sh ||:
+	/usr/local/bin/update-ccache-symlinks.sh ||:
 }
+
 
 if [ "$CI" != "true" ]; then
 	echo runing not in CI, no _install_ccache_download_redis
 else
-	_install_ccache_download_redis
+	[[ "$1" == "install" ]] && _install_ccache_download_redis
 fi
 
 set +eo pipefail
@@ -542,14 +579,15 @@ export REDIS_PASSWORD=
 
 ccache -p
 ###ccache --set-config remote_storage="file://home/builder/.ccache|redis://172.17.0.1|redis://172.18.0.1|redis://host.docker.internal|redis://redis-y9g98g58d|redis://redis-2y9g98g58d|redis://redis"
-[[ "$CI" == "true" ]] && ccache --set-config remote_storage="file:/${HOST_CCACHE_DIR}|file:/${BUILDER_CCACHE_DIR}"
+[[ "$1" == "install" ]] && [[ "$CI" == "true" ]] && ccache --set-config remote_storage="file:/${HOST_CCACHE_DIR}|file:/${BUILDER_CCACHE_DIR}"
 #ccache --set-config reshare=true
 #ccache --set-config remote_only=true
-ccache --set-config hard_link=false
-ccache --set-config umask=002
-ccache -p
+[[ "$1" == "install" ]] && ccache --set-config hard_link=false
+[[ "$1" == "install" ]] && ccache --set-config umask=002
+[[ "$1" == "install" ]] && ccache -p
 
-[[ "$CI" == "true" ]] && cat <<EOF | $Sudo tee /etc/ccache.conf-04-mod-host | $Sudo tee /usr/local/etc/ccache.conf-04-mod-host
+
+[[ "$1" == "install" ]] && [[ "$CI" == "true" ]] && cat <<EOF | $Sudo tee /etc/ccache.conf-04-mod-host | $Sudo tee /usr/local/etc/ccache.conf-04-mod-host
 #cache_dir=/ccache/
 cache_dir=/dev/shm/ccache/
 #cache_dir=/tmp/ccache/
@@ -574,20 +612,33 @@ EOF
 
 
 if [ "$CI" != "true" ]; then
-	echo "runing not in CI, no HOST_SELF_redis_ip_test"
+	#echo "runing not in CI, no HOST_SELF_redis_ip_test"
+	echo "runing not in CI"
+	set +vx
+	DOCKER_HOST_IP1=$(docker_ip_fn)
+	DOCKER_HOST_IP2=$(docker_ip_fn2)
+	DOCKER_HOST_IP3=$(docker_ip_fn3)
+	DOCKER_HOST_IP4=$(docker_ip_fn4)
+#	set -vx
+	HOST_SELF_redis_ip_test | tee HOST_SELF_redis_ip_test.out # && grep PONG HOST_SELF_redis_ip_test.out && rm HOST_SELF_redis_ip_test.out
+	HOST_SELF_redis_ip_test_port_6379 | tee -a HOST_SELF_redis_ip_test.out 
+	HOST_SELF_redis_ip_test_port_26379 | tee -a HOST_SELF_redis_ip_test.out # && grep PONG HOST_SELF_redis_ip_test.out && rm HOST_SELF_redis_ip_test.out
 else
 set +vx
 DOCKER_HOST_IP1=$(docker_ip_fn)
 DOCKER_HOST_IP2=$(docker_ip_fn2)
 DOCKER_HOST_IP3=$(docker_ip_fn3)
 DOCKER_HOST_IP4=$(docker_ip_fn4)
-set -vx
+# set -vx
 
-HOST_SELF_redis_ip_test
-HOST_SELF_redis_ip_test_port_6379
-HOST_SELF_redis_ip_test_port_26379
+HOST_SELF_redis_ip_test | tee HOST_SELF_redis_ip_test.out # && grep PONG HOST_SELF_redis_ip_test.out && rm HOST_SELF_redis_ip_test.out
+HOST_SELF_redis_ip_test_port_6379 | tee -a HOST_SELF_redis_ip_test.out 
+HOST_SELF_redis_ip_test_port_26379 | tee -a HOST_SELF_redis_ip_test.out # && grep PONG HOST_SELF_redis_ip_test.out && rm HOST_SELF_redis_ip_test.out
 fi
 
+## if [ "$1" == "install" ]; then
+## fi
+## [[ "$1" == "install" ]] && 
 
 
 
@@ -607,11 +658,16 @@ if [ "$CI" != "true" ]; then
 #working but not on github error with the /dev/tty loggign # [[ "$*" != "" ]] && mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG ) ; echo "$mypong"
 #working but not on github error with the /dev/tty loggign # [[ "$*" == "" ]] && echo "call docker without --network "
 #working but not on github error with the /dev/tty loggign # [[ "$*" == "" ]] && mypong=$( docker_redis_ip_test | tee /dev/tty | grep PONG ) ; echo "$mypong"
-[[ "$*" != "" ]] && echo "call docker with --network $*"
-[[ "$*" != "" ]] && docker_redis_ip_test  --network "$*" | tee docker_redis_ip_test.out && grep PONG docker_redis_ip_test.out && rm docker_redis_ip_test.out
-[[ "$*" == "" ]] && echo "call docker without --network "
-[[ "$*" == "" ]] && docker_redis_ip_test | tee docker_redis_ip_test.out && grep PONG docker_redis_ip_test.out && rm docker_redis_ip_test.out
+[[ "$*" != "" ]] && echo "call docker with --network $*" | tee docker_redis_ip_test.out
+[[ "$*" != "" ]] && docker_redis_ip_test  --network "$*" | tee -a docker_redis_ip_test.out # && grep PONG docker_redis_ip_test.out && rm docker_redis_ip_test.out
+[[ "$*" == "" ]] && echo "call docker without --network " | tee docker_redis_ip_test.out 
+[[ "$*" == "" ]] && docker_redis_ip_test | tee -a docker_redis_ip_test.out # && grep PONG docker_redis_ip_test.out && rm docker_redis_ip_test.out
 
+echo PONG HOST_SELF_redis_ip_test.out
+grep PONG HOST_SELF_redis_ip_test.out # && rm HOST_SELF_redis_ip_test.out
+printf "_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_\n"
+echo PONG docker_redis_ip_test.out
+grep -E "PONG|call" docker_redis_ip_test.out # && rm docker_redis_ip_test.out
 
 #	docker_redis_ip_test_port_26379  --network "$*"
 #	docker_redis_ip2_test  --network "$*"
@@ -643,6 +699,7 @@ fi
 
 
 
+if [ "$1" == "install" ]; then
 echo "= UIDs on Host ==== $0 ==============================================="
 	set -vx
 id -u
@@ -663,6 +720,8 @@ for FILE in redis-cli-test_*.sh; do
 	set +vx
 done # not needed?? || echo "files redis-cli-test_*.sh not exist"
 unset FILE
+fi
+
 fi
 
 echo "= redis-cli-test.sh ==== $0 ==== end ==========================================="
