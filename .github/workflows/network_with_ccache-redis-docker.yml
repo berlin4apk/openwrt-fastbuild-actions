@@ -373,8 +373,10 @@ jobs:
           *_test.out 
 #          HOST_SELF_redis_ip_test.out 
 #          docker_redis_ip_test.out
-    - name: exit 0
-      run: exit 0
+    - name: echo "SKIP_TARGET=1" >> $GITHUB_ENV
+      run: echo "SKIP_TARGET=1" >> $GITHUB_ENV
+      #echo "SKIP_TARGET=${{ env.HOST_DLCCACHE_DIR }}/" >> $GITHUB_ENV
+
 
     #- run: docker network ls
     #- name: Run redis-cli-test 2
