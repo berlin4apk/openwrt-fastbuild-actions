@@ -8,7 +8,7 @@
 env:
   # DO NOT CHANGE the following here, set them only in forked repo's Settings->Secrets page
   # You don't need to set docker_registry if you are using the default Docker Hub Settings->Secrets
-  DK_REGISTRY: ${{secrets.docker_registry}}
+  DK_REGISTRY: ${{vars.docker_registry}}
   DK_USERNAME: ${{vars.docker_username}}
   DK_PASSWORD: ${{secrets.docker_password}}
   SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK_URL}}
@@ -70,6 +70,9 @@ on:
         type: boolean
         default: true
       OPT_PUSH_WHEN_FAIL:
+        type: boolean
+        default: false
+      OPT_INSPECT:
         type: boolean
         default: false
       OPT_IGNORE_ERRORS:
@@ -286,6 +289,8 @@ jobs:
       run: echo "OPT_PACKAGE_ONLY=1" >> $GITHUB_OUTPUT
     - if: ${{ github.event.inputs.OPT_PUSH_WHEN_FAIL && github.event.inputs.OPT_PUSH_WHEN_FAIL != 'false' }}
       run: echo "OPT_PUSH_WHEN_FAIL=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_INSPECT && github.event.inputs.OPT_INSPECT != 'false' }}
+      run: echo "OPT_INSPECT=1" >> $GITHUB_OUTPUT
     - if: ${{ github.event.inputs.OPT_IGNORE_ERRORS && github.event.inputs.OPT_IGNORE_ERRORS != 'false' }}
       run: echo "OPT_IGNORE_ERRORS=1" >> $GITHUB_OUTPUT
     - if: ${{ github.event.inputs.OPT_DEBUG && github.event.inputs.OPT_DEBUG != 'false' }}
@@ -558,10 +563,15 @@ jobs:
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
        ccache -V
+        echo "#################"
        ccache -p
+        echo "#################"
        ccache --set-config=cache_dir=${{ env.HOST_CCACHE_DIR }} ||:
+        echo "#################"
        ccache --set-config=max_size=1500M
+        echo "#################"
        ccache --set-config=compression=true
+        echo "#################"
        ccache -p
 
 
@@ -614,7 +624,7 @@ jobs:
 
      
 
-    - name: Link ccache
+    - name: Link ccache   ln -vs /usr/local/lib/ccache/bin/* /usr/local/bin/
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: |
        #cd /usr/local/bin && ln --verbose -s /usr/lib/ccache/* . ||:
@@ -624,12 +634,12 @@ jobs:
        ls -latr /usr/lib/ccache/bin/* /usr/local/lib/ccache/bin/* /usr/local/bin/ ||:
 
 
-    - name: get ccache config
-      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      run: |
-       cat /usr/local/etc/ccache.conf ||:
-       ccache -sv ||:
-       ccache -p ||:
+#    - name: get ccache config
+#      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+#      run: |
+#       cat /usr/local/etc/ccache.conf ||:
+#       ccache -sv ||:
+#       ccache -p ||:
 
     - name: get ccache config
       #if: env.SKIP_TARGET == '0' && env.TEST != '1'
@@ -696,10 +706,10 @@ jobs:
       if: env.SKIP_TARGET == '0' && env.TEST != '1'
       run: scripts/cisteps/build-openwrt/08-customize.sh
       env:
-        HOST_CCACHE_DIR: ${{ env.HOST_CCACHE_DIR }}
-        BUILDER_CCACHE_DIR: ${{ env.BUILDER_CCACHE_DIR }}
-        HOST_DLCCACHE_DIR: ${{ env.HOST_DLCCACHE_DIR }}
-        BUILDER_DLCCACHE_DIR: ${{ env.BUILDER_DLCCACHE_DIR }}
+####        HOST_CCACHE_DIR: ${{ env.HOST_CCACHE_DIR }}
+####        BUILDER_CCACHE_DIR: ${{ env.BUILDER_CCACHE_DIR }}
+####        HOST_DLCCACHE_DIR: ${{ env.HOST_DLCCACHE_DIR }}
+####        BUILDER_DLCCACHE_DIR: ${{ env.BUILDER_DLCCACHE_DIR }}
 #        HOST_WORK_DIR: ${{github.workspace}}
 
     # Allow intermediate customization
@@ -800,7 +810,7 @@ jobs:
 
     - name: host tree1
       id: hosttree1
-      if: env.SKIP_TARGET == '0' && !cancelled()
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' && !cancelled()
       run: |
         set -vx
         #mkdir -p docker_inspect
@@ -815,7 +825,7 @@ jobs:
 
     - name: docker tree1
       id: tree1
-      if: env.SKIP_TARGET == '0' && !cancelled()
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' && !cancelled()
       run: |
         set -vx
         #mkdir -p docker_inspect
@@ -838,7 +848,7 @@ jobs:
 
     - name: docker tree2
       id: tree2
-      if: env.SKIP_TARGET == '0' && !cancelled()
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' && !cancelled()
       run: |
         set -vx
         #mkdir -p docker_inspect
@@ -851,7 +861,7 @@ jobs:
 
     - name: docker inspect1
       id: inspect1
-      if: env.SKIP_TARGET == '0' && env.TEST != '1' && !cancelled()
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' && env.TEST != '1' && !cancelled()
       run: |
         set -vx
         #mkdir -p docker_inspect
@@ -865,7 +875,7 @@ jobs:
 
     - name: docker inspect2 BUILDER_CONTAINER_ID
       id: inspect2
-      if: env.SKIP_TARGET == '0' && env.TEST != '1' && !cancelled()
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' && env.TEST != '1' && !cancelled()
       run: |
         set -vx
         #mkdir -p docker_inspect
@@ -879,7 +889,7 @@ jobs:
 
     - name: Upload inspect output
       uses: actions/upload-artifact@master
-      if: env.SKIP_TARGET == '0'
+      if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' 
       with:
         name: docker_inspect_${{env.BUILD_TARGET}}
         path: |

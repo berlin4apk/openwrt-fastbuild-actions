@@ -8,14 +8,16 @@
 env:
   # DO NOT CHANGE the following here, set them only in forked repo's Settings->Secrets page
   # You don't need to set docker_registry if you are using the default Docker Hub Settings->Secrets
-  DK_REGISTRY: ${{secrets.docker_registry}}
+  DK_REGISTRY: ${{vars.docker_registry}}
   DK_USERNAME: ${{vars.docker_username}}
   DK_PASSWORD: ${{secrets.docker_password}}
   SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK_URL}}
   TMATE_ENCRYPT_PASSWORD: ${{secrets.TMATE_ENCRYPT_PASSWORD}}
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
   OPT_UPDATE_FEEDS: 1
-  # OPT_REBUILD: 1
+  # OPT_REBUILD: "1"
+#  OPT_PACKAGE_ONLY: "1"
+#  OPT_PUSH_WHEN_FAIL: "1"
   OPT_PUSH_WHEN_FAIL: 1
   REPOSITORY_GH_PAGES_RELEASES: ${{vars.VARG_REPOSITORY_GH_PAGES}} # eg berlin4apk/openwrt-releases or openlumi/releases 
 
@@ -25,8 +27,58 @@ on:
   deployment:
   repository_dispatch:
   workflow_dispatch:
-    env:
-      # OPT_DEBUG: 1
+    inputs:
+      RD_TARGET:
+#      BUILD_TARGET:
+        description: 'target to use'
+        #required: true
+        default: 22.03.4-rsync
+        type: choice
+        options:
+        - all
+        - 21.02.5
+        - 22.03.3
+        - 22.03.3-rsync-test
+        - 22.03.3-rsync-test2
+        - 22.03.3-rsync-mini
+        - 22.03.4-rsync
+        - snapshot
+      RD_TASK:
+#      BUILD_TARGET:
+        description: 'Task to run'
+        #required: true
+        default: build
+        type: choice
+        options:
+        - build
+        - squash
+        - test
+      OPT_UPDATE_FEEDS:
+        #description: 'target to use'
+        #required: true
+        #default: 22.03.3-rsync-mini
+        type: boolean
+        #default: true
+        default: false
+      OPT_REBUILD:
+        type: boolean
+        default: false
+      OPT_PACKAGE_ONLY:
+        type: boolean
+        default: true
+      OPT_PUSH_WHEN_FAIL:
+        type: boolean
+        default: false
+      OPT_IGNORE_ERRORS:
+        type: boolean
+        default: false
+      OPT_DEBUG:
+        type: boolean
+        default: false
+##      continue-on-error:
+##        type: boolean
+#    env:
+#        OPT_DEBUG: 1
   pull_request:
   push:
     paths:
@@ -88,12 +140,48 @@ jobs:
       HOST_WORK_DIR: ${{github.workspace}}
       BUILD_MODE: ${{matrix.mode}}
       BUILD_TARGET: ${{matrix.target}}
-
+# FIXME BUG see https://github.com/actions/runner/issues/1483      
+      CONTINUE_ON_ERROR: ${{inputs.continue-on-error}}
+# FIXME #    # fixme # if: ${{ github.event.inputs.continue-on-error }}
+# FIXME #    continue-on-error: true
     steps:
+# FIXME BUG see https://github.com/actions/runner/issues/1483
+    - if: ${{ github.event.inputs.OPT_UPDATE_FEEDS && github.event.inputs.OPT_UPDATE_FEEDS != 'false' }}
+      run: echo "OPT_UPDATE_FEEDS=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_REBUILD && github.event.inputs.OPT_REBUILD != 'false' }}
+      run: echo "OPT_REBUILD=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_PACKAGE_ONLY && github.event.inputs.OPT_PACKAGE_ONLY != 'false' }}
+      run: echo "OPT_PACKAGE_ONLY=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_PUSH_WHEN_FAIL && github.event.inputs.OPT_PUSH_WHEN_FAIL != 'false' }}
+      run: echo "OPT_PUSH_WHEN_FAIL=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_IGNORE_ERRORS && github.event.inputs.OPT_IGNORE_ERRORS != 'false' }}
+      run: echo "OPT_IGNORE_ERRORS=1" >> $GITHUB_OUTPUT
+    - if: ${{ github.event.inputs.OPT_DEBUG && github.event.inputs.OPT_DEBUG != 'false' }}
+      run: echo "OPT_DEBUG=1" >> $GITHUB_OUTPUT
+#    - if: ${{ github.event.inputs.continue-on-error }}
+#      continue-on-error: ${{ github.event.inputs.continue-on-error }}
+# FIXME BUG see https://github.com/actions/runner/issues/1483
+      continue-on-error: ${{ fromJSON(env.CONTINUE_ON_ERROR) }}
     - name: Checkout
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+
+    - name: Get current time
+      uses: josStorer/get-current-time@v2.1.1
+      id: date
+      with:
+        format: x # Unix Millisecond Timestamp  # https://momentjs.com/docs/#/displaying/format/
+        #format: YYYYMMDD-HH
+        #utcOffset: "+08:00"
+    - name: Use current time
+      env:
+        TIME: "${{ steps.date.outputs.time }}"
+        R_TIME: "${{ steps.date.outputs.readableTime }}"
+        F_TIME: "${{ steps.date.outputs.formattedTime }}"
+        YEAR: "${{ steps.date.outputs.year }}"
+        DAY: "${{ steps.date.outputs.day }}"
+      run: echo $TIME $R_TIME $F_TIME $YEAR $DAY
 
     - name: Set lower case owner name
       id: lower_owner
@@ -131,6 +219,10 @@ jobs:
       if: env.SKIP_TARGET == '0'
       run: scripts/cisteps/build-openwrt/04-configure_docker.sh
 
+    - name: Configure host modification (04-mod-host.sh)
+      if: env.SKIP_TARGET == '0'
+      run: scripts/cisteps/build-openwrt/04-mod-host.sh
+
     - name: Check status of builders
       if: env.SKIP_TARGET == '0'
       run: scripts/cisteps/build-openwrt/05-check_builders.sh
@@ -166,6 +258,48 @@ jobs:
         echo "ccache_hash=$CCACHE_HASH"
         echo "ccache_hash=$CCACHE_HASH" >> $GITHUB_OUTPUT
 
+    - name: 😀 Cache DLccache
+      uses: actions/cache@v3
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+      with:
+        path: |
+          ${{ env.HOST_DLCCACHE_DIR }}
+# /dev/shm/1001/DLccache/
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}-${{ steps.date.outputs.time }}
+        key: DLccache-${{ github.sha }}-${{ steps.date.outputs.time }}
+        restore-keys: |
+          #DLccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+          DLccache-${{ env.REPO_BRANCH }}-${{ github.sha }}-
+          DLccache-${{ env.REPO_BRANCH }}-
+          DLccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-
+          DLccache-${{ github.sha }}-
+          DLccache-${{ env.BUILD_TARGET }}-
+          DLccache-
+
+    - name: 🪣🪣 Cache HOST_CCACHE_DIR
+      uses: actions/cache@v3
+      #if: env.SKIP_TARGET == '0' && env.TEST != '1'
+      if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+      with:
+        path: |
+          ${{ env.HOST_CCACHE_DIR }}
+# /dev/shm/1001/DLccache/
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ steps.ccache_hash.outputs.ccache_hash }}
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+        #key: DLccache-${{ env.BUILD_TARGET }}-${{ env.BUILD_MODE }}-${{ github.sha }}-${{ steps.date.outputs.time }}
+        key: HOSTccache-${{ env.REPO_BRANCH }}-${{ github.sha }}-${{ steps.date.outputs.time }}
+        restore-keys: |
+          #HOSTccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+          HOSTccache-${{ env.REPO_BRANCH }}-${{ github.sha }}-
+          HOSTccache-${{ env.REPO_BRANCH }}-
+          HOSTccache-${{ env.BUILD_TARGET }}-${{ github.sha }}-
+          HOSTccache-${{ github.sha }}-
+          HOSTccache-${{ env.BUILD_TARGET }}-
+          HOSTccache-
+ 
     - name: Cache ccache
       uses: actions/cache@v3
       with:
