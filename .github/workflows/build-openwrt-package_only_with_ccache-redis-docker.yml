@@ -72,9 +72,6 @@ on:
       OPT_CONTAINER_JOB:
         type: boolean
         default: false
-      OPT_CONTAINER_JOB2:
-        type: boolean
-        default: false
       OPT_PUSH_WHEN_FAIL:
         type: boolean
         default: false
@@ -194,7 +191,7 @@ jobs:
 #jobs:
   build:
   
-    if: ${{ github.event.inputs.OPT_CONTAINER_JOB2 && github.event.inputs.OPT_CONTAINER_JOB2 != 'false' }}
+    if: ${{ github.event.inputs.OPT_CONTAINER_JOB && github.event.inputs.OPT_CONTAINER_JOB != 'false' }}
     services:
       # Label used to access the service container
       redis-y9g98g58d:
