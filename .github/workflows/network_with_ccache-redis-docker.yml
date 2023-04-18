@@ -188,6 +188,12 @@ jobs:
     #  - name: Sleep for 30 seconds
     #    run: sleep 300s
     #    shell: bash
+    
+      - name: Tailscale
+        uses: tailscale/github-action@v1
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
       - name: Wait for tests to succeed
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
@@ -356,6 +362,12 @@ jobs:
 
     - name: Check if skip this job
       run: scripts/cisteps/build-openwrt/02-check_target.sh
+
+    - name: Tailscale
+      if: env.SKIP_TARGET == '0'
+      uses: tailscale/github-action@v1
+      with:
+        authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
 ##    - name: Create docker network 🖧
 ##      run: docker network create ${MODEL_EXTERNAL_DOCKER_NETWORK}
