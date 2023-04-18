@@ -190,9 +190,11 @@ jobs:
     #    shell: bash
     
       - name: Tailscale
+        # if: env.SKIP_TARGET == '0' && env.TEST != '1'
         uses: tailscale/github-action@v1
         with:
-          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY_container_job }}
+          #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
       - name: Wait for tests to succeed
         uses: lewagon/wait-on-check-action@v1.3.1
@@ -364,10 +366,11 @@ jobs:
       run: scripts/cisteps/build-openwrt/02-check_target.sh
 
     - name: Tailscale
-      if: env.SKIP_TARGET == '0'
+      if: env.SKIP_TARGET == '0' && env.TEST != '1'
       uses: tailscale/github-action@v1
       with:
-        authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY_runner }}
+          #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
 ##    - name: Create docker network 🖧
 ##      run: docker network create ${MODEL_EXTERNAL_DOCKER_NETWORK}
