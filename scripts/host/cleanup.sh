@@ -27,7 +27,7 @@ _has_command_bin() {
 
 _install_tools() {
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
-/bin/bash -x -c "export DEBIAN_FRONTEND=noninteractive ; sudo -E apt-get install -q --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies dctrl-tools || sudo -E apt-get -q --yes update ; sudo -E apt-get install -q --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies dctrl-tools"
+/bin/bash -x -c "export DEBIAN_FRONTEND=noninteractive ; sudo -E apt-get install -qq --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies dctrl-tools || sudo -E apt-get --yes update ; sudo -E apt-get install -qq --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies dctrl-tools"
 }
 
 _got_more_space() {
@@ -39,7 +39,8 @@ export LANG=C
 Vtotal2=${Vtotal2:-0}
 Vtotalold2="$Vtotal2"
 Vtotal2=$(df --total --portability | awk 'END {print $4}')
-bc <<<"($Vtotal2-$Vtotalold2)*1024" | numfmt --to=iec
+VtotalDiff2=$(bc <<<"($Vtotal2-$Vtotalold2)*1024" | numfmt --to=iec)
+printf "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t %s\n" "$VtotalDiff2"
 #  for cmd do
 #    command -v "$cmd" >/dev/null 2>&1 || return 1
 #  done
