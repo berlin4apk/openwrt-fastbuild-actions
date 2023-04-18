@@ -157,7 +157,7 @@ _got_more_space
 _got_more_space
 #sudo -E apt-get -q purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
 ###echo "azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*" | xargs --max-args=1 --no-run-if-empty $SudoE $Eatmydata apt-get purge --no-upgrade --no-install-recommends --no-install-suggests --ignore-hold --no-download  ;
-echo "azure-cli zulu* hhvm firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*" | xargs --max-args=1 --no-run-if-empty $SudoE $Eatmydata apt-get purge --no-upgrade --no-install-recommends --no-install-suggests --ignore-hold --no-download  ;
+echo "azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*" | xargs --max-args=1 --no-run-if-empty $SudoE $Eatmydata apt-get purge --no-upgrade --no-install-recommends --no-install-suggests --ignore-hold --no-download  ;
 _got_more_space
 ### _exec_with_df_sudo apt-get purge azure-cli zulu* hhvm llvm* firefox microsoft-edge* google-cloud-sdk google* dotnet* powershell openjdk* temurin-*-jdk mysql*
 # _got_more_space
