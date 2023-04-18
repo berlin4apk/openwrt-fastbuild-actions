@@ -474,15 +474,19 @@ _install_command() {
 if [ "$CI" != "true" ]; then
 	echo runing not in CI, no apt install
 else
+	# https://groups.google.com/g/linux.debian.user/c/nlumWRyKtmc
 	export DEBIAN_FRONTEND=noninteractive
+	AptOpt="-o=Dpkg::Use-Pty=0 -o quiet::NoProgress=true -qqy --yes --no-upgrade"
 #    sudo -E apt-get -qq install --no-upgrade "$1" || $($SudoE apt-get -qq update && sudo -E apt-get -qq install --no-upgrade "$1")
-    $SudoE apt-get --yes install --no-upgrade "$1" ||:
+#    $SudoE apt-get --yes install --no-upgrade "$1" ||:
+    $SudoE apt-get install $AptOpt "$1" ||:
     if _has_command "$1"; then
          echo "system has now command $1"
     else
          echo "system has still NOT command $1"
-         $SudoE apt-get -qq --yes update
-         $SudoE apt-get --yes install --no-upgrade "$1"
+         #$SudoE apt-get -qq --yes update
+         $SudoE apt-get $AptOpt update
+         $SudoE apt-get $AptOpt install "$1"
     fi
 fi    
 }
@@ -502,12 +506,17 @@ _install_apt_deb() {
 if [ "$CI" != "true" ]; then
 	echo runing not in CI, no apt install
 else
-export DEBIAN_FRONTEND=noninteractive
+	# https://groups.google.com/g/linux.debian.user/c/nlumWRyKtmc
+	export DEBIAN_FRONTEND=noninteractive
+	AptOpt="-o=Dpkg::Use-Pty=0 -o quiet::NoProgress=true -qqy --yes --no-upgrade"
 #    sudo -E apt-get -qq install --no-upgrade "$1" || $($SudoE apt-get -qq update && $SudoE apt-get -qq install --no-upgrade "$1")
-    $SudoE apt-get --yes install --no-upgrade "$1" ||:
+#    $SudoE apt-get --yes install --no-upgrade "$1" ||:
+    $SudoE apt-get $AptOpt install "$1" ||:
     if [ "x0" = "x$?" ] ; then
-         $SudoE apt-get -qq --yes update
-         $SudoE apt-get --yes install --no-upgrade "$1"
+       #  $SudoE apt-get -qq --yes update
+       #  $SudoE apt-get --yes install --no-upgrade "$1"
+         $SudoE apt-get $AptOpt update
+         $SudoE apt-get $AptOpt install "$1"
     fi
 fi
 }
@@ -641,7 +650,7 @@ fi
 ## [[ "$1" == "install" ]] && 
 
 
-
+if [ "$1" != "install" ]; then
 # docker run --network ${{ job.container.network }} --hostname redis-cli --name redis-cli -d redis:7.0.10-alpine3.17 
 if [ "$CI" != "true" ]; then
 	echo "runing not in CI"
@@ -695,7 +704,7 @@ else
 #	docker_redis_ip2_test  --network "$*"
 #	docker_redis_ip3_test  --network "$*"
 fi
-
+fi
 
 
 
