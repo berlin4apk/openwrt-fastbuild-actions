@@ -72,7 +72,7 @@ on:
         default: true
       OPT_CONTAINER_JOB:
         type: boolean
-        default: false
+        default: true
       OPT_PUSH_WHEN_FAIL:
         type: boolean
         default: false
