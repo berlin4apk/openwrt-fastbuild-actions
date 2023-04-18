@@ -194,11 +194,10 @@ jobs:
 #jobs:
   build:
   
-  
+    if: ${{ github.event.inputs.OPT_CONTAINER_JOB2 && github.event.inputs.OPT_CONTAINER_JOB2 != 'false' }}
     services:
       # Label used to access the service container
       redis-y9g98g58d:
-      if: ${{ github.event.inputs.OPT_CONTAINER_JOB2 && github.event.inputs.OPT_CONTAINER_JOB2 != 'false' }}
       #redis-2y9g98g58d:
         # Docker Hub image
         #image: _/redis
