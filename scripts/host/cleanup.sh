@@ -27,7 +27,7 @@ _has_command_bin() {
 
 _install_tools() {
 # https://book.dpmb.org/debian-paketmanagement.chunked/ch08s16.html
-/bin/bash -x -c "export DEBIAN_FRONTEND=noninteractive ; sudo -E apt-get install --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies dctrl-tools || sudo -E apt-get  --yes update ; sudo -E apt-get install --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies dctrl-tools"
+/bin/bash -x -c "export DEBIAN_FRONTEND=noninteractive ; sudo -E apt-get install -q --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies dctrl-tools || sudo -E apt-get -q --yes update ; sudo -E apt-get install -q --yes --no-upgrade --no-install-recommends --no-install-suggests eatmydata aptitude debian-goodies dctrl-tools"
 }
 
 _got_more_space() {
