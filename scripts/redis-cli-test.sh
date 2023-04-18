@@ -40,18 +40,25 @@ else
 fi
   
 docker_build_alpine_image() {
-cat <<EOF | docker build --tag alpine -
+#cat <<EOF | docker build --tag alpine -
+cat <<EOF | docker buildx build --tag alpine -
 FROM alpine:latest
 RUN set -vx && apk add --no-cache redis bind-tools musl-utils iproute2
 EOF
 }
-docker_build_alpine_image
+docker image inspect alpine || docker_build_alpine_image;
 
+
+#_has_command() {   for cmd do     command -v "$cmd" >/dev/null 2>&1 || return 1   done  }
+#_has_command2() {    command -v -- "$1" 2>/dev/null || hash -- "$1" 2>/dev/null   }
+#_has_command2 redis-cli || apk add --no-cache redis
 docker_redis_ip_test() {
 cat <<EOF | docker run --rm -i  $*  --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
 set -vx
-apk add --no-cache redis >/dev/null
+command -v -- redis-cli 2>/dev/null || apk add --no-cache redis
 echo docker_redis_ip_test
+
+
 serverlist="
 redis://172.17.0.1:6379
 redis://172.18.0.1:6379
@@ -155,13 +162,56 @@ redis://docker.for.win.host.internal:56379
 redis://docker.for.win.localhost:56379
 "
 for t in \$serverlist; do 
-	echo "###########################"
-	echo \$t
-	redis-cli -u \$t   ping ||: ;
-	echo "###########################"
+set +vx
+	#echo "###########################"
+	#echo "########"
+	#echo \$t
+	#printf "\$t \t\t "
+#	printf "\t\t\t %s\n" "\$t"
+#printf "%s\t" "\$t"
+printf "%s" "\$t"
+#printf '\033[%d' 10
+#	printf "%s" "\$t"
+#	printf "\33[%d;%d" "30" "10"
+#	ESC[1;5C
+#	printf "\337\33[%d;%dH%s\338" "30" "30" ">"
+#	printf "\337\33[%d;%dH%s\338" "$Y" "$X" "$CHAR"
+#	printf "\33[%d;%dH%s" "$Y" "$X" "$CHAR"
+#	redis-cli -u \$t   ping  ||: ; | tr "\n" " "
+#	printf "%5s", "abc"
+#	redis-cli -u \$t   ping  | tr "\n" " "
+#outVAR=$(redis-cli -u "\$t"   ping 2>&1 ) 
+#printf "\033[0C bbbb"
+printf "\033[0L" 
+printf "\033[45C "
+#printf "\033[40C foooooo"
+redis-cli -u "\$t"   ping 2>&1
+#printf "%s" "\$outVAR"
+	#echo "###########################"
+#	echo "__________________________________________________________________________________________________"
+printf "_______________________________________________________________________________________________________________________\n"
 done
 EOF
 }
+
+#for t in \$serverlist; do 
+#	#echo "###########################"
+#	echo "########"
+#	#echo \$t
+#	#printf "\$t \t\t "
+##	printf "\t\t\t %s\n" "\$t"
+#printf "%s\t\t" "\$t"
+##	redis-cli -u \$t   ping  ||: ; | tr "\n" " "
+##	rediscliout= # redis-cli -u \$t   ping  | tr "\n" " " 
+#	redis-cli -u \$t   ping  2>&1 | tr "\n" " " 
+#	#echo "\$t \t\t $rediscliout"
+#	#echo "###########################"
+#	echo "########________________________________________________________________________________________________"
+##	printf "\n########__________________________________________________________________________________________\n"
+#done
+
+
+
 
 docker_redis_ip_test_port_26379() {
 cat <<EOF | docker run --rm -i  $*   --add-host=host.docker.internal:host-gateway --name redis_alpine alpine:latest sh
@@ -474,7 +524,11 @@ $Sudo -l ||:
 /usr/local/bin/update-ccache-symlinks.sh ||:
 }
 
-_install_ccache_download_redis
+if [ "$CI" != "true" ]; then
+	echo runing not in CI, no _install_ccache_download_redis
+else
+	_install_ccache_download_redis
+fi
 
 set +eo pipefail
 
@@ -484,14 +538,14 @@ export REDIS_PASSWORD=
 
 ccache -p
 ###ccache --set-config remote_storage="file://home/builder/.ccache|redis://172.17.0.1|redis://172.18.0.1|redis://host.docker.internal|redis://redis-y9g98g58d|redis://redis-2y9g98g58d|redis://redis"
-ccache --set-config remote_storage="file:/${HOST_CCACHE_DIR}|file:/${BUILDER_CCACHE_DIR}"
+[[ "$CI" == "true" ]] && ccache --set-config remote_storage="file:/${HOST_CCACHE_DIR}|file:/${BUILDER_CCACHE_DIR}"
 #ccache --set-config reshare=true
 #ccache --set-config remote_only=true
 ccache --set-config hard_link=false
 ccache --set-config umask=002
 ccache -p
 
-cat <<EOF | $Sudo tee /etc/ccache.conf-04-mod-host | $Sudo tee /usr/local/etc/ccache.conf-04-mod-host
+[[ "$CI" == "true" ]] && cat <<EOF | $Sudo tee /etc/ccache.conf-04-mod-host | $Sudo tee /usr/local/etc/ccache.conf-04-mod-host
 #cache_dir=/ccache/
 cache_dir=/dev/shm/ccache/
 #cache_dir=/tmp/ccache/
@@ -513,12 +567,11 @@ max_size=1500M
 EOF
 
 
-# docker run --network ${{ job.container.network }} --hostname redis-cli --name redis-cli -d redis:7.0.10-alpine3.17 
-docker_redis_ip_test_port_26379  --network $ENV_JOB_CONTAINER_NETWORK
-docker_redis_ip_test  --network $ENV_JOB_CONTAINER_NETWORK
-docker_redis_ip2_test  --network $ENV_JOB_CONTAINER_NETWORK
-docker_redis_ip3_test  --network $ENV_JOB_CONTAINER_NETWORK
 
+
+if [ "$CI" != "true" ]; then
+	echo "runing not in CI, no HOST_SELF_redis_ip_test"
+else
 set +vx
 DOCKER_HOST_IP1=$(docker_ip_fn)
 DOCKER_HOST_IP2=$(docker_ip_fn2)
@@ -526,10 +579,35 @@ DOCKER_HOST_IP3=$(docker_ip_fn3)
 DOCKER_HOST_IP4=$(docker_ip_fn4)
 set -vx
 
-
 HOST_SELF_redis_ip_test
 HOST_SELF_redis_ip_test_port_6379
 HOST_SELF_redis_ip_test_port_26379
+fi
+
+
+
+
+# docker run --network ${{ job.container.network }} --hostname redis-cli --name redis-cli -d redis:7.0.10-alpine3.17 
+if [ "$CI" != "true" ]; then
+	echo "runing not in CI"
+#	docker_redis_ip_test  --network "$*"
+# working #	mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep -B1 PONG )
+	mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG )
+	echo "$mypong"
+
+#	docker_redis_ip_test_port_26379  --network "$*"
+#	docker_redis_ip2_test  --network "$*"
+#	docker_redis_ip3_test  --network "$*"
+else
+#	docker_redis_ip_test  --network "$*"
+# working #	mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep -B1 PONG )
+	mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG )
+	echo "$mypong"
+#	docker_redis_ip_test_port_26379  --network "$*"
+#	docker_redis_ip2_test  --network "$*"
+#	docker_redis_ip3_test  --network "$*"
+fi
+
 
 
 
