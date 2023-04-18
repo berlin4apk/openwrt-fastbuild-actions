@@ -9,9 +9,6 @@
 
 set -eo pipefail
 
-set -vx
-export -p
-
 # shellcheck disable=SC1090
 source "${BUILDER_WORK_DIR}/scripts/lib/gaction.sh"
 
@@ -25,6 +22,10 @@ if [ "x${TEST}" = "x1" ]; then
   _set_env OPENWRT_CUR_DIR
   exit 0
 fi
+
+set -vx
+export -p
+
 
 echo "Executing cat config_*.diff"
 bash -xc "wc -l ${BUILDER_PROFILE_DIR}/config.diff" ||:
@@ -55,7 +56,8 @@ bash -xc "wc -l ${BUILDER_PROFILE_DIR}/config.diff" ||:
 bash -xc "wc -l ${BUILDER_PROFILE_DIR}/.config.diff" ||:
 bash -xc "wc -l ${BUILDER_PROFILE_DIR}/.config" ||:
 
-cp "${BUILDER_PROFILE_DIR}/config.diff" "${OPENWRT_CUR_DIR}/.config"
+### cp "${BUILDER_PROFILE_DIR}/config.diff" "${OPENWRT_CUR_DIR}/.config"
+cat "${BUILDER_PROFILE_DIR}/config.diff" | tee -a "${OPENWRT_CUR_DIR}/.config"
 
 echo "Applying patches..."
 if [ -n "$(ls -A "${BUILDER_PROFILE_DIR}/patches" 2>/dev/null)" ]; then
