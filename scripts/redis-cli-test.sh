@@ -185,7 +185,7 @@ printf "%s" "\$t"
 printf "\033[0L" 
 printf "\033[45C "
 #printf "\033[40C foooooo"
-redis-cli -u "\$t"   ping 2>&1
+redis-cli --verbose -u "\$t"   ping 2>&1
 #printf "%s" "\$outVAR"
 	#echo "###########################"
 #	echo "__________________________________________________________________________________________________"
@@ -592,17 +592,40 @@ if [ "$CI" != "true" ]; then
 	echo "runing not in CI"
 #	docker_redis_ip_test  --network "$*"
 # working #	mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep -B1 PONG )
-	mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG )
-	echo "$mypong"
+#	mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG )
+#	echo "$mypong"
+#[[ "$*" != "" ]] && echo "call docker with --network $*"
+#[[ "$*" != "" ]] && docker_redis_ip_test  --network "$*"
+#[[ "$*" == "" ]] && echo "call docker without --network "
+#[[ "$*" == "" ]] && docker_redis_ip_test
+
+[[ "$*" != "" ]] && echo "call docker with --network $*"
+[[ "$*" != "" ]] && mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG ) ; echo "$mypong"
+[[ "$*" == "" ]] && echo "call docker without --network "
+[[ "$*" == "" ]] && mypong=$( docker_redis_ip_test | tee /dev/tty | grep PONG ) ; echo "$mypong"
+
+
 
 #	docker_redis_ip_test_port_26379  --network "$*"
 #	docker_redis_ip2_test  --network "$*"
 #	docker_redis_ip3_test  --network "$*"
 else
 #	docker_redis_ip_test  --network "$*"
-# working #	mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep -B1 PONG )
-	mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG )
-	echo "$mypong"
+# in CI not fully working #	mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep -B1 PONG )
+#	mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG )
+#	echo "$mypong"
+#docker_redis_ip_test  --network "$*"
+#docker_redis_ip_test  --network "$*" | grep PONG
+#[[ "$*" != "" ]] && echo "call docker with --network $*"
+#[[ "$*" != "" ]] && docker_redis_ip_test  --network "$*"
+#[[ "$*" == "" ]] && echo "call docker without --network "
+#[[ "$*" == "" ]] && docker_redis_ip_test
+
+[[ "$*" != "" ]] && echo "call docker with --network $*"
+[[ "$*" != "" ]] && mypong=$( docker_redis_ip_test  --network "$*" | tee /dev/tty | grep PONG ) ; echo "$mypong"
+[[ "$*" == "" ]] && echo "call docker without --network "
+[[ "$*" == "" ]] && mypong=$( docker_redis_ip_test | tee /dev/tty | grep PONG ) ; echo "$mypong"
+
 #	docker_redis_ip_test_port_26379  --network "$*"
 #	docker_redis_ip2_test  --network "$*"
 #	docker_redis_ip3_test  --network "$*"
