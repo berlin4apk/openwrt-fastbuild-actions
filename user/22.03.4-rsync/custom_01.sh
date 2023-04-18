@@ -8,6 +8,25 @@ echo "= $0 ==== start ==========================================="
 # make defconfig
 
 set -x
+
+ls -la ./
+
+echo "CONFIG_CCACHE=y" | tee -a config_010.diff
+echo "BUILDER_CCACHE_DIR ${BUILDER_CCACHE_DIR}"
+echo "CONFIG_CCACHE_DIR=${BUILDER_CCACHE_DIR}/" | tee -a config_011.diff
+echo "BUILDER_DLCCACHE_DIR ${BUILDER_DLCCACHE_DIR}"
+echo "CONFIG_DOWNLOAD_FOLDER=${BUILDER_DLCCACHE_DIR}/" | tee -a config_012.diff
+echo "# DL_DIR=${BUILDER_DLCCACHE_DIR}/" | tee -a config_013.diff
+
+echo "CONFIG_CCACHE=y" | tee -a .config
+echo "CONFIG_CCACHE_DIR=${BUILDER_CCACHE_DIR}/" | tee -a .config
+echo "CONFIG_DOWNLOAD_FOLDER=${BUILDER_DLCCACHE_DIR}/" | tee -a .config
+echo "# DL_DIR=${BUILDER_DLCCACHE_DIR}/" | tee -a .config
+
+cat .config
+
+
+
 #mkdir -p dl ## FIXME ##
 #mkdir -p /home/builder/dl  ## FIXME ##
 #mkdir -p /home/builder/openwrt/dl  ## FIXME ##
