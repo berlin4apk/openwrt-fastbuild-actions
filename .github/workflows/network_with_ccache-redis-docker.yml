@@ -120,7 +120,8 @@ jobs:
     # Service containers to run with `container-job`
     services:
       # Label used to access the service container
-      redis-y9g98g58d:
+      #redis-y9g98g58d:
+      redis:
         # Docker Hub image
         #image: _/redis
         #image: redis:6.2.6-alpine3.14
@@ -154,8 +155,12 @@ jobs:
 #          - my_docker_volume:/volume_mount
 #          - /source/directory:/destination/directory
         ports:
+          - 6379/tcp
+          # get the rendom port via ${{ job.services.redis.ports['6379'] }}
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idservices
+# https://docs.github.com/en/actions/learn-github-actions/contexts#job-context
           # Maps port 6379 on service container to the host
-          - 6379:6379
+          #- 6379:6379
 
     steps:
 #      - uses: docker-practice/actions-setup-docker@1.0.8
@@ -355,8 +360,7 @@ jobs:
 ##      #run: docker run -p 3030:3030 -v ${{ github.workspace }}/aksw-model:/staging --network "bridge" --hostname fuseki --name fuseki -d stain/jena-fuseki /jena-fuseki/fuseki-server --file=/staging/aksw.org.nt /aksw
 ##      run: docker run -p 36379:6379 -v ${{ github.workspace }}/docker_volume_mount:/data:rw --network "bridge" --hostname redis3 --name redis3 -d redis:7.0.10-alpine3.17 --unixsocket /tmp/docker/socket.sock --unixsocketperm 777 --loglevel verbose
 ##    - run: docker network ls
-    
-  
+      
     - name: Run redis-cli-test.sh install
       run: scripts/redis-cli-test.sh install
     
@@ -364,6 +368,11 @@ jobs:
       run: scripts/redis-cli-test.sh ${{ job.container.network }}
       env: 
         ENV_JOB_CONTAINER_NETWORK: ${{ job.container.network }}
+        ENV_job_services_redis_ports_6379: ${{ job.services.redis.ports['6379'] }}
+        ENV_job_services_redis_network: ${{ job.services.redis.network }}
+        ENV_job_services_network: ${{ job.services.network }}
+    - name: run echo 
+      run: echo "${{ job.container.network }} ${{ job.services.redis.ports['6379'] }} ${{ job.services.redis.network }} ${{ job.services.network }}"
     - name: Upload redis-cli-test.sh output
       uses: actions/upload-artifact@master
       if: env.SKIP_TARGET == '0' && env.OPT_INSPECT == '1' 
