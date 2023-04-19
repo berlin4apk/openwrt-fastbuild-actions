@@ -131,7 +131,7 @@ jobs:
         #image: redis:7.0.10
         # Set health checks to wait until redis has started
         options: >-
-          --user 1001:123
+          --user=runner:runner   # --user=1001:123
           --interactive
           --hostname redis
           --add-host=host.docker.internal:host-gateway
