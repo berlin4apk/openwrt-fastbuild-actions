@@ -195,7 +195,7 @@ jobs:
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY_container_job }}
           hostname: redis-y9g98g58d
-          args: '--state=mem:'
+          #args: # notworking # '--state=mem:'
           version: '1.38.4'
           #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
       - name: check for hello.ipn.dev in netmap
@@ -377,7 +377,7 @@ jobs:
       uses: tailscale/github-action@ce41a99162202a647a4b24c30c558a567b926709
       with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY_runner }}
-          args: '--state=mem:'
+          #args: # notworking # '--state=mem:'
           version: '1.38.4'
           #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
     - name: check for hello.ipn.dev in netmap
