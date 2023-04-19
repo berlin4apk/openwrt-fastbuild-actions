@@ -166,6 +166,29 @@ jobs:
 
     steps:
 #      - uses: docker-practice/actions-setup-docker@1.0.8
+      - name: Get current time
+        uses: josStorer/get-current-time@v2.1.1
+        id: date
+        with:
+          format: x # Unix Millisecond Timestamp  # https://momentjs.com/docs/#/displaying/format/
+      - name: 🪣🪣 Cache REDIS_DATA_DIR
+        uses: actions/cache@v3
+        if: env.SKIP_TARGET == '0' && env.TEST != '1'
+        #if: env.NULL_DISABLE_SKIP_TARGET == '0' 
+        with:
+          path: |
+            /tmp/docker_volume_mount
+            ${{ env.HOST_CCACHE_DIR }} # for ccache-download-redis / ccache-upload-redis
+          key: REDIS_DATA_DIR-${{ env.REPO_BRANCH }}-${{ github.sha }}-${{ steps.date.outputs.time }}
+          restore-keys: |
+            #REDIS_DATA_DIR-${{ env.BUILD_TARGET }}-${{ github.sha }}-${{ hashFiles('/dev/shm/1001/DLccache/**') }}
+            REDIS_DATA_DIR-${{ env.REPO_BRANCH }}-${{ github.sha }}-
+            REDIS_DATA_DIR-${{ env.REPO_BRANCH }}-
+            REDIS_DATA_DIR-${{ env.BUILD_TARGET }}-${{ github.sha }}-
+            REDIS_DATA_DIR-${{ github.sha }}-
+            REDIS_DATA_DIR-${{ env.BUILD_TARGET }}-
+            REDIS_DATA_DIR-
+
       - name: "Set some redis settings"
         run: |
           export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
