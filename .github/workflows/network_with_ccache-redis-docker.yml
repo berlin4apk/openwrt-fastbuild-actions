@@ -214,12 +214,13 @@ jobs:
     
       - name: Tailscale
         # if: env.SKIP_TARGET == '0' && env.TEST != '1'
-        uses: tailscale/github-action@ce41a99162202a647a4b24c30c558a567b926709
+        uses: berlin4apk/tailscale-github-action@dev
+        #uses: tailscale/github-action@ce41a99162202a647a4b24c30c558a567b926709
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY_container_job }}
           hostname: redis-y9g98g58d
           #args: # notworking # '--state=mem:'
-          version: '1.38.4'
+          #version: '1.38.4'
           #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
       - name: check for hello.ipn.dev in netmap
         if: env.SKIP_TARGET == '0' && env.TEST != '1'
@@ -397,11 +398,12 @@ jobs:
 
     - name: Tailscale
       if: env.SKIP_TARGET == '0' && env.TEST != '1'
-      uses: tailscale/github-action@ce41a99162202a647a4b24c30c558a567b926709
+      #uses: tailscale/github-action@ce41a99162202a647a4b24c30c558a567b926709
+      uses: berlin4apk/tailscale-github-action@dev
       with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY_runner }}
           #args: # notworking # '--state=mem:'
-          version: '1.38.4'
+          #version: '1.38.4'
           #authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
     - name: check for hello.ipn.dev in netmap
       if: env.SKIP_TARGET == '0' && env.TEST != '1'
