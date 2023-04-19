@@ -139,7 +139,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
           --restart always
-          --user=runner:runner
+          --user=1001:123
 # --user=runner:runner
 # --user=1001:123
         # https://hub.docker.com/_/redis
