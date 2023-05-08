@@ -1,0 +1,150 @@
+# https://patch-diff.githubusercontent.com/raw/woa7/openwrt-packages/pull/2.patch
+From 82db748e91c8f7d7429d7eae63b5fa27db3f3956 Mon Sep 17 00:00:00 2001
+From: woa7 <7572779+woa7@users.noreply.github.com>
+Date: Mon, 8 May 2023 23:47:14 +0200
+Subject: [PATCH 1/4] Update Makefile, add USERID proxy=13 for polipo
+
+add USERID proxy=13, the same UID and UserName as in debian buster
+
+Signed-off-by: woa7 <7572779+woa7@users.noreply.github.com>
+---
+ net/polipo/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/net/polipo/Makefile b/net/polipo/Makefile
+index 52ccf6e2717f..4851d4f8cd88 100644
+--- package/feeds/packages/net/polipo/Makefile
++++ package/feeds/packages/net/polipo/Makefile
+@@ -26,6 +26,7 @@ define Package/polipo
+   TITLE:=A caching web proxy
+   URL:=http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/
+   MAINTAINER:=Gabriel Kerneis <gabriel@kerneis.info>
++  USERID:=proxy=13:proxy=13
+ endef
+ 
+ define Package/polipo/description
+
+From 198ff60a81b3c1c6427094dd42758e43c21fbf73 Mon Sep 17 00:00:00 2001
+From: woa7 <7572779+woa7@users.noreply.github.com>
+Date: Tue, 9 May 2023 00:28:14 +0200
+Subject: [PATCH 2/4] Update polipo.init add USERID proxy=13
+
+add USERID proxy=13, the same UID and UserName as in debian buster
+
+Signed-off-by: woa7 <7572779+woa7@users.noreply.github.com>
+---
+ net/polipo/files/polipo.init | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+
+diff --git a/net/polipo/files/polipo.init b/net/polipo/files/polipo.init
+index 3cd73d49bd43..e0c6982df276 100644
+--- package/feeds/packages/net/polipo/files/polipo.init
++++ package/feeds/packages/net/polipo/files/polipo.init
+@@ -5,8 +5,38 @@ START=99
+ 
+ CFGFILE=/var/etc/polipo.conf
+ 
++USER="proxy"
++USERID="13"
++# LOGFILE="/var/log/polipo"
++config_get 
++
++fix_perms() {
++	config_load 'polipo'
++	local diskCacheRoot
++	config_get "diskCacheRoot" "diskCacheRoot" '"'
++	local localDocumentRoot
++	config_get "localDocumentRoot" "localDocumentRoot" '"'
++	local logFile
++	config_get "logFile" "logFile" '"'
++	
++	user_exists $USER $USERID || user_add $USER $USERID
++	group_exists $USER $USERID || group_add $USER $USERID
++
++	for dir in $diskCacheRoot $localDocumentRoot; do
++		test -e $dir || {
++			mkdir -p $dir
++			chgrp $USER $dir
++			chmod g+w $dir
++		}
++		chgrp $USER $LOGFILE
++		chgrp $USER $CFGFILE
++		chmod g+r $CFGFILE
++	done
++}
++
+ start() {
+ 	config_load 'polipo'
++	fix_perms
+ 
+ 	config_get_bool enabled "general" 'enabled' '0'
+ 	[ $enabled -gt 0 ] || return 1
+
+From 0b2535be20747570cd5adad299f1c9d1585e9a43 Mon Sep 17 00:00:00 2001
+From: woa7 <7572779+woa7@users.noreply.github.com>
+Date: Tue, 9 May 2023 00:46:29 +0200
+Subject: [PATCH 3/4] Update polipo.init
+
+Signed-off-by: woa7 <7572779+woa7@users.noreply.github.com>
+---
+ net/polipo/files/polipo.init | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/net/polipo/files/polipo.init b/net/polipo/files/polipo.init
+index e0c6982df276..01260205cb53 100644
+--- package/feeds/packages/net/polipo/files/polipo.init
++++ package/feeds/packages/net/polipo/files/polipo.init
+@@ -3,6 +3,7 @@
+ 
+ START=99
+ 
++PROG=/usr/sbin/polipo
+ CFGFILE=/var/etc/polipo.conf
+ 
+ USER="proxy"
+@@ -20,7 +21,7 @@ fix_perms() {
+ 	config_get "logFile" "logFile" '"'
+ 	
+ 	user_exists $USER $USERID || user_add $USER $USERID
+-	group_exists $USER $USERID || group_add $USER $USERID
++	group_exists $USER $USERID || group_add $USER $USERID && group_add_user $USER $USER
+ 
+ 	for dir in $diskCacheRoot $localDocumentRoot; do
+ 		test -e $dir || {
+@@ -55,11 +56,11 @@ start() {
+ 	polipo_atom "general" "logFile" '"' "1" >> $CFGFILE
+ 	polipo_atom "general" "localDocumentRoot" '"' "1" >> $CFGFILE
+ 
+-	service_start /usr/sbin/polipo -c "$CFGFILE"
++	service_start $PROG -c "$CFGFILE"
+ }
+ 
+ stop() {
+-	service_stop /usr/sbin/polipo -c "$CFGFILE"
++	service_stop $PROG -c "$CFGFILE"
+ }
+ 
+ polipo_config() {
+
+From bd1d63f0a7b033df4e84f0ba66c2e01ed7856d8a Mon Sep 17 00:00:00 2001
+From: woa7 <7572779+woa7@users.noreply.github.com>
+Date: Tue, 9 May 2023 00:55:25 +0200
+Subject: [PATCH 4/4] fix typo in polipo.init
+
+Signed-off-by: woa7 <7572779+woa7@users.noreply.github.com>
+---
+ net/polipo/files/polipo.init | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/net/polipo/files/polipo.init b/net/polipo/files/polipo.init
+index 01260205cb53..011d1b40f528 100644
+--- package/feeds/packages/net/polipo/files/polipo.init
++++ package/feeds/packages/net/polipo/files/polipo.init
+@@ -9,7 +9,6 @@ CFGFILE=/var/etc/polipo.conf
+ USER="proxy"
+ USERID="13"
+ # LOGFILE="/var/log/polipo"
+-config_get 
+ 
+ fix_perms() {
+ 	config_load 'polipo'
